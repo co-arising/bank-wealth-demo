@@ -309,7 +309,7 @@ payload:
           }
         }
       },
-      "formal-technical-port-bank-refund0-commit-execute": {
+      "formal-technical-port-debit-fund-collection-commit-execute": {
         "parameters": ["file","doc-id","ref-id","ref-id-2"],
         "body": {
           "file": {"$arg":"file"},
@@ -329,7 +329,7 @@ payload:
           }
         }
       },
-      "formal-technical-port-bank-refund0-commit-query-port": {
+      "formal-technical-port-debit-fund-collection-commit-query-port": {
         "parameters": ["file","doc-id","ref-id","ref-id-2"],
         "body": {
           "file": {"$arg":"file"},
@@ -370,7 +370,7 @@ payload:
           }
         }
       },
-      "value-object-bank-refund0-commit-query": {
+      "value-object-debit-fund-collection-commit-query": {
         "parameters": ["file","doc-name","doc-seq"],
         "body": {
           "file": {"$arg":"file"},
@@ -395,7 +395,7 @@ payload:
           }
         }
       },
-      "value-object-bank-refund0-commit-receipt": {
+      "value-object-debit-fund-collection-commit-receipt": {
         "parameters": ["file","doc-name","doc-seq"],
         "body": {
           "file": {"$arg":"file"},
@@ -423,7 +423,7 @@ payload:
           }
         }
       },
-      "value-object-bank-refund0-compensate-receipt": {
+      "value-object-debit-fund-collection-compensate-receipt": {
         "parameters": ["file","doc-name","doc-seq"],
         "body": {
           "file": {"$arg":"file"},
@@ -478,64 +478,64 @@ payload:
                   ["BankRefundEntry","BankRefundOriginal","@type(primitive:boolean)"],
                   ["BankRefundAssociation","BankRefundOriginal","@type(primitive:boolean)"],
                   [
-                    "BankRefund0PrepareExecute",
-                    "BankRefund0PrepareInput",
-                    "@type(nominal:bankwealth:type#BankRefund0PrepareReceipt)"
+                    "DebitFundCollectionPrepareExecute",
+                    "DebitFundCollectionPrepareInput",
+                    "@type(nominal:bankwealth:type#DebitFundCollectionPrepareReceipt)"
                   ],
                   [
-                    "BankRefund0PrepareQueryPort",
-                    "BankRefund0PrepareQuery",
-                    "@type(optional:nominal:bankwealth:type#BankRefund0PrepareReceipt)"
+                    "DebitFundCollectionPrepareQueryPort",
+                    "DebitFundCollectionPrepareQuery",
+                    "@type(optional:nominal:bankwealth:type#DebitFundCollectionPrepareReceipt)"
                   ],
                   [
-                    "BankRefund0CommitExecute",
-                    "BankRefund0CommitInput",
-                    "@type(nominal:bankwealth:type#BankRefund0CommitReceipt)"
+                    "DebitFundCollectionCommitExecute",
+                    "DebitFundCollectionCommitInput",
+                    "@type(nominal:bankwealth:type#DebitFundCollectionCommitReceipt)"
                   ],
                   [
-                    "BankRefund0CommitQueryPort",
-                    "BankRefund0CommitQuery",
-                    "@type(optional:nominal:bankwealth:type#BankRefund0CommitReceipt)"
+                    "DebitFundCollectionCommitQueryPort",
+                    "DebitFundCollectionCommitQuery",
+                    "@type(optional:nominal:bankwealth:type#DebitFundCollectionCommitReceipt)"
                   ],
                   [
-                    "BankRefund0CompensateExecute",
-                    "BankRefund0CompensateInput",
-                    "@type(nominal:bankwealth:type#BankRefund0CompensateReceipt)"
+                    "DebitFundCollectionCompensateExecute",
+                    "DebitFundCollectionCompensateInput",
+                    "@type(nominal:bankwealth:type#DebitFundCollectionCompensateReceipt)"
                   ],
                   [
-                    "BankRefund0CompensateQueryPort",
-                    "BankRefund0CompensateQuery",
-                    "@type(optional:nominal:bankwealth:type#BankRefund0CompensateReceipt)"
+                    "DebitFundCollectionCompensateQueryPort",
+                    "DebitFundCollectionCompensateQuery",
+                    "@type(optional:nominal:bankwealth:type#DebitFundCollectionCompensateReceipt)"
                   ],
                   [
-                    "BankRefund1PrepareExecute",
-                    "BankRefund1PrepareInput",
-                    "@type(nominal:bankwealth:type#BankRefund1PrepareReceipt)"
+                    "CreditOriginalInvestorPrepareExecute",
+                    "CreditOriginalInvestorPrepareInput",
+                    "@type(nominal:bankwealth:type#CreditOriginalInvestorPrepareReceipt)"
                   ],
                   [
-                    "BankRefund1PrepareQueryPort",
-                    "BankRefund1PrepareQuery",
-                    "@type(optional:nominal:bankwealth:type#BankRefund1PrepareReceipt)"
+                    "CreditOriginalInvestorPrepareQueryPort",
+                    "CreditOriginalInvestorPrepareQuery",
+                    "@type(optional:nominal:bankwealth:type#CreditOriginalInvestorPrepareReceipt)"
                   ],
                   [
-                    "BankRefund1CommitExecute",
-                    "BankRefund1CommitInput",
-                    "@type(nominal:bankwealth:type#BankRefund1CommitReceipt)"
+                    "CreditOriginalInvestorCommitExecute",
+                    "CreditOriginalInvestorCommitInput",
+                    "@type(nominal:bankwealth:type#CreditOriginalInvestorCommitReceipt)"
                   ],
                   [
-                    "BankRefund1CommitQueryPort",
-                    "BankRefund1CommitQuery",
-                    "@type(optional:nominal:bankwealth:type#BankRefund1CommitReceipt)"
+                    "CreditOriginalInvestorCommitQueryPort",
+                    "CreditOriginalInvestorCommitQuery",
+                    "@type(optional:nominal:bankwealth:type#CreditOriginalInvestorCommitReceipt)"
                   ],
                   [
-                    "BankRefund1CompensateExecute",
-                    "BankRefund1CompensateInput",
-                    "@type(nominal:bankwealth:type#BankRefund1CompensateReceipt)"
+                    "CreditOriginalInvestorCompensateExecute",
+                    "CreditOriginalInvestorCompensateInput",
+                    "@type(nominal:bankwealth:type#CreditOriginalInvestorCompensateReceipt)"
                   ],
                   [
-                    "BankRefund1CompensateQueryPort",
-                    "BankRefund1CompensateQuery",
-                    "@type(optional:nominal:bankwealth:type#BankRefund1CompensateReceipt)"
+                    "CreditOriginalInvestorCompensateQueryPort",
+                    "CreditOriginalInvestorCompensateQuery",
+                    "@type(optional:nominal:bankwealth:type#CreditOriginalInvestorCompensateReceipt)"
                   ],
                   [
                     "BankRefundSucceededAuthority",
@@ -577,18 +577,18 @@ payload:
                 "rows": [
                   ["BankRefundEntry","bankwealth.BankRefundEntry"],
                   ["BankRefundAssociation","bankwealth.BankRefundAssociation"],
-                  ["BankRefund0PrepareExecute","bankwealth.BankRefund0PrepareExecute"],
-                  ["BankRefund0PrepareQueryPort","bankwealth.BankRefund0PrepareQueryPort"],
-                  ["BankRefund0CommitExecute","bankwealth.BankRefund0CommitExecute"],
-                  ["BankRefund0CommitQueryPort","bankwealth.BankRefund0CommitQueryPort"],
-                  ["BankRefund0CompensateExecute","bankwealth.BankRefund0CompensateExecute"],
-                  ["BankRefund0CompensateQueryPort","bankwealth.BankRefund0CompensateQueryPort"],
-                  ["BankRefund1PrepareExecute","bankwealth.BankRefund1PrepareExecute"],
-                  ["BankRefund1PrepareQueryPort","bankwealth.BankRefund1PrepareQueryPort"],
-                  ["BankRefund1CommitExecute","bankwealth.BankRefund1CommitExecute"],
-                  ["BankRefund1CommitQueryPort","bankwealth.BankRefund1CommitQueryPort"],
-                  ["BankRefund1CompensateExecute","bankwealth.BankRefund1CompensateExecute"],
-                  ["BankRefund1CompensateQueryPort","bankwealth.BankRefund1CompensateQueryPort"],
+                  ["DebitFundCollectionPrepareExecute","bankwealth.DebitFundCollectionPrepareExecute"],
+                  ["DebitFundCollectionPrepareQueryPort","bankwealth.DebitFundCollectionPrepareQueryPort"],
+                  ["DebitFundCollectionCommitExecute","bankwealth.DebitFundCollectionCommitExecute"],
+                  ["DebitFundCollectionCommitQueryPort","bankwealth.DebitFundCollectionCommitQueryPort"],
+                  ["DebitFundCollectionCompensateExecute","bankwealth.DebitFundCollectionCompensateExecute"],
+                  ["DebitFundCollectionCompensateQueryPort","bankwealth.DebitFundCollectionCompensateQueryPort"],
+                  ["CreditOriginalInvestorPrepareExecute","bankwealth.CreditOriginalInvestorPrepareExecute"],
+                  ["CreditOriginalInvestorPrepareQueryPort","bankwealth.CreditOriginalInvestorPrepareQueryPort"],
+                  ["CreditOriginalInvestorCommitExecute","bankwealth.CreditOriginalInvestorCommitExecute"],
+                  ["CreditOriginalInvestorCommitQueryPort","bankwealth.CreditOriginalInvestorCommitQueryPort"],
+                  ["CreditOriginalInvestorCompensateExecute","bankwealth.CreditOriginalInvestorCompensateExecute"],
+                  ["CreditOriginalInvestorCompensateQueryPort","bankwealth.CreditOriginalInvestorCompensateQueryPort"],
                   ["BankRefundSucceededAuthority","bankwealth.BankRefundSucceededAuthority"],
                   ["BankRefundSucceededDelivery","bankwealth.BankRefundSucceededDelivery"],
                   ["BankRefundRejectedBeforeEffectsAuthority","bankwealth.BankRefundRejectedBeforeEffectsAuthority"],
@@ -668,8 +668,8 @@ payload:
                     "collectionCreditBalance",
                     "fundCollectionAccountId",
                     "ReserveFunds",
-                    "BankRefund0PrepareInput",
-                    "BankRefund0PrepareExecute",
+                    "DebitFundCollectionPrepareInput",
+                    "DebitFundCollectionPrepareExecute",
                     "ReserveFundsConfirmed",
                     [
                       {"slot":"@ref(bankwealth:event-slot/CreditBalance/ReserveFundsConfirmed#txid)","output":"txid"},
@@ -681,38 +681,38 @@ payload:
                         "output": "available"
                       }
                     ],
-                    "BankRefund0PrepareQueryPort",
-                    "BankRefund0PrepareQuery",
-                    "BankRefund0PrepareReceipt",
+                    "DebitFundCollectionPrepareQueryPort",
+                    "DebitFundCollectionPrepareQuery",
+                    "DebitFundCollectionPrepareReceipt",
                     [
-                      {"output":"txid","member":"@ref(bankwealth:member/BankRefund0PrepareReceipt#payloadTxid)"},
-                      {"output":"resource","member":"@ref(bankwealth:member/BankRefund0PrepareReceipt#payloadResource)"},
-                      {"output":"amount","member":"@ref(bankwealth:member/BankRefund0PrepareReceipt#payloadAmount)"},
-                      {"output":"currency","member":"@ref(bankwealth:member/BankRefund0PrepareReceipt#payloadCurrency)"},
-                      {"output":"available","member":"@ref(bankwealth:member/BankRefund0PrepareReceipt#payloadAvailable)"}
+                      {"output":"txid","member":"@ref(bankwealth:member/DebitFundCollectionPrepareReceipt#payloadTxid)"},
+                      {"output":"resource","member":"@ref(bankwealth:member/DebitFundCollectionPrepareReceipt#payloadResource)"},
+                      {"output":"amount","member":"@ref(bankwealth:member/DebitFundCollectionPrepareReceipt#payloadAmount)"},
+                      {"output":"currency","member":"@ref(bankwealth:member/DebitFundCollectionPrepareReceipt#payloadCurrency)"},
+                      {"output":"available","member":"@ref(bankwealth:member/DebitFundCollectionPrepareReceipt#payloadAvailable)"}
                     ],
                     "bank-refund-debit-fund-collection-prepare",
                     "DeductFunds",
-                    "BankRefund0CommitInput",
-                    "BankRefund0CommitExecute",
+                    "DebitFundCollectionCommitInput",
+                    "DebitFundCollectionCommitExecute",
                     "DeductFundsConfirmed",
                     [
                       {"slot":"@ref(bankwealth:event-slot/CreditBalance/DeductFundsConfirmed#txid)","output":"txid"},
                       {"slot":"@ref(bankwealth:event-slot/CreditBalance/DeductFundsConfirmed#resource)","output":"resource"},
                       {"slot":"@ref(bankwealth:event-slot/CreditBalance/DeductFundsConfirmed#amount)","output":"amount"}
                     ],
-                    "BankRefund0CommitQueryPort",
-                    "BankRefund0CommitQuery",
-                    "BankRefund0CommitReceipt",
+                    "DebitFundCollectionCommitQueryPort",
+                    "DebitFundCollectionCommitQuery",
+                    "DebitFundCollectionCommitReceipt",
                     [
-                      {"output":"txid","member":"@ref(bankwealth:member/BankRefund0CommitReceipt#payloadTxid)"},
-                      {"output":"resource","member":"@ref(bankwealth:member/BankRefund0CommitReceipt#payloadResource)"},
-                      {"output":"amount","member":"@ref(bankwealth:member/BankRefund0CommitReceipt#payloadAmount)"}
+                      {"output":"txid","member":"@ref(bankwealth:member/DebitFundCollectionCommitReceipt#payloadTxid)"},
+                      {"output":"resource","member":"@ref(bankwealth:member/DebitFundCollectionCommitReceipt#payloadResource)"},
+                      {"output":"amount","member":"@ref(bankwealth:member/DebitFundCollectionCommitReceipt#payloadAmount)"}
                     ],
                     "bank-refund-debit-fund-collection-commit",
                     "ReleaseReservedFunds",
-                    "BankRefund0CompensateInput",
-                    "BankRefund0CompensateExecute",
+                    "DebitFundCollectionCompensateInput",
+                    "DebitFundCollectionCompensateExecute",
                     "ReleaseReservedFundsConfirmed",
                     [
                       {"slot":"@ref(bankwealth:event-slot/CreditBalance/ReleaseReservedFundsConfirmed#txid)","output":"txid"},
@@ -733,15 +733,15 @@ payload:
                         "output": "available"
                       }
                     ],
-                    "BankRefund0CompensateQueryPort",
-                    "BankRefund0CompensateQuery",
-                    "BankRefund0CompensateReceipt",
+                    "DebitFundCollectionCompensateQueryPort",
+                    "DebitFundCollectionCompensateQuery",
+                    "DebitFundCollectionCompensateReceipt",
                     [
-                      {"output":"txid","member":"@ref(bankwealth:member/BankRefund0CompensateReceipt#payloadTxid)"},
-                      {"output":"resource","member":"@ref(bankwealth:member/BankRefund0CompensateReceipt#payloadResource)"},
-                      {"output":"amount","member":"@ref(bankwealth:member/BankRefund0CompensateReceipt#payloadAmount)"},
-                      {"output":"currency","member":"@ref(bankwealth:member/BankRefund0CompensateReceipt#payloadCurrency)"},
-                      {"output":"available","member":"@ref(bankwealth:member/BankRefund0CompensateReceipt#payloadAvailable)"}
+                      {"output":"txid","member":"@ref(bankwealth:member/DebitFundCollectionCompensateReceipt#payloadTxid)"},
+                      {"output":"resource","member":"@ref(bankwealth:member/DebitFundCollectionCompensateReceipt#payloadResource)"},
+                      {"output":"amount","member":"@ref(bankwealth:member/DebitFundCollectionCompensateReceipt#payloadAmount)"},
+                      {"output":"currency","member":"@ref(bankwealth:member/DebitFundCollectionCompensateReceipt#payloadCurrency)"},
+                      {"output":"available","member":"@ref(bankwealth:member/DebitFundCollectionCompensateReceipt#payloadAvailable)"}
                     ],
                     "bank-refund-debit-fund-collection-compensate"
                   ],
@@ -750,8 +750,8 @@ payload:
                     "investorCreditBalance",
                     "investorAccountId",
                     "RecordIncomingCredits",
-                    "BankRefund1PrepareInput",
-                    "BankRefund1PrepareExecute",
+                    "CreditOriginalInvestorPrepareInput",
+                    "CreditOriginalInvestorPrepareExecute",
                     "RecordIncomingCreditsConfirmed",
                     [
                       {"slot":"@ref(bankwealth:event-slot/CreditBalance/RecordIncomingCreditsConfirmed#txid)","output":"txid"},
@@ -764,18 +764,18 @@ payload:
                         "output": "amount"
                       }
                     ],
-                    "BankRefund1PrepareQueryPort",
-                    "BankRefund1PrepareQuery",
-                    "BankRefund1PrepareReceipt",
+                    "CreditOriginalInvestorPrepareQueryPort",
+                    "CreditOriginalInvestorPrepareQuery",
+                    "CreditOriginalInvestorPrepareReceipt",
                     [
-                      {"output":"txid","member":"@ref(bankwealth:member/BankRefund1PrepareReceipt#payloadTxid)"},
-                      {"output":"resource","member":"@ref(bankwealth:member/BankRefund1PrepareReceipt#payloadResource)"},
-                      {"output":"amount","member":"@ref(bankwealth:member/BankRefund1PrepareReceipt#payloadAmount)"}
+                      {"output":"txid","member":"@ref(bankwealth:member/CreditOriginalInvestorPrepareReceipt#payloadTxid)"},
+                      {"output":"resource","member":"@ref(bankwealth:member/CreditOriginalInvestorPrepareReceipt#payloadResource)"},
+                      {"output":"amount","member":"@ref(bankwealth:member/CreditOriginalInvestorPrepareReceipt#payloadAmount)"}
                     ],
                     "bank-refund-credit-original-investor-prepare",
                     "CommitIncomingCredits",
-                    "BankRefund1CommitInput",
-                    "BankRefund1CommitExecute",
+                    "CreditOriginalInvestorCommitInput",
+                    "CreditOriginalInvestorCommitExecute",
                     "CommitIncomingCreditsConfirmed",
                     [
                       {"slot":"@ref(bankwealth:event-slot/CreditBalance/CommitIncomingCreditsConfirmed#txid)","output":"txid"},
@@ -796,20 +796,20 @@ payload:
                         "output": "available"
                       }
                     ],
-                    "BankRefund1CommitQueryPort",
-                    "BankRefund1CommitQuery",
-                    "BankRefund1CommitReceipt",
+                    "CreditOriginalInvestorCommitQueryPort",
+                    "CreditOriginalInvestorCommitQuery",
+                    "CreditOriginalInvestorCommitReceipt",
                     [
-                      {"output":"txid","member":"@ref(bankwealth:member/BankRefund1CommitReceipt#payloadTxid)"},
-                      {"output":"resource","member":"@ref(bankwealth:member/BankRefund1CommitReceipt#payloadResource)"},
-                      {"output":"amount","member":"@ref(bankwealth:member/BankRefund1CommitReceipt#payloadAmount)"},
-                      {"output":"currency","member":"@ref(bankwealth:member/BankRefund1CommitReceipt#payloadCurrency)"},
-                      {"output":"available","member":"@ref(bankwealth:member/BankRefund1CommitReceipt#payloadAvailable)"}
+                      {"output":"txid","member":"@ref(bankwealth:member/CreditOriginalInvestorCommitReceipt#payloadTxid)"},
+                      {"output":"resource","member":"@ref(bankwealth:member/CreditOriginalInvestorCommitReceipt#payloadResource)"},
+                      {"output":"amount","member":"@ref(bankwealth:member/CreditOriginalInvestorCommitReceipt#payloadAmount)"},
+                      {"output":"currency","member":"@ref(bankwealth:member/CreditOriginalInvestorCommitReceipt#payloadCurrency)"},
+                      {"output":"available","member":"@ref(bankwealth:member/CreditOriginalInvestorCommitReceipt#payloadAvailable)"}
                     ],
                     "bank-refund-credit-original-investor-commit",
                     "CancelIncomingCredit",
-                    "BankRefund1CompensateInput",
-                    "BankRefund1CompensateExecute",
+                    "CreditOriginalInvestorCompensateInput",
+                    "CreditOriginalInvestorCompensateExecute",
                     "CancelIncomingCreditConfirmed",
                     [
                       {"slot":"@ref(bankwealth:event-slot/CreditBalance/CancelIncomingCreditConfirmed#txid)","output":"txid"},
@@ -822,13 +822,13 @@ payload:
                         "output": "amount"
                       }
                     ],
-                    "BankRefund1CompensateQueryPort",
-                    "BankRefund1CompensateQuery",
-                    "BankRefund1CompensateReceipt",
+                    "CreditOriginalInvestorCompensateQueryPort",
+                    "CreditOriginalInvestorCompensateQuery",
+                    "CreditOriginalInvestorCompensateReceipt",
                     [
-                      {"output":"txid","member":"@ref(bankwealth:member/BankRefund1CompensateReceipt#payloadTxid)"},
-                      {"output":"resource","member":"@ref(bankwealth:member/BankRefund1CompensateReceipt#payloadResource)"},
-                      {"output":"amount","member":"@ref(bankwealth:member/BankRefund1CompensateReceipt#payloadAmount)"}
+                      {"output":"txid","member":"@ref(bankwealth:member/CreditOriginalInvestorCompensateReceipt#payloadTxid)"},
+                      {"output":"resource","member":"@ref(bankwealth:member/CreditOriginalInvestorCompensateReceipt#payloadResource)"},
+                      {"output":"amount","member":"@ref(bankwealth:member/CreditOriginalInvestorCompensateReceipt#payloadAmount)"}
                     ],
                     "bank-refund-credit-original-investor-compensate"
                   ]
@@ -853,18 +853,18 @@ payload:
                 "rows": [
                   ["entry","BankRefundEntry","bankwealth.BankRefundEntry"],
                   ["association","BankRefundAssociation","bankwealth.BankRefundAssociation"],
-                  ["phase-execute","BankRefund0PrepareExecute","bankwealth.BankRefund0PrepareExecute"],
-                  ["phase-query","BankRefund0PrepareQueryPort","bankwealth.BankRefund0PrepareQueryPort"],
-                  ["phase-execute","BankRefund0CommitExecute","bankwealth.BankRefund0CommitExecute"],
-                  ["phase-query","BankRefund0CommitQueryPort","bankwealth.BankRefund0CommitQueryPort"],
-                  ["phase-execute","BankRefund0CompensateExecute","bankwealth.BankRefund0CompensateExecute"],
-                  ["phase-query","BankRefund0CompensateQueryPort","bankwealth.BankRefund0CompensateQueryPort"],
-                  ["phase-execute","BankRefund1PrepareExecute","bankwealth.BankRefund1PrepareExecute"],
-                  ["phase-query","BankRefund1PrepareQueryPort","bankwealth.BankRefund1PrepareQueryPort"],
-                  ["phase-execute","BankRefund1CommitExecute","bankwealth.BankRefund1CommitExecute"],
-                  ["phase-query","BankRefund1CommitQueryPort","bankwealth.BankRefund1CommitQueryPort"],
-                  ["phase-execute","BankRefund1CompensateExecute","bankwealth.BankRefund1CompensateExecute"],
-                  ["phase-query","BankRefund1CompensateQueryPort","bankwealth.BankRefund1CompensateQueryPort"],
+                  ["phase-execute","DebitFundCollectionPrepareExecute","bankwealth.DebitFundCollectionPrepareExecute"],
+                  ["phase-query","DebitFundCollectionPrepareQueryPort","bankwealth.DebitFundCollectionPrepareQueryPort"],
+                  ["phase-execute","DebitFundCollectionCommitExecute","bankwealth.DebitFundCollectionCommitExecute"],
+                  ["phase-query","DebitFundCollectionCommitQueryPort","bankwealth.DebitFundCollectionCommitQueryPort"],
+                  ["phase-execute","DebitFundCollectionCompensateExecute","bankwealth.DebitFundCollectionCompensateExecute"],
+                  ["phase-query","DebitFundCollectionCompensateQueryPort","bankwealth.DebitFundCollectionCompensateQueryPort"],
+                  ["phase-execute","CreditOriginalInvestorPrepareExecute","bankwealth.CreditOriginalInvestorPrepareExecute"],
+                  ["phase-query","CreditOriginalInvestorPrepareQueryPort","bankwealth.CreditOriginalInvestorPrepareQueryPort"],
+                  ["phase-execute","CreditOriginalInvestorCommitExecute","bankwealth.CreditOriginalInvestorCommitExecute"],
+                  ["phase-query","CreditOriginalInvestorCommitQueryPort","bankwealth.CreditOriginalInvestorCommitQueryPort"],
+                  ["phase-execute","CreditOriginalInvestorCompensateExecute","bankwealth.CreditOriginalInvestorCompensateExecute"],
+                  ["phase-query","CreditOriginalInvestorCompensateQueryPort","bankwealth.CreditOriginalInvestorCompensateQueryPort"],
                   ["authority","BankRefundSucceededAuthority","bankwealth.BankRefundSucceededAuthority"],
                   ["result-delivery","BankRefundSucceededDelivery","bankwealth.BankRefundSucceededDelivery"],
                   ["authority","BankRefundRejectedBeforeEffectsAuthority","bankwealth.BankRefundRejectedBeforeEffectsAuthority"],
@@ -909,27 +909,27 @@ payload:
       },
       {
         "$rows": {
-          "template": "formal-technical-port-bank-refund0-commit-execute",
+          "template": "formal-technical-port-debit-fund-collection-commit-execute",
           "rows": [
-            ["contexts/bankwealth/formal-products/technical-port/bank-refund0-commit-execute.formal.yaml","BankRefund0CommitExecute","BankRefund0CommitInput","BankRefund0CommitReceipt"],
-            ["contexts/bankwealth/formal-products/technical-port/bank-refund0-compensate-execute.formal.yaml","BankRefund0CompensateExecute","BankRefund0CompensateInput","BankRefund0CompensateReceipt"],
-            ["contexts/bankwealth/formal-products/technical-port/bank-refund0-prepare-execute.formal.yaml","BankRefund0PrepareExecute","BankRefund0PrepareInput","BankRefund0PrepareReceipt"],
-            ["contexts/bankwealth/formal-products/technical-port/bank-refund1-commit-execute.formal.yaml","BankRefund1CommitExecute","BankRefund1CommitInput","BankRefund1CommitReceipt"],
-            ["contexts/bankwealth/formal-products/technical-port/bank-refund1-compensate-execute.formal.yaml","BankRefund1CompensateExecute","BankRefund1CompensateInput","BankRefund1CompensateReceipt"],
-            ["contexts/bankwealth/formal-products/technical-port/bank-refund1-prepare-execute.formal.yaml","BankRefund1PrepareExecute","BankRefund1PrepareInput","BankRefund1PrepareReceipt"]
+            ["contexts/bankwealth/formal-products/technical-port/debit-fund-collection-commit-execute.formal.yaml","DebitFundCollectionCommitExecute","DebitFundCollectionCommitInput","DebitFundCollectionCommitReceipt"],
+            ["contexts/bankwealth/formal-products/technical-port/debit-fund-collection-compensate-execute.formal.yaml","DebitFundCollectionCompensateExecute","DebitFundCollectionCompensateInput","DebitFundCollectionCompensateReceipt"],
+            ["contexts/bankwealth/formal-products/technical-port/debit-fund-collection-prepare-execute.formal.yaml","DebitFundCollectionPrepareExecute","DebitFundCollectionPrepareInput","DebitFundCollectionPrepareReceipt"],
+            ["contexts/bankwealth/formal-products/technical-port/credit-original-investor-commit-execute.formal.yaml","CreditOriginalInvestorCommitExecute","CreditOriginalInvestorCommitInput","CreditOriginalInvestorCommitReceipt"],
+            ["contexts/bankwealth/formal-products/technical-port/credit-original-investor-compensate-execute.formal.yaml","CreditOriginalInvestorCompensateExecute","CreditOriginalInvestorCompensateInput","CreditOriginalInvestorCompensateReceipt"],
+            ["contexts/bankwealth/formal-products/technical-port/credit-original-investor-prepare-execute.formal.yaml","CreditOriginalInvestorPrepareExecute","CreditOriginalInvestorPrepareInput","CreditOriginalInvestorPrepareReceipt"]
           ]
         }
       },
       {
         "$rows": {
-          "template": "formal-technical-port-bank-refund0-commit-query-port",
+          "template": "formal-technical-port-debit-fund-collection-commit-query-port",
           "rows": [
-            ["contexts/bankwealth/formal-products/technical-port/bank-refund0-commit-query-port.formal.yaml","BankRefund0CommitQueryPort","BankRefund0CommitQuery","BankRefund0CommitReceipt"],
-            ["contexts/bankwealth/formal-products/technical-port/bank-refund0-compensate-query-port.formal.yaml","BankRefund0CompensateQueryPort","BankRefund0CompensateQuery","BankRefund0CompensateReceipt"],
-            ["contexts/bankwealth/formal-products/technical-port/bank-refund0-prepare-query-port.formal.yaml","BankRefund0PrepareQueryPort","BankRefund0PrepareQuery","BankRefund0PrepareReceipt"],
-            ["contexts/bankwealth/formal-products/technical-port/bank-refund1-commit-query-port.formal.yaml","BankRefund1CommitQueryPort","BankRefund1CommitQuery","BankRefund1CommitReceipt"],
-            ["contexts/bankwealth/formal-products/technical-port/bank-refund1-compensate-query-port.formal.yaml","BankRefund1CompensateQueryPort","BankRefund1CompensateQuery","BankRefund1CompensateReceipt"],
-            ["contexts/bankwealth/formal-products/technical-port/bank-refund1-prepare-query-port.formal.yaml","BankRefund1PrepareQueryPort","BankRefund1PrepareQuery","BankRefund1PrepareReceipt"]
+            ["contexts/bankwealth/formal-products/technical-port/debit-fund-collection-commit-query-port.formal.yaml","DebitFundCollectionCommitQueryPort","DebitFundCollectionCommitQuery","DebitFundCollectionCommitReceipt"],
+            ["contexts/bankwealth/formal-products/technical-port/debit-fund-collection-compensate-query-port.formal.yaml","DebitFundCollectionCompensateQueryPort","DebitFundCollectionCompensateQuery","DebitFundCollectionCompensateReceipt"],
+            ["contexts/bankwealth/formal-products/technical-port/debit-fund-collection-prepare-query-port.formal.yaml","DebitFundCollectionPrepareQueryPort","DebitFundCollectionPrepareQuery","DebitFundCollectionPrepareReceipt"],
+            ["contexts/bankwealth/formal-products/technical-port/credit-original-investor-commit-query-port.formal.yaml","CreditOriginalInvestorCommitQueryPort","CreditOriginalInvestorCommitQuery","CreditOriginalInvestorCommitReceipt"],
+            ["contexts/bankwealth/formal-products/technical-port/credit-original-investor-compensate-query-port.formal.yaml","CreditOriginalInvestorCompensateQueryPort","CreditOriginalInvestorCompensateQuery","CreditOriginalInvestorCompensateReceipt"],
+            ["contexts/bankwealth/formal-products/technical-port/credit-original-investor-prepare-query-port.formal.yaml","CreditOriginalInvestorPrepareQueryPort","CreditOriginalInvestorPrepareQuery","CreditOriginalInvestorPrepareReceipt"]
           ]
         }
       },
@@ -938,12 +938,12 @@ payload:
           "template": "value-object-bank-refund-args",
           "rows": [
             ["contexts/bankwealth/value-objects/bank-refund-args.vo.yaml","BankRefundArgs",50,"fundCollectionAccountId","AccountId","investorAccountId"],
-            ["contexts/bankwealth/value-objects/bank-refund0-commit-input.vo.yaml","BankRefund0CommitInput",54,"txid","TxId","resource"],
-            ["contexts/bankwealth/value-objects/bank-refund0-compensate-input.vo.yaml","BankRefund0CompensateInput",57,"txid","TxId","resource"],
-            ["contexts/bankwealth/value-objects/bank-refund0-prepare-input.vo.yaml","BankRefund0PrepareInput",51,"txid","TxId","resource"],
-            ["contexts/bankwealth/value-objects/bank-refund1-commit-input.vo.yaml","BankRefund1CommitInput",63,"txid","TxId","resource"],
-            ["contexts/bankwealth/value-objects/bank-refund1-compensate-input.vo.yaml","BankRefund1CompensateInput",66,"txid","TxId","resource"],
-            ["contexts/bankwealth/value-objects/bank-refund1-prepare-input.vo.yaml","BankRefund1PrepareInput",60,"txid","TxId","resource"]
+            ["contexts/bankwealth/value-objects/debit-fund-collection-commit-input.vo.yaml","DebitFundCollectionCommitInput",54,"txid","TxId","resource"],
+            ["contexts/bankwealth/value-objects/debit-fund-collection-compensate-input.vo.yaml","DebitFundCollectionCompensateInput",57,"txid","TxId","resource"],
+            ["contexts/bankwealth/value-objects/debit-fund-collection-prepare-input.vo.yaml","DebitFundCollectionPrepareInput",51,"txid","TxId","resource"],
+            ["contexts/bankwealth/value-objects/credit-original-investor-commit-input.vo.yaml","CreditOriginalInvestorCommitInput",63,"txid","TxId","resource"],
+            ["contexts/bankwealth/value-objects/credit-original-investor-compensate-input.vo.yaml","CreditOriginalInvestorCompensateInput",66,"txid","TxId","resource"],
+            ["contexts/bankwealth/value-objects/credit-original-investor-prepare-input.vo.yaml","CreditOriginalInvestorPrepareInput",60,"txid","TxId","resource"]
           ]
         }
       },
@@ -958,34 +958,34 @@ payload:
       },
       {
         "$rows": {
-          "template": "value-object-bank-refund0-commit-query",
+          "template": "value-object-debit-fund-collection-commit-query",
           "rows": [
-            ["contexts/bankwealth/value-objects/bank-refund0-commit-query.vo.yaml","BankRefund0CommitQuery",56],
-            ["contexts/bankwealth/value-objects/bank-refund0-compensate-query.vo.yaml","BankRefund0CompensateQuery",59],
-            ["contexts/bankwealth/value-objects/bank-refund0-prepare-query.vo.yaml","BankRefund0PrepareQuery",53],
-            ["contexts/bankwealth/value-objects/bank-refund1-commit-query.vo.yaml","BankRefund1CommitQuery",65],
-            ["contexts/bankwealth/value-objects/bank-refund1-compensate-query.vo.yaml","BankRefund1CompensateQuery",68],
-            ["contexts/bankwealth/value-objects/bank-refund1-prepare-query.vo.yaml","BankRefund1PrepareQuery",62]
+            ["contexts/bankwealth/value-objects/debit-fund-collection-commit-query.vo.yaml","DebitFundCollectionCommitQuery",56],
+            ["contexts/bankwealth/value-objects/debit-fund-collection-compensate-query.vo.yaml","DebitFundCollectionCompensateQuery",59],
+            ["contexts/bankwealth/value-objects/debit-fund-collection-prepare-query.vo.yaml","DebitFundCollectionPrepareQuery",53],
+            ["contexts/bankwealth/value-objects/credit-original-investor-commit-query.vo.yaml","CreditOriginalInvestorCommitQuery",65],
+            ["contexts/bankwealth/value-objects/credit-original-investor-compensate-query.vo.yaml","CreditOriginalInvestorCompensateQuery",68],
+            ["contexts/bankwealth/value-objects/credit-original-investor-prepare-query.vo.yaml","CreditOriginalInvestorPrepareQuery",62]
           ]
         }
       },
       {
         "$rows": {
-          "template": "value-object-bank-refund0-commit-receipt",
+          "template": "value-object-debit-fund-collection-commit-receipt",
           "rows": [
-            ["contexts/bankwealth/value-objects/bank-refund0-commit-receipt.vo.yaml","BankRefund0CommitReceipt",55],
-            ["contexts/bankwealth/value-objects/bank-refund1-compensate-receipt.vo.yaml","BankRefund1CompensateReceipt",67],
-            ["contexts/bankwealth/value-objects/bank-refund1-prepare-receipt.vo.yaml","BankRefund1PrepareReceipt",61]
+            ["contexts/bankwealth/value-objects/debit-fund-collection-commit-receipt.vo.yaml","DebitFundCollectionCommitReceipt",55],
+            ["contexts/bankwealth/value-objects/credit-original-investor-compensate-receipt.vo.yaml","CreditOriginalInvestorCompensateReceipt",67],
+            ["contexts/bankwealth/value-objects/credit-original-investor-prepare-receipt.vo.yaml","CreditOriginalInvestorPrepareReceipt",61]
           ]
         }
       },
       {
         "$rows": {
-          "template": "value-object-bank-refund0-compensate-receipt",
+          "template": "value-object-debit-fund-collection-compensate-receipt",
           "rows": [
-            ["contexts/bankwealth/value-objects/bank-refund0-compensate-receipt.vo.yaml","BankRefund0CompensateReceipt",58],
-            ["contexts/bankwealth/value-objects/bank-refund0-prepare-receipt.vo.yaml","BankRefund0PrepareReceipt",52],
-            ["contexts/bankwealth/value-objects/bank-refund1-commit-receipt.vo.yaml","BankRefund1CommitReceipt",64]
+            ["contexts/bankwealth/value-objects/debit-fund-collection-compensate-receipt.vo.yaml","DebitFundCollectionCompensateReceipt",58],
+            ["contexts/bankwealth/value-objects/debit-fund-collection-prepare-receipt.vo.yaml","DebitFundCollectionPrepareReceipt",52],
+            ["contexts/bankwealth/value-objects/credit-original-investor-commit-receipt.vo.yaml","CreditOriginalInvestorCommitReceipt",64]
           ]
         }
       }
