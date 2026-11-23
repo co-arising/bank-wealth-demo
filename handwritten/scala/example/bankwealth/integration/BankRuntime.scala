@@ -4,10 +4,10 @@ import akka.actor.typed.{ActorRef, ActorSystem, Behavior}
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.scaladsl.adapter._
 import akka.util.Timeout
-import example.bankwealth.application.{BankCashPaymentExecution => Cash, bank_independent_refund_v1Execution => Refund,
+import example.bankwealth.application.{BankCashPaymentExecution => Cash, BankIndependentRefundExecution => Refund,
   bank_ta_submission_v1Execution => Ta, bank_sip_dispatch_v1Execution => Dispatch,
-  BankPaymentSagaDefinition => PaymentDefinition, bank_refund_hostDefinition => RefundDefinition,
-  BankPaymentHost => PaymentHost, bank_refund_hostHost => RefundHost,
+  BankPaymentSagaDefinition => PaymentDefinition, BankRefundSagaDefinition => RefundDefinition,
+  BankPaymentHost => PaymentHost, BankRefundHost => RefundHost,
   bank_ta_effectEffectHost => TaHost, bank_sip_dispatchEffectHost => SipHost}
 import example.bankwealth.bindings._
 import example.bankwealth.domain._
@@ -123,7 +123,7 @@ final class BankRuntime(
       val saga = spawn(ids.refundSaga(original.refundOperationId), RefundDefinition.coordinator(ids.refundSaga(original.refundOperationId), RefundDefinition.fromTechnical(bindings.installed), reconcileAuthorizer))
       coordinator = saga.ref
       val host = spawn(ids.refundHost(original.refundOperationId), RefundHost(ids.refundHost(original.refundOperationId), saga.ref, bindings.installed))
-      val parent = spawn(ids.refundRun(original.refundOperationId), Refund.behavior(ids.refundRun(original.refundOperationId), Refund.install(new Refund.PureStages {}, host.ref), new RunObserver[Refund.State] {}))
+      val parent = spawn(ids.refundRun(original.refundOperationId), Refund.behavior(ids.refundRun(original.refundOperationId), Refund.install(host.ref), new RunObserver[Refund.State] {}))
       BankRefundRuntime(original, bindings.operationId, saga, host, parent)
     }
   }.map { value => require(value.original == original, "same refund identity has conflicting body"); value }

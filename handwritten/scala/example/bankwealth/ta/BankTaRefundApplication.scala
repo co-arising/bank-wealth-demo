@@ -5,8 +5,8 @@ import akka.actor.typed.scaladsl.AskPattern._
 import akka.stream.{KillSwitches, Materializer, SystemMaterializer}
 import akka.stream.scaladsl.{RestartSource, Sink, Source}
 import akka.util.Timeout
-import example.bankwealth.application.{bank_independent_refund_v1Execution => Refund, bank_ta_submission_v1Execution => Ta,
-  bank_refund_hostHost => RefundHost, bank_ta_effectEffectHost => TaHost}
+import example.bankwealth.application.{BankIndependentRefundExecution => Refund, bank_ta_submission_v1Execution => Ta,
+  BankRefundHost => RefundHost, bank_ta_effectEffectHost => TaHost}
 import example.bankwealth.bindings.{BankTaBridge, BankTaEffectBindings, MockTAClient, StableOrderIdentity}
 import example.bankwealth.domain._
 import example.bankwealth.domain.values._

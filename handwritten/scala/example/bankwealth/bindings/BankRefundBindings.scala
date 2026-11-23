@@ -3,7 +3,7 @@ package example.bankwealth.bindings
 import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.util.Timeout
-import example.bankwealth.application.{bank_independent_refund_v1Execution => Execution, bank_refund_hostDefinition => Definition, bank_refund_hostHost => Host, bank_refund_hostTechnicalPorts => Technical}
+import example.bankwealth.application.{BankIndependentRefundExecution => Execution, BankRefundSagaDefinition => Definition, BankRefundHost => Host, BankRefundPorts, BankRefundPortBindings => Technical, CompletionContext, OperationNotExecuted}
 import example.bankwealth.domain._
 import example.bankwealth.domain.values._
 import example.bankwealth.infrastructure.proto._
@@ -83,7 +83,7 @@ final class BankRefundBindings(
     history(index).map { events =>
       val receipt = ledgerEvidence(index, phase, events)
       if (phase == Phase.Prepare && receipt.isEmpty && ledgerEvidence(index, Phase.Compensate, events).nonEmpty)
-        throw Technical.OperationNotExecuted(id, "bank-v1-durable-cancel/" + persistence(index) + "/query", true)
+        throw OperationNotExecuted(id, "bank-v1-durable-cancel/" + persistence(index) + "/query", true)
       receipt
     }
   }
@@ -116,7 +116,7 @@ final class BankRefundBindings(
             case Right(_) => history(index).flatMap { events =>
               val prepared = ledgerEvidence(index, Phase.Prepare, events)
               val canceled = ledgerEvidence(index, Phase.Compensate, events)
-              if (prepared.isEmpty && canceled.nonEmpty) Future.failed(Technical.OperationNotExecuted(id, "bank-v1-durable-cancel/" + persistence(index) + "/" + code, true))
+              if (prepared.isEmpty && canceled.nonEmpty) Future.failed(OperationNotExecuted(id, "bank-v1-durable-cancel/" + persistence(index) + "/" + code, true))
               else Future.failed(new IllegalStateException("prepare absence not fenced"))
             }
           }
@@ -154,7 +154,7 @@ final class BankRefundBindings(
     case StrictStatus.RecoveryRequired => if (s.evidence.values.exists(_.isInstanceOf[Evidence.Uncertain])) "outcome-unknown" else "recovery-required"
     case _ => throw new IllegalStateException("nonterminal refund status")
   }
-  private def authority(kind: String, input: BankRefundOriginal, context: Technical.CompletionContext): Future[BankRefundResult] = {
+  private def authority(kind: String, input: BankRefundOriginal, context: CompletionContext): Future[BankRefundResult] = {
     require(input == original && context.original == original, "completion original changed")
     validateTransaction(context.identity)
     coordinator().ask[StrictSagaCoordinator.Reply](StrictSagaCoordinator.GetStatus).map {
@@ -164,7 +164,7 @@ final class BankRefundBindings(
       case _ => throw new IllegalStateException("no authoritative Saga status")
     }
   }
-  private def deliver(kind: String, input: BankRefundResult, context: Technical.CompletionContext): Future[Boolean] = {
+  private def deliver(kind: String, input: BankRefundResult, context: CompletionContext): Future[Boolean] = {
     authority(kind, context.original, context).flatMap { actual =>
       require(actual == input, "completion result changed")
       val receiptId = "bank-refund-result-v1/" + operationId + "/" + kind
@@ -184,80 +184,80 @@ final class BankRefundBindings(
       }
     }
   }
-  private def simple[I, O](name: String)(run: I => Future[O]): Technical.Implementation[I, O] =
-    Technical.Implementation("bankwealth." + name, version, run)
-  private def operation[I, O](name: String)(run: (I, OperationIdentity) => Future[O]): Technical.Implementation[I, O] =
-    Technical.Implementation("bankwealth." + name, version, (_: I) => Future.failed(new IllegalArgumentException("operation identity required")), operation = run)
-  private def completion[I, O](name: String)(run: (I, Technical.CompletionContext) => Future[O]): Technical.Implementation[I, O] =
-    Technical.Implementation("bankwealth." + name, version, (_: I) => Future.failed(new IllegalArgumentException("completion identity required")), completion = run)
+  private def simple[I, O](name: String)(run: I => Future[O]): Technical.RunBinding[I, O] =
+    Technical.RunBinding("bankwealth." + name, version, run)
+  private def operation[I, O](name: String)(run: (I, OperationIdentity) => Future[O]): Technical.OperationBinding[I, O] =
+    Technical.OperationBinding("bankwealth." + name, version, run)
+  private def completion[I, O](name: String)(run: (I, CompletionContext) => Future[O]): Technical.CompletionBinding[I, O] =
+    Technical.CompletionBinding("bankwealth." + name, version, run)
   private def input(txid: TxId, resource: String, amount: Money, index: Int): Unit =
     require(txid.value == operationId && resource == resources(index) && amount == original.amount, "phase input differs from original")
   private def queryInput(txid: TxId, version: String, digest: String, participant: String, resource: String, step: String, phase: String, id: OperationIdentity): Unit =
     require(txid.value == id.transaction.transactionId && version == id.transaction.definitionVersion.toString && digest == id.transaction.argsDigest &&
       participant == id.participantId && resource == id.resource && step == id.stepId && phase == id.phase.toString.toLowerCase(java.util.Locale.ROOT), "query input identity mismatch")
 
-  lazy val installed: Technical.Installed = Technical.install(bindings)
+  lazy val installed: BankRefundPorts = Technical.install(bindings)
   private lazy val bindings: Technical.Bindings = bankBindings
   private def bankBindings: Technical.Bindings = Technical.Bindings(
-    BankRefundEntry = simple[BankRefundOriginal, Boolean]("BankRefundEntry")(entry),
-    BankRefundAssociation = simple[BankRefundOriginal, Boolean]("BankRefundAssociation")(entry),
-    DebitFundCollectionPrepareExecute = operation[DebitFundCollectionPrepareInput, DebitFundCollectionPrepareReceipt]("DebitFundCollectionPrepareExecute") { (p, id) =>
+    entry = simple[BankRefundOriginal, Boolean]("BankRefundEntry")(entry),
+    association = simple[BankRefundOriginal, Boolean]("BankRefundAssociation")(entry),
+    debitFundCollectionPrepareExecute = operation[DebitFundCollectionPrepareInput, DebitFundCollectionPrepareReceipt]("DebitFundCollectionPrepareExecute") { (p, id) =>
       input(p.txid, p.resource.value, p.amount, 0)
       execute(0, Phase.Prepare, id).map { case e: CreditBalanceProtocol.ReserveFundsConfirmed => DebitFundCollectionPrepareReceipt(TxId(id.transaction.transactionId), id.transaction.definitionVersion.toString, id.transaction.argsDigest, id.participantId, AccountId(id.resource), id.stepId, id.phase.toString.toLowerCase(java.util.Locale.ROOT), e.txid, e.resource, e.amount, e.currency, e.available); case _ => throw new IllegalStateException("wrong persisted phase event") }
     },
-    DebitFundCollectionPrepareQueryPort = operation[DebitFundCollectionPrepareQuery, Option[DebitFundCollectionPrepareReceipt]]("DebitFundCollectionPrepareQueryPort") { (p, id) =>
+    debitFundCollectionPrepareQuery = operation[DebitFundCollectionPrepareQuery, Option[DebitFundCollectionPrepareReceipt]]("DebitFundCollectionPrepareQueryPort") { (p, id) =>
       queryInput(p.transaction, p.definitionVersion, p.argsDigest, p.participant, p.resource.value, p.step, p.phase, id)
       query(0, Phase.Prepare, id).map(_.map { case e: CreditBalanceProtocol.ReserveFundsConfirmed => DebitFundCollectionPrepareReceipt(TxId(id.transaction.transactionId), id.transaction.definitionVersion.toString, id.transaction.argsDigest, id.participantId, AccountId(id.resource), id.stepId, id.phase.toString.toLowerCase(java.util.Locale.ROOT), e.txid, e.resource, e.amount, e.currency, e.available); case _ => throw new IllegalStateException("wrong persisted phase event") })
     },
-    DebitFundCollectionCommitExecute = operation[DebitFundCollectionCommitInput, DebitFundCollectionCommitReceipt]("DebitFundCollectionCommitExecute") { (p, id) =>
+    debitFundCollectionCommitExecute = operation[DebitFundCollectionCommitInput, DebitFundCollectionCommitReceipt]("DebitFundCollectionCommitExecute") { (p, id) =>
       input(p.txid, p.resource.value, p.amount, 0)
       execute(0, Phase.Commit, id).map { case e: CreditBalanceProtocol.DeductFundsConfirmed => DebitFundCollectionCommitReceipt(TxId(id.transaction.transactionId), id.transaction.definitionVersion.toString, id.transaction.argsDigest, id.participantId, AccountId(id.resource), id.stepId, id.phase.toString.toLowerCase(java.util.Locale.ROOT), e.txid, e.resource, e.amount); case _ => throw new IllegalStateException("wrong persisted phase event") }
     },
-    DebitFundCollectionCommitQueryPort = operation[DebitFundCollectionCommitQuery, Option[DebitFundCollectionCommitReceipt]]("DebitFundCollectionCommitQueryPort") { (p, id) =>
+    debitFundCollectionCommitQuery = operation[DebitFundCollectionCommitQuery, Option[DebitFundCollectionCommitReceipt]]("DebitFundCollectionCommitQueryPort") { (p, id) =>
       queryInput(p.transaction, p.definitionVersion, p.argsDigest, p.participant, p.resource.value, p.step, p.phase, id)
       query(0, Phase.Commit, id).map(_.map { case e: CreditBalanceProtocol.DeductFundsConfirmed => DebitFundCollectionCommitReceipt(TxId(id.transaction.transactionId), id.transaction.definitionVersion.toString, id.transaction.argsDigest, id.participantId, AccountId(id.resource), id.stepId, id.phase.toString.toLowerCase(java.util.Locale.ROOT), e.txid, e.resource, e.amount); case _ => throw new IllegalStateException("wrong persisted phase event") })
     },
-    DebitFundCollectionCompensateExecute = operation[DebitFundCollectionCompensateInput, DebitFundCollectionCompensateReceipt]("DebitFundCollectionCompensateExecute") { (p, id) =>
+    debitFundCollectionCompensateExecute = operation[DebitFundCollectionCompensateInput, DebitFundCollectionCompensateReceipt]("DebitFundCollectionCompensateExecute") { (p, id) =>
       input(p.txid, p.resource.value, p.amount, 0)
       execute(0, Phase.Compensate, id).map { case e: CreditBalanceProtocol.ReleaseReservedFundsConfirmed => DebitFundCollectionCompensateReceipt(TxId(id.transaction.transactionId), id.transaction.definitionVersion.toString, id.transaction.argsDigest, id.participantId, AccountId(id.resource), id.stepId, id.phase.toString.toLowerCase(java.util.Locale.ROOT), e.txid, e.resource, e.amount, e.currency, e.available); case _ => throw new IllegalStateException("wrong persisted phase event") }
     },
-    DebitFundCollectionCompensateQueryPort = operation[DebitFundCollectionCompensateQuery, Option[DebitFundCollectionCompensateReceipt]]("DebitFundCollectionCompensateQueryPort") { (p, id) =>
+    debitFundCollectionCompensateQuery = operation[DebitFundCollectionCompensateQuery, Option[DebitFundCollectionCompensateReceipt]]("DebitFundCollectionCompensateQueryPort") { (p, id) =>
       queryInput(p.transaction, p.definitionVersion, p.argsDigest, p.participant, p.resource.value, p.step, p.phase, id)
       query(0, Phase.Compensate, id).map(_.map { case e: CreditBalanceProtocol.ReleaseReservedFundsConfirmed => DebitFundCollectionCompensateReceipt(TxId(id.transaction.transactionId), id.transaction.definitionVersion.toString, id.transaction.argsDigest, id.participantId, AccountId(id.resource), id.stepId, id.phase.toString.toLowerCase(java.util.Locale.ROOT), e.txid, e.resource, e.amount, e.currency, e.available); case _ => throw new IllegalStateException("wrong persisted phase event") })
     },
-    CreditOriginalInvestorPrepareExecute = operation[CreditOriginalInvestorPrepareInput, CreditOriginalInvestorPrepareReceipt]("CreditOriginalInvestorPrepareExecute") { (p, id) =>
+    creditOriginalInvestorPrepareExecute = operation[CreditOriginalInvestorPrepareInput, CreditOriginalInvestorPrepareReceipt]("CreditOriginalInvestorPrepareExecute") { (p, id) =>
       input(p.txid, p.resource.value, p.amount, 1)
       execute(1, Phase.Prepare, id).map { case e: CreditBalanceProtocol.RecordIncomingCreditsConfirmed => CreditOriginalInvestorPrepareReceipt(TxId(id.transaction.transactionId), id.transaction.definitionVersion.toString, id.transaction.argsDigest, id.participantId, AccountId(id.resource), id.stepId, id.phase.toString.toLowerCase(java.util.Locale.ROOT), e.txid, e.resource, e.amount); case _ => throw new IllegalStateException("wrong persisted phase event") }
     },
-    CreditOriginalInvestorPrepareQueryPort = operation[CreditOriginalInvestorPrepareQuery, Option[CreditOriginalInvestorPrepareReceipt]]("CreditOriginalInvestorPrepareQueryPort") { (p, id) =>
+    creditOriginalInvestorPrepareQuery = operation[CreditOriginalInvestorPrepareQuery, Option[CreditOriginalInvestorPrepareReceipt]]("CreditOriginalInvestorPrepareQueryPort") { (p, id) =>
       queryInput(p.transaction, p.definitionVersion, p.argsDigest, p.participant, p.resource.value, p.step, p.phase, id)
       query(1, Phase.Prepare, id).map(_.map { case e: CreditBalanceProtocol.RecordIncomingCreditsConfirmed => CreditOriginalInvestorPrepareReceipt(TxId(id.transaction.transactionId), id.transaction.definitionVersion.toString, id.transaction.argsDigest, id.participantId, AccountId(id.resource), id.stepId, id.phase.toString.toLowerCase(java.util.Locale.ROOT), e.txid, e.resource, e.amount); case _ => throw new IllegalStateException("wrong persisted phase event") })
     },
-    CreditOriginalInvestorCommitExecute = operation[CreditOriginalInvestorCommitInput, CreditOriginalInvestorCommitReceipt]("CreditOriginalInvestorCommitExecute") { (p, id) =>
+    creditOriginalInvestorCommitExecute = operation[CreditOriginalInvestorCommitInput, CreditOriginalInvestorCommitReceipt]("CreditOriginalInvestorCommitExecute") { (p, id) =>
       input(p.txid, p.resource.value, p.amount, 1)
       execute(1, Phase.Commit, id).map { case e: CreditBalanceProtocol.CommitIncomingCreditsConfirmed => CreditOriginalInvestorCommitReceipt(TxId(id.transaction.transactionId), id.transaction.definitionVersion.toString, id.transaction.argsDigest, id.participantId, AccountId(id.resource), id.stepId, id.phase.toString.toLowerCase(java.util.Locale.ROOT), e.txid, e.resource, e.amount, e.currency, e.available); case _ => throw new IllegalStateException("wrong persisted phase event") }
     },
-    CreditOriginalInvestorCommitQueryPort = operation[CreditOriginalInvestorCommitQuery, Option[CreditOriginalInvestorCommitReceipt]]("CreditOriginalInvestorCommitQueryPort") { (p, id) =>
+    creditOriginalInvestorCommitQuery = operation[CreditOriginalInvestorCommitQuery, Option[CreditOriginalInvestorCommitReceipt]]("CreditOriginalInvestorCommitQueryPort") { (p, id) =>
       queryInput(p.transaction, p.definitionVersion, p.argsDigest, p.participant, p.resource.value, p.step, p.phase, id)
       query(1, Phase.Commit, id).map(_.map { case e: CreditBalanceProtocol.CommitIncomingCreditsConfirmed => CreditOriginalInvestorCommitReceipt(TxId(id.transaction.transactionId), id.transaction.definitionVersion.toString, id.transaction.argsDigest, id.participantId, AccountId(id.resource), id.stepId, id.phase.toString.toLowerCase(java.util.Locale.ROOT), e.txid, e.resource, e.amount, e.currency, e.available); case _ => throw new IllegalStateException("wrong persisted phase event") })
     },
-    CreditOriginalInvestorCompensateExecute = operation[CreditOriginalInvestorCompensateInput, CreditOriginalInvestorCompensateReceipt]("CreditOriginalInvestorCompensateExecute") { (p, id) =>
+    creditOriginalInvestorCompensateExecute = operation[CreditOriginalInvestorCompensateInput, CreditOriginalInvestorCompensateReceipt]("CreditOriginalInvestorCompensateExecute") { (p, id) =>
       input(p.txid, p.resource.value, p.amount, 1)
       execute(1, Phase.Compensate, id).map { case e: CreditBalanceProtocol.CancelIncomingCreditConfirmed => CreditOriginalInvestorCompensateReceipt(TxId(id.transaction.transactionId), id.transaction.definitionVersion.toString, id.transaction.argsDigest, id.participantId, AccountId(id.resource), id.stepId, id.phase.toString.toLowerCase(java.util.Locale.ROOT), e.txid, e.resource, e.amount); case _ => throw new IllegalStateException("wrong persisted phase event") }
     },
-    CreditOriginalInvestorCompensateQueryPort = operation[CreditOriginalInvestorCompensateQuery, Option[CreditOriginalInvestorCompensateReceipt]]("CreditOriginalInvestorCompensateQueryPort") { (p, id) =>
+    creditOriginalInvestorCompensateQuery = operation[CreditOriginalInvestorCompensateQuery, Option[CreditOriginalInvestorCompensateReceipt]]("CreditOriginalInvestorCompensateQueryPort") { (p, id) =>
       queryInput(p.transaction, p.definitionVersion, p.argsDigest, p.participant, p.resource.value, p.step, p.phase, id)
       query(1, Phase.Compensate, id).map(_.map { case e: CreditBalanceProtocol.CancelIncomingCreditConfirmed => CreditOriginalInvestorCompensateReceipt(TxId(id.transaction.transactionId), id.transaction.definitionVersion.toString, id.transaction.argsDigest, id.participantId, AccountId(id.resource), id.stepId, id.phase.toString.toLowerCase(java.util.Locale.ROOT), e.txid, e.resource, e.amount); case _ => throw new IllegalStateException("wrong persisted phase event") })
     },
-    BankRefundSucceededAuthority = completion[BankRefundOriginal, BankRefundResult]("BankRefundSucceededAuthority")((input, context) => authority("succeeded", input, context)),
-    BankRefundSucceededDelivery = completion[BankRefundResult, Boolean]("BankRefundSucceededDelivery")((input, context) => deliver("succeeded", input, context)),
-    BankRefundRejectedBeforeEffectsAuthority = completion[BankRefundOriginal, BankRefundResult]("BankRefundRejectedBeforeEffectsAuthority")((input, context) => authority("rejected-before-effects", input, context)),
-    BankRefundRejectedBeforeEffectsDelivery = completion[BankRefundResult, Boolean]("BankRefundRejectedBeforeEffectsDelivery")((input, context) => deliver("rejected-before-effects", input, context)),
-    BankRefundCompensatedAuthority = completion[BankRefundOriginal, BankRefundResult]("BankRefundCompensatedAuthority")((input, context) => authority("compensated", input, context)),
-    BankRefundCompensatedDelivery = completion[BankRefundResult, Boolean]("BankRefundCompensatedDelivery")((input, context) => deliver("compensated", input, context)),
-    BankRefundRecoveryRequiredAuthority = completion[BankRefundOriginal, BankRefundResult]("BankRefundRecoveryRequiredAuthority")((input, context) => authority("recovery-required", input, context)),
-    BankRefundRecoveryRequiredDelivery = completion[BankRefundResult, Boolean]("BankRefundRecoveryRequiredDelivery")((input, context) => deliver("recovery-required", input, context)),
-    BankRefundOutcomeUnknownAuthority = completion[BankRefundOriginal, BankRefundResult]("BankRefundOutcomeUnknownAuthority")((input, context) => authority("outcome-unknown", input, context)),
-    BankRefundOutcomeUnknownDelivery = completion[BankRefundResult, Boolean]("BankRefundOutcomeUnknownDelivery")((input, context) => deliver("outcome-unknown", input, context))
+    succeededAuthority = completion[BankRefundOriginal, BankRefundResult]("BankRefundSucceededAuthority")((input, context) => authority("succeeded", input, context)),
+    succeededDelivery = completion[BankRefundResult, Boolean]("BankRefundSucceededDelivery")((input, context) => deliver("succeeded", input, context)),
+    rejectedBeforeEffectsAuthority = completion[BankRefundOriginal, BankRefundResult]("BankRefundRejectedBeforeEffectsAuthority")((input, context) => authority("rejected-before-effects", input, context)),
+    rejectedBeforeEffectsDelivery = completion[BankRefundResult, Boolean]("BankRefundRejectedBeforeEffectsDelivery")((input, context) => deliver("rejected-before-effects", input, context)),
+    compensatedAuthority = completion[BankRefundOriginal, BankRefundResult]("BankRefundCompensatedAuthority")((input, context) => authority("compensated", input, context)),
+    compensatedDelivery = completion[BankRefundResult, Boolean]("BankRefundCompensatedDelivery")((input, context) => deliver("compensated", input, context)),
+    recoveryRequiredAuthority = completion[BankRefundOriginal, BankRefundResult]("BankRefundRecoveryRequiredAuthority")((input, context) => authority("recovery-required", input, context)),
+    recoveryRequiredDelivery = completion[BankRefundResult, Boolean]("BankRefundRecoveryRequiredDelivery")((input, context) => deliver("recovery-required", input, context)),
+    outcomeUnknownAuthority = completion[BankRefundOriginal, BankRefundResult]("BankRefundOutcomeUnknownAuthority")((input, context) => authority("outcome-unknown", input, context)),
+    outcomeUnknownDelivery = completion[BankRefundResult, Boolean]("BankRefundOutcomeUnknownDelivery")((input, context) => deliver("outcome-unknown", input, context))
   )
 }

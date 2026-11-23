@@ -4,7 +4,7 @@ import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.util.Timeout
 import example.bankwealth.application.{BankCashPaymentExecution => Cash, BankPaymentHost => PaymentHost,
-  bank_independent_refund_v1Execution => Refund, bank_refund_hostHost => RefundHost}
+  BankIndependentRefundExecution => Refund, BankRefundHost => RefundHost}
 import example.bankwealth.domain._
 import example.bankwealth.domain.values._
 import example.bankwealth.infrastructure.proto._
