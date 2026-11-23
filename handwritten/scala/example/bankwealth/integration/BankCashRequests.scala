@@ -9,7 +9,7 @@ import example.bankwealth.infrastructure.serialization.DomainConverters
 import example.bankwealth.security.BankDemoConfiguration
 import example.bankwealth.service.BankServiceService._
 import net.imadz.monarch.persistence.PersistentMonarch
-import example.bankwealth.application.{bank_cash_payment_v1Execution => Cash}
+import example.bankwealth.application.{BankCashPaymentExecution => Cash}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
 import scala.util.control.NonFatal

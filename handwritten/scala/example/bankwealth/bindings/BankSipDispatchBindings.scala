@@ -3,7 +3,7 @@ package example.bankwealth.bindings
 import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.util.Timeout
-import example.bankwealth.application.{bank_cash_payment_v1Execution => Cash, bank_sip_dispatch_v1Execution => Dispatch, bank_sip_dispatchEffectHost => Host}
+import example.bankwealth.application.{BankCashPaymentExecution => Cash, bank_sip_dispatch_v1Execution => Dispatch, bank_sip_dispatchEffectHost => Host}
 import example.bankwealth.domain._
 import example.bankwealth.domain.values._
 import example.bankwealth.infrastructure.proto.SipPlanSipInstallmentTriggeredPB

@@ -3,7 +3,7 @@ package example.bankwealth.bindings
 import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.util.Timeout
-import example.bankwealth.application.{bank_cash_payment_v1Execution => Cash, bank_payment_hostHost => PaymentHost,
+import example.bankwealth.application.{BankCashPaymentExecution => Cash, BankPaymentHost => PaymentHost,
   bank_independent_refund_v1Execution => Refund, bank_refund_hostHost => RefundHost}
 import example.bankwealth.domain._
 import example.bankwealth.domain.values._

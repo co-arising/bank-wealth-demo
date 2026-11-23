@@ -1,9 +1,9 @@
 package example.bankwealth.integration
 
 import akka.actor.typed.ActorRef
-import example.bankwealth.application.{bank_cash_payment_v1Execution => Cash, bank_independent_refund_v1Execution => Refund,
+import example.bankwealth.application.{BankCashPaymentExecution => Cash, bank_independent_refund_v1Execution => Refund,
   bank_ta_submission_v1Execution => Ta, bank_sip_dispatch_v1Execution => SipDispatch,
-  bank_payment_hostHost => PaymentHost, bank_refund_hostHost => RefundHost,
+  BankPaymentHost => PaymentHost, bank_refund_hostHost => RefundHost,
   bank_ta_effectEffectHost => TaHost, bank_sip_dispatchEffectHost => SipHost}
 import example.bankwealth.domain._
 import example.bankwealth.domain.values._
