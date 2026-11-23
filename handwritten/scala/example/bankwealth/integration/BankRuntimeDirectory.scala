@@ -2,9 +2,9 @@ package example.bankwealth.integration
 
 import akka.actor.typed.ActorRef
 import example.bankwealth.application.{BankCashPaymentExecution => Cash, BankIndependentRefundExecution => Refund,
-  bank_ta_submission_v1Execution => Ta, bank_sip_dispatch_v1Execution => SipDispatch,
+  BankTaSubmissionExecution => Ta, BankSipDispatchExecution => SipDispatch,
   BankPaymentHost => PaymentHost, BankRefundHost => RefundHost,
-  bank_ta_effectEffectHost => TaHost, bank_sip_dispatchEffectHost => SipHost}
+  BankTaEffectHost => TaHost, BankSipDispatchEffectHost => SipHost}
 import example.bankwealth.domain._
 import example.bankwealth.domain.values._
 import net.imadz.infra.saga.strict.StrictSagaCoordinator

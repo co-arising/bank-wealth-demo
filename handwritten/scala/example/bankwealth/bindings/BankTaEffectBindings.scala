@@ -3,7 +3,7 @@ package example.bankwealth.bindings
 import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.util.Timeout
-import example.bankwealth.application.{bank_ta_effectEffectHost => Host, bank_ta_submission_v1Execution => Execution}
+import example.bankwealth.application.{BankTaEffectHost => Host, BankTaSubmissionExecution => Execution}
 import example.bankwealth.domain.{FundOrderAggregate, FundOrderState}
 import example.bankwealth.domain.values._
 import scala.concurrent.{ExecutionContext, Future}
@@ -40,11 +40,11 @@ object BankTaEffectBindings {
         new BankTaEffectBindings(order, client, bridge, scenario).installed
       }
       Host.install(Host.Bindings(
-        Host.Implementation("bankwealth.BankTaEffectExecute", "bank-v1-1", (operation: BankTaEffectOperation) =>
+        execute = Host.EffectBinding("bankwealth.BankTaEffectExecute", "bank-v1-1", (operation: BankTaEffectOperation) =>
           bindings(operation).execute(operation)),
-        Host.Implementation("bankwealth.BankTaEffectQuery", "bank-v1-1", (operation: BankTaEffectOperation) =>
+        query = Host.EffectBinding("bankwealth.BankTaEffectQuery", "bank-v1-1", (operation: BankTaEffectOperation) =>
           bindings(operation).query(operation)),
-        Host.Implementation("bankwealth.BankTaEffectReconcilePort", "bank-v1-1", (input: BankTaEffectReconcile) =>
+        reconcile = Host.EffectBinding("bankwealth.BankTaEffectReconcilePort", "bank-v1-1", (input: BankTaEffectReconcile) =>
           bindings(BankTaEffectOperation(input.operation, input.request)).reconcile(input))
       ))
     }

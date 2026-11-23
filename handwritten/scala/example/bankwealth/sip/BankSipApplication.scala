@@ -5,7 +5,7 @@ import akka.actor.typed.scaladsl.AskPattern._
 import akka.stream.{Materializer, SystemMaterializer}
 import akka.stream.scaladsl.Sink
 import akka.util.Timeout
-import example.bankwealth.application.{bank_sip_dispatch_v1Execution => Dispatch}
+import example.bankwealth.application.{BankSipDispatchExecution => Dispatch}
 import example.bankwealth.bindings.{BankSipTerminalBridge, StableSipIdentity}
 import example.bankwealth.domain._
 import example.bankwealth.domain.values._

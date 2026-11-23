@@ -5,10 +5,10 @@ import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.scaladsl.adapter._
 import akka.util.Timeout
 import example.bankwealth.application.{BankCashPaymentExecution => Cash, BankIndependentRefundExecution => Refund,
-  bank_ta_submission_v1Execution => Ta, bank_sip_dispatch_v1Execution => Dispatch,
+  BankTaSubmissionExecution => Ta, BankSipDispatchExecution => Dispatch,
   BankPaymentSagaDefinition => PaymentDefinition, BankRefundSagaDefinition => RefundDefinition,
   BankPaymentHost => PaymentHost, BankRefundHost => RefundHost,
-  bank_ta_effectEffectHost => TaHost, bank_sip_dispatchEffectHost => SipHost}
+  BankTaEffectHost => TaHost, BankSipDispatchEffectHost => SipHost}
 import example.bankwealth.bindings._
 import example.bankwealth.domain._
 import example.bankwealth.domain.values._
@@ -135,7 +135,7 @@ final class BankRuntime(
       _ = require(state.taRequestId == request.taRequestId && state.selectedPaymentTxId == request.paymentTxId && state.cashPaymentFinalResults.get(request.paymentTxId).contains("succeeded"), "TA graph requires original paid submission")
     } yield synchronized {
       val host = spawn(ids.taHost(request.taRequestId), TaHost(ids.taHost(request.taRequestId), taBindings(destination.ref)))
-      val parent = spawn(ids.taRun(request.taRequestId), Ta.behavior(ids.taRun(request.taRequestId), Ta.install(new Ta.PureStages {}, host.ref), new RunObserver[Ta.State] {}))
+      val parent = spawn(ids.taRun(request.taRequestId), Ta.behavior(ids.taRun(request.taRequestId), Ta.install(host.ref), new RunObserver[Ta.State] {}))
       BankTaRuntime(request, host, parent)
     }
   }.map { value => require(value.request == request, "same TA identity has conflicting body"); value }
@@ -155,7 +155,7 @@ final class BankRuntime(
     } yield synchronized {
       val bindings = new BankSipDispatchBindings(source.ref, source.persistenceId, destination.ref, cash.parent.ref, cash.parent.persistenceId, journal.readAll(_))
       val host = spawn(ids.sipHost(occurrence.occurrenceId), SipHost(ids.sipHost(occurrence.occurrenceId), bindings.installed))
-      val parent = spawn(ids.sipRun(occurrence.occurrenceId), Dispatch.behavior(ids.sipRun(occurrence.occurrenceId), Dispatch.install(new Dispatch.PureStages {}, host.ref), new RunObserver[Dispatch.State] {}))
+      val parent = spawn(ids.sipRun(occurrence.occurrenceId), Dispatch.behavior(ids.sipRun(occurrence.occurrenceId), Dispatch.install(host.ref), new RunObserver[Dispatch.State] {}))
       BankSipDispatchRuntime(occurrence, host, parent)
     }
   }.map { value => require(value.occurrence == occurrence, "same dispatch identity has conflicting body"); value }

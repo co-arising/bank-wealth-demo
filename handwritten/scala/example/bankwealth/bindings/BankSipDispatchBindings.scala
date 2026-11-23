@@ -3,7 +3,7 @@ package example.bankwealth.bindings
 import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.util.Timeout
-import example.bankwealth.application.{BankCashPaymentExecution => Cash, bank_sip_dispatch_v1Execution => Dispatch, bank_sip_dispatchEffectHost => Host}
+import example.bankwealth.application.{BankCashPaymentExecution => Cash, BankSipDispatchExecution => Dispatch, BankSipDispatchEffectHost => Host}
 import example.bankwealth.domain._
 import example.bankwealth.domain.values._
 import example.bankwealth.infrastructure.proto.SipPlanSipInstallmentTriggeredPB
@@ -59,7 +59,7 @@ final class BankSipDispatchBindings(plan: ActorRef[SipPlanAggregate.Request], pl
     proof <- observed(op)
   } yield proof.getOrElse(throw new IllegalStateException("cash run has no matching durable start"))
   val installed: Host.Installed = Host.install(Host.Bindings(
-    Host.Implementation("bankwealth.BankSipDispatchExecute", "bank-v1-1", execute),
-    Host.Implementation("bankwealth.BankSipDispatchQuery", "bank-v1-1", observed),
-    Host.Implementation("bankwealth.BankSipDispatchReconcilePort", "bank-v1-1", (_: BankSipDispatchReconcile) => Future.successful(false))))
+    execute = Host.EffectBinding("bankwealth.BankSipDispatchExecute", "bank-v1-1", execute),
+    query = Host.EffectBinding("bankwealth.BankSipDispatchQuery", "bank-v1-1", observed),
+    reconcile = Host.EffectBinding("bankwealth.BankSipDispatchReconcilePort", "bank-v1-1", (_: BankSipDispatchReconcile) => Future.successful(false))))
 }
