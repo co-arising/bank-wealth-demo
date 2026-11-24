@@ -57,9 +57,9 @@ final class BankRecovery(directory: BankRuntimeDirectory, journal: BankJournal, 
     else journal.persistenceIds().filter(pid => pid.startsWith(ids.prefix + "order/") || pid.startsWith(ids.prefix + "plan/")).runWith(Sink.seq).flatMap { pids =>
       Future.traverse(pids)(pid => journal.readPb(pid)).flatMap { streams =>
         val rows = streams.flatten
-        val refunds = rows.collect { case p: FundOrderFundPurchaseRefundRequestedPB => DomainConverters.decodeFundOrderFundPurchaseRefundRequestedPB(p) }
-        val originals = rows.collect { case p: FundOrderCashRequestSourceRecordedPB => DomainConverters.decodeFundOrderCashRequestSourceRecordedPB(p).original }
-        val occurrences = rows.collect { case p: SipPlanSipInstallmentTriggeredPB => DomainConverters.decodeSipPlanSipInstallmentTriggeredPB(p).occurrence }
+        val refunds = rows.collect { case pb: FundOrderEventPO if pb.event.isFundPurchaseRefundRequested => DomainConverters.decodeFundPurchaseRefundRequestedPO(pb.event.fundPurchaseRefundRequested.get) }
+        val originals = rows.collect { case pb: FundOrderEventPO if pb.event.isCashRequestSourceRecorded => DomainConverters.decodeCashRequestSourceRecordedPO(pb.event.cashRequestSourceRecorded.get).original }
+        val occurrences = rows.collect { case pb: SipPlanEventPO if pb.event.isSipInstallmentTriggered => DomainConverters.decodeSipInstallmentTriggeredPO(pb.event.sipInstallmentTriggered.get).occurrence }
         refunds.find(_.refundOperationId == key.operationId) match {
           case Some(r) =>
             val original = BankRefundOriginal(r.fundOrderId, r.paymentTxId, r.investorAccountId, r.fundCollectionAccountId, r.amount, r.refundOperationId)

@@ -7,8 +7,9 @@ import akka.persistence.query.PersistenceQuery
 import akka.stream.SystemMaterializer
 import akka.stream.scaladsl.Sink
 import example.bankwealth.bindings._
+import example.bankwealth.domain.SipPlanProtocol
 import example.bankwealth.domain.values._
-import example.bankwealth.infrastructure.proto.SipPlanSipInstallmentTriggeredPB
+import example.bankwealth.infrastructure.proto.SipPlanEventPO
 import example.bankwealth.infrastructure.serialization.DomainConverters
 import example.bankwealth.readside.BankReadside
 import example.bankwealth.security._
@@ -86,7 +87,7 @@ final class BankServiceFactory extends BankServiceService.Factory {
       resources += sip
       val terminal: FundOrderId => Future[Unit] = orderId => journal.persistenceIds().filter(_.startsWith(ids.prefix + "plan/")).runWith(Sink.seq).flatMap { pids =>
         Future.traverse(pids)(journal.readPb(_)).flatMap { rows =>
-          val occurrences = rows.flatten.collect { case p: SipPlanSipInstallmentTriggeredPB => DomainConverters.decodeSipPlanSipInstallmentTriggeredPB(p).occurrence }.filter(_.fundOrderId == orderId).distinct
+          val occurrences = rows.flatten.collect { case p: SipPlanEventPO => DomainConverters.decodeSipPlanEventPO(p) }.collect { case e: SipPlanProtocol.SipInstallmentTriggered => e.occurrence }.filter(_.fundOrderId == orderId).distinct
           Future.traverse(occurrences)(o => sip.recordTerminal(o).map(result => require(result.isRight, "terminal bridge remains pending"))).map(_ => ())
         }
       }

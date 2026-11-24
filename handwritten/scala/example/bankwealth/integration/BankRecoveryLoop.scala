@@ -51,10 +51,10 @@ final class BankRecoveryLoop(journal: BankJournal, cash: BankCashRequests, ta: B
       if (closed.get()) Future.successful(pending)
       else {
         journal.readPb(pid).flatMap { rows =>
-          val originals = rows.collect { case p: FundOrderCashRequestSourceRecordedPB => DomainConverters.decodeFundOrderCashRequestSourceRecordedPB(p).original }.distinct
-          val plans = rows.collect { case p: SipPlanSipCreateIntentRecordedPB => DomainConverters.decodeSipPlanSipCreateIntentRecordedPB(p).intent.planId }.distinct
-          val settlements = rows.collect { case p: FundOrderFundPurchaseSettlementRequestedPB => DomainConverters.decodeFundOrderFundPurchaseSettlementRequestedPB(p) }.distinct
-          val refunds = rows.collect { case p: FundOrderFundPurchaseRefundRequestedPB => DomainConverters.decodeFundOrderFundPurchaseRefundRequestedPB(p) }.distinct
+          val originals = rows.collect { case pb: FundOrderEventPO if pb.event.isCashRequestSourceRecorded => DomainConverters.decodeCashRequestSourceRecordedPO(pb.event.cashRequestSourceRecorded.get).original }.distinct
+          val plans = rows.collect { case pb: SipPlanEventPO if pb.event.isSipCreateIntentRecorded => DomainConverters.decodeSipCreateIntentRecordedPO(pb.event.sipCreateIntentRecorded.get).intent.planId }.distinct
+          val settlements = rows.collect { case pb: FundOrderEventPO if pb.event.isFundPurchaseSettlementRequested => DomainConverters.decodeFundPurchaseSettlementRequestedPO(pb.event.fundPurchaseSettlementRequested.get) }.distinct
+          val refunds = rows.collect { case pb: FundOrderEventPO if pb.event.isFundPurchaseRefundRequested => DomainConverters.decodeFundPurchaseRefundRequestedPO(pb.event.fundPurchaseRefundRequested.get) }.distinct
           val orders = settlements.map(_.fundOrderId)
           for {
             cashResults <- Future.traverse(originals)(o => attempt(cash.resumePersisted(o)))

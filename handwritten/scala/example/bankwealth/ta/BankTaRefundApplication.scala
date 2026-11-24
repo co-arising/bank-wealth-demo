@@ -103,14 +103,7 @@ final class BankTaRefundApplication(directory: BankRuntimeDirectory, journal: Ba
       require(rows.zipWithIndex.forall { case (r, i) => r.persistenceId == pid && r.sequenceNr == i.toLong + 1L },
         "complete contiguous original journal required")
       rows.map(_.event).map {
-        case p: FundOrderFundPurchaseSettlementRequestedPB => DomainConverters.decodeFundOrderFundPurchaseSettlementRequestedPB(p)
-        case p: FundOrderFundSubscriptionPaymentConfirmedPB => DomainConverters.decodeFundOrderFundSubscriptionPaymentConfirmedPB(p)
-        case p: FundOrderFundCashPaymentSucceededPB => DomainConverters.decodeFundOrderFundCashPaymentSucceededPB(p)
-        case p: FundOrderFundTASubmissionRegisteredPB => DomainConverters.decodeFundOrderFundTASubmissionRegisteredPB(p)
-        case p: FundOrderFundTASharesConfirmedPB => DomainConverters.decodeFundOrderFundTASharesConfirmedPB(p)
-        case p: FundOrderFundTARejectedPB => DomainConverters.decodeFundOrderFundTARejectedPB(p)
-        case p: FundOrderFundPurchaseRefundRequestedPB => DomainConverters.decodeFundOrderFundPurchaseRefundRequestedPB(p)
-        case p: FundOrderFundRefundSucceededPB => DomainConverters.decodeFundOrderFundRefundSucceededPB(p)
+        case p: FundOrderEventPO => DomainConverters.decodeFundOrderEventPO(p)
         case other => other
       }
     }
@@ -209,7 +202,7 @@ final class BankTaRefundApplication(directory: BankRuntimeDirectory, journal: Ba
     intents.foreach(e => require(e.operation == TaHost.operationIdentity(input) && Ta.codec.decode(e.original.toByteArray) == input,
       "TA effect intent differs from original registered request"))
     val latest = events.collect { case e: TaHost.ObservationStored => e.value }.lastOption.filterNot(_.isEmpty)
-      .map(bytes => DomainConverters.decodeBankTaEffectObservationPB(BankTaEffectObservationPB.parseFrom(bytes.toByteArray)))
+      .map(bytes => DomainConverters.decodeBankTaEffectObservationPO(BankTaEffectObservationPO.parseFrom(bytes.toByteArray)))
     latest match {
       case Some(proof) if intents.nonEmpty && proof.status == "absent" =>
         require(proof.operation == TaHost.operationIdentity(input) && proof.request == runtime.request && proof.result.isEmpty && proof.evidence.nonEmpty,

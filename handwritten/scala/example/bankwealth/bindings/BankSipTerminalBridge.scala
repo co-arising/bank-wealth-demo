@@ -23,6 +23,7 @@ final class BankSipTerminalBridge(plan: ActorRef[SipPlanAggregate.Request], orde
     p <- plan.ask[SipPlanState](SipPlanAggregate.GetState)
     s <- order.ask[FundOrderState](FundOrderAggregate.GetState)
     events <- readJournal(orderPersistenceId)
+    decodedEvents = events.collect { case raw: FundOrderEventPO => DomainConverters.decodeFundOrderEventPO(raw) }
     _ = require(p.id == o.planId && p.occurrences.get(o.dueSlot).contains(o) && s.id == o.fundOrderId && s.operationId == o.operationId &&
       s.investorAccountId == o.config.investorAccountId && s.fundCollectionAccountId == o.config.fundCollectionAccountId &&
       s.amount == o.config.amount && s.fundCode == o.config.fundCode, "terminal original occurrence association mismatch")
@@ -30,21 +31,18 @@ final class BankSipTerminalBridge(plan: ActorRef[SipPlanAggregate.Request], orde
       o.fundOrderId, o.config.fundCollectionAccountId, o.config.amount, o.config.fundCode))))
     _ = require(s.selectedPaymentTxId.value.isEmpty || s.selectedPaymentTxId == expectedPayment,
       "terminal selected payment differs from original occurrence")
-    paid = s.selectedPaymentTxId == expectedPayment && s.cashPaymentFinalResults.get(expectedPayment).contains("succeeded") && events.exists {
-      case raw: FundOrderFundCashPaymentSucceededPB => DomainConverters.decodeFundOrderFundCashPaymentSucceededPB(raw).txid == expectedPayment
+    paid = s.selectedPaymentTxId == expectedPayment && s.cashPaymentFinalResults.get(expectedPayment).contains("succeeded") && decodedEvents.exists {
+      case e: FundOrderProtocol.FundCashPaymentSucceeded => e.txid == expectedPayment
       case _ => false
     }
-    confirmation = events.collect { case raw: FundOrderFundTASharesConfirmedPB =>
-      DomainConverters.decodeFundOrderFundTASharesConfirmedPB(raw)
-    }.find { e =>
+    confirmation = decodedEvents.collect { case e: FundOrderProtocol.FundTASharesConfirmed => e }.find { e =>
       e.fundOrderId == o.fundOrderId && e.paymentTxId == expectedPayment && e.taRequestId == s.taRequestId &&
         e.taReference == s.taReference && e.fundCode == o.config.fundCode && e.currency == o.config.amount.currency &&
         e.shares == s.taConfirmedShares && s.taReceipts.get(e.receiptId).contains(e.receiptBody)
     }
     taConfirmed = paid && s.taStatus == "confirmed" && confirmation.nonEmpty
-    taRejected = paid && s.taStatus == "rejected" && events.exists {
-      case raw: FundOrderFundTARejectedPB =>
-        val e = DomainConverters.decodeFundOrderFundTARejectedPB(raw)
+    taRejected = paid && s.taStatus == "rejected" && decodedEvents.exists {
+      case e: FundOrderProtocol.FundTARejected =>
         e.fundOrderId == o.fundOrderId && e.paymentTxId == expectedPayment && e.taRequestId == s.taRequestId &&
           e.taReference == s.taReference && e.fundCode == o.config.fundCode && e.currency == o.config.amount.currency &&
           e.reason == s.taRejectionReason && s.taReceipts.get(e.receiptId).contains(e.receiptBody)
@@ -53,26 +51,24 @@ final class BankSipTerminalBridge(plan: ActorRef[SipPlanAggregate.Request], orde
     expectedRefundOperation = StableOrderIdentity.StableRefundOperationId(s, FundOrderProtocol.RequestFundPurchaseRefund(o.fundOrderId, expectedPayment))
     expectedRefund = TxId(RefundHost.operationIdentity(Refund.State(Refund.Inputs(o.fundOrderId, expectedPayment,
       o.config.investorAccountId, o.config.fundCollectionAccountId, o.config.amount, expectedRefundOperation))))
-    refundRequested = taRejected && s.refundOperationId == expectedRefundOperation && events.exists {
-      case raw: FundOrderFundPurchaseRefundRequestedPB =>
-        val e = DomainConverters.decodeFundOrderFundPurchaseRefundRequestedPB(raw)
+    refundRequested = taRejected && s.refundOperationId == expectedRefundOperation && decodedEvents.exists {
+      case e: FundOrderProtocol.FundPurchaseRefundRequested =>
         e.fundOrderId == o.fundOrderId && e.paymentTxId == expectedPayment && e.refundOperationId == s.refundOperationId &&
           e.investorAccountId == o.config.investorAccountId && e.fundCollectionAccountId == o.config.fundCollectionAccountId && e.amount == o.config.amount
       case _ => false
     }
-    refunded = refundRequested && s.refundOutcome == "succeeded" && s.refundFinalResults.get(expectedRefund).contains("succeeded") && events.exists {
-      case raw: FundOrderFundRefundSucceededPB =>
-        val e = DomainConverters.decodeFundOrderFundRefundSucceededPB(raw)
+    refunded = refundRequested && s.refundOutcome == "succeeded" && s.refundFinalResults.get(expectedRefund).contains("succeeded") && decodedEvents.exists {
+      case e: FundOrderProtocol.FundRefundSucceeded =>
         e.refundOperationId == s.refundOperationId && e.refundTxId == expectedRefund && s.refundResultReceipts.get(e.receiptId).contains(e.receiptBody)
       case _ => false
     }
     outcome = if (taConfirmed) Some("ta-confirmed") else if (refunded) Some("ta-rejected-refund-completed")
-      else if (s.paymentOutcome == "rejected-before-effects" && s.cashPaymentFinalResults.get(expectedPayment).contains("rejected-before-effects") && events.exists {
-        case raw: FundOrderFundCashPaymentRejectedBeforeEffectsPB => DomainConverters.decodeFundOrderFundCashPaymentRejectedBeforeEffectsPB(raw).txid == expectedPayment
+      else if (s.paymentOutcome == "rejected-before-effects" && s.cashPaymentFinalResults.get(expectedPayment).contains("rejected-before-effects") && decodedEvents.exists {
+        case e: FundOrderProtocol.FundCashPaymentRejectedBeforeEffects => e.txid == expectedPayment
         case _ => false
       }) Some("payment-rejected-before-effects")
-      else if (s.paymentOutcome == "compensated" && s.cashPaymentFinalResults.get(expectedPayment).contains("compensated") && events.exists {
-        case raw: FundOrderFundCashPaymentCompensatedPB => DomainConverters.decodeFundOrderFundCashPaymentCompensatedPB(raw).txid == expectedPayment
+      else if (s.paymentOutcome == "compensated" && s.cashPaymentFinalResults.get(expectedPayment).contains("compensated") && decodedEvents.exists {
+        case e: FundOrderProtocol.FundCashPaymentCompensated => e.txid == expectedPayment
         case _ => false
       }) Some("payment-compensated") else None
     _ = require(p.firstTerminals.get(o.occurrenceId).forall {

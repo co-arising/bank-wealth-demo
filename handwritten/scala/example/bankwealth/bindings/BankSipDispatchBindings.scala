@@ -6,7 +6,7 @@ import akka.util.Timeout
 import example.bankwealth.application.{BankCashPaymentExecution => Cash, BankSipDispatchExecution => Dispatch, BankSipDispatchEffectHost => Host}
 import example.bankwealth.domain._
 import example.bankwealth.domain.values._
-import example.bankwealth.infrastructure.proto.SipPlanSipInstallmentTriggeredPB
+import example.bankwealth.infrastructure.proto.SipPlanEventPO
 import example.bankwealth.infrastructure.serialization.DomainConverters
 import net.imadz.monarch.persistence.PersistentMonarch
 import scala.concurrent.{ExecutionContext, Future}
@@ -27,7 +27,10 @@ final class BankSipDispatchBindings(plan: ActorRef[SipPlanAggregate.Request], pl
       events <- readJournal(planPersistenceId)
       _ = require(s.id == o.planId && s.occurrences.get(o.dueSlot).contains(o), "SIP original occurrence missing or changed")
       _ = require(events.exists {
-        case p: SipPlanSipInstallmentTriggeredPB => DomainConverters.decodeSipPlanSipInstallmentTriggeredPB(p).occurrence == o
+        case p: SipPlanEventPO => DomainConverters.decodeSipPlanEventPO(p) match {
+          case e: SipPlanProtocol.SipInstallmentTriggered => e.occurrence == o
+          case _ => false
+        }
         case _ => false
       }, "SIP dispatch requires original persisted occurrence event")
     } yield o

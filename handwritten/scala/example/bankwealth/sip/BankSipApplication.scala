@@ -9,7 +9,7 @@ import example.bankwealth.application.{BankSipDispatchExecution => Dispatch}
 import example.bankwealth.bindings.{BankSipTerminalBridge, StableSipIdentity}
 import example.bankwealth.domain._
 import example.bankwealth.domain.values._
-import example.bankwealth.infrastructure.proto.{SipPlanSipCreateIntentRecordedPB, SipPlanSipInstallmentTriggeredPB}
+import example.bankwealth.infrastructure.proto.SipPlanEventPO
 import example.bankwealth.infrastructure.serialization.DomainConverters
 import example.bankwealth.integration._
 import example.bankwealth.security.BankDemoConfiguration
@@ -59,11 +59,11 @@ final class BankSipApplication(directory: BankRuntimeDirectory, journal: BankJou
     handle.ref.ask[SipPlanState](SipPlanAggregate.GetState)
 
   private def original(pid: String): Future[Option[BankSipCreateIntent]] = journal.readPb(pid).map { events =>
-    val intents = events.collect { case raw: SipPlanSipCreateIntentRecordedPB =>
-      val event = DomainConverters.decodeSipPlanSipCreateIntentRecordedPB(raw)
-      validateIntent(event.intent)
-      check(event.source.contains(event.intent) && pid == ids.plan(event.intent.planId))
-      event.intent
+    val intents = events.collect { case raw: SipPlanEventPO => DomainConverters.decodeSipPlanEventPO(raw) }.collect {
+      case event: SipPlanProtocol.SipCreateIntentRecorded =>
+        validateIntent(event.intent)
+        check(event.source.contains(event.intent) && pid == ids.plan(event.intent.planId))
+        event.intent
     }
     check(intents.distinct.size <= 1)
     intents.headOption
@@ -268,9 +268,10 @@ final class BankSipApplication(directory: BankRuntimeDirectory, journal: BankJou
       o.dueSlot >= o.config.effectiveSlot && s.revisionEnds.get(o.revision).forall(o.dueSlot < _))
     events <- journal.readPb(h.persistenceId)
     _ = check(events.exists {
-      case raw: SipPlanSipInstallmentTriggeredPB =>
-        val e = DomainConverters.decodeSipPlanSipInstallmentTriggeredPB(raw)
-        e.position == position && e.occurrence == o
+      case raw: SipPlanEventPO => DomainConverters.decodeSipPlanEventPO(raw) match {
+        case e: SipPlanProtocol.SipInstallmentTriggered => e.position == position && e.occurrence == o
+        case _ => false
+      }
       case _ => false
     })
   } yield ()

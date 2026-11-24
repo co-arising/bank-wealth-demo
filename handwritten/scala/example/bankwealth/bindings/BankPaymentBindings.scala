@@ -54,16 +54,8 @@ final class BankPaymentBindings(
   private def ledgerState(index: Int): Future[CreditBalanceState] = ledger(index).ask[CreditBalanceState](CreditBalanceAggregate.GetState)
   private def orderState(): Future[FundOrderState] = order.ask[FundOrderState](FundOrderAggregate.GetState)
   private def event(raw: GeneratedMessage): Any = raw match {
-    case x: CreditBalanceReserveFundsConfirmedPB => DomainConverters.decodeCreditBalanceReserveFundsConfirmedPB(x)
-    case x: CreditBalanceDeductFundsConfirmedPB => DomainConverters.decodeCreditBalanceDeductFundsConfirmedPB(x)
-    case x: CreditBalanceReleaseReservedFundsConfirmedPB => DomainConverters.decodeCreditBalanceReleaseReservedFundsConfirmedPB(x)
-    case x: CreditBalanceRecordIncomingCreditsConfirmedPB => DomainConverters.decodeCreditBalanceRecordIncomingCreditsConfirmedPB(x)
-    case x: CreditBalanceCommitIncomingCreditsConfirmedPB => DomainConverters.decodeCreditBalanceCommitIncomingCreditsConfirmedPB(x)
-    case x: CreditBalanceCancelIncomingCreditConfirmedPB => DomainConverters.decodeCreditBalanceCancelIncomingCreditConfirmedPB(x)
-    case x: FundOrderReserveFundSubscriptionConfirmedPB => DomainConverters.decodeFundOrderReserveFundSubscriptionConfirmedPB(x)
-    case x: FundOrderFundSubscriptionPaymentConfirmedPB => DomainConverters.decodeFundOrderFundSubscriptionPaymentConfirmedPB(x)
-    case x: FundOrderCashFundSubscriptionCanceledPB => DomainConverters.decodeFundOrderCashFundSubscriptionCanceledPB(x)
-    case x: FundOrderFundPurchaseSettlementRequestedPB => DomainConverters.decodeFundOrderFundPurchaseSettlementRequestedPB(x)
+    case x: CreditBalanceEventPO => DomainConverters.decodeCreditBalanceEventPO(x)
+    case x: FundOrderEventPO => DomainConverters.decodeFundOrderEventPO(x)
     case _ => raw
   }
   private def history(index: Int): Future[Vector[Any]] = readJournal(persistence(index)).map(_.map(event))

@@ -5,7 +5,7 @@ import akka.actor.typed.ActorSystem
 import akka.stream.scaladsl.Source
 import example.bankwealth.domain._
 import example.bankwealth.domain.values._
-import example.bankwealth.infrastructure.proto.SipOccurrencePB
+import example.bankwealth.infrastructure.proto.SipOccurrencePO
 import example.bankwealth.infrastructure.serialization.DomainConverters
 import example.bankwealth.infrastructure.projection.{BankJournalReadsideDomain, BankJournalReadsideProjection, BankJournalReadsideRepository}
 import example.bankwealth.infrastructure.projection.BankJournalReadsideRepository.{Row, State, Pending, Occurrence, hash}
@@ -133,7 +133,7 @@ final class BankReadside(journal: BankJournal, config: BankDemoConfiguration, da
       s.occurrences.toVector.sortBy(_._1).foreach { case (due, occurrence) =>
         require(occurrence.planId.value == r.resource && r.account.contains(occurrence.config.investorAccountId.value), "occurrence ownership mismatch")
         c.putOccurrence(Occurrence(hash(r.pid), due, hash(occurrence.occurrenceId.value), hash(ids.order(occurrence.fundOrderId)),
-          occurrence.config.investorAccountId.value, DomainConverters.encodeSipOccurrencePB(occurrence).toByteArray))
+          occurrence.config.investorAccountId.value, DomainConverters.encodeSipOccurrencePO(occurrence).toByteArray))
         if (!s.firstTerminals.contains(occurrence.occurrenceId))
           pendingPut(c, BankPendingOperationView(occurrence.operationId, "sip-dispatch", Some(occurrence.fundOrderId), Some(occurrence.planId), Some(occurrence.occurrenceId), "installment", s.occurrenceProgress.getOrElse(occurrence.occurrenceId, "pending"), true), r.pid)
         else pendingDelete(c, occurrence.operationId, "sip-dispatch")
@@ -240,8 +240,8 @@ final class BankReadside(journal: BankJournal, config: BankDemoConfiguration, da
       case None => BankSipOccurrencePage(metadata(Vector.empty), Vector.empty, None)
       case Some(planRow) =>
         val s = planState(planRow)
-        val records = c.queryOccurrenceby_plan(hash(planRow.pid), who.accountId.value, key.limit + 1L, key.after)
-          .map(x => DomainConverters.decodeSipOccurrencePB(SipOccurrencePB.parseFrom(x.occurrence_payload)))
+        val records = c.queryOccurrenceByPlan(hash(planRow.pid), who.accountId.value, key.limit + 1L, key.after)
+          .map(x => DomainConverters.decodeSipOccurrencePO(SipOccurrencePO.parseFrom(x.occurrence_payload)))
         val page = records.take(key.limit.toInt)
         val orderRows = page.map(o => owned(c, ids.order(o.fundOrderId), who))
         val views = page.zip(orderRows).map { case (o, orderRow) =>
@@ -259,7 +259,7 @@ final class BankReadside(journal: BankJournal, config: BankDemoConfiguration, da
     else projection.read { c =>
       try {
         validPage(key.limit, key.after)
-        val records = c.queryPendinglisting(key.limit + 1L, key.after).map { r =>
+        val records = c.queryPendingListing(key.limit + 1L, key.after).map { r =>
           BankPendingOperationView(OperationId(r.operation_id), r.flow, r.order_id.map(FundOrderId.apply),
             r.plan_id.map(PlanId.apply), r.occurrence_id.map(OccurrenceId.apply), r.phase, r.status, r.recoverable) -> r.source_pid
         }
