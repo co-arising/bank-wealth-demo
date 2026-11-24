@@ -1,14 +1,15 @@
 package example.bankwealth.integration
 
 import akka.actor.typed.ActorRef
-import example.bankwealth.application.{BankCashPaymentExecution => Cash, BankIndependentRefundExecution => Refund,
-  BankTaSubmissionExecution => Ta, BankSipDispatchExecution => SipDispatch,
-  BankPaymentHost => PaymentHost, BankRefundHost => RefundHost,
+import example.bankwealth.application.process.{BankCashPaymentExecution => Cash, BankIndependentRefundExecution => Refund,
+  BankPaymentHost => PaymentHost, BankRefundHost => RefundHost}
+import example.bankwealth.application.integration.{BankTaSubmissionExecution => Ta, BankSipDispatchExecution => SipDispatch,
   BankTaEffectHost => TaHost, BankSipDispatchEffectHost => SipHost}
 import example.bankwealth.application.aggregates.{CreditBalanceProtocol, FundOrderProtocol, SipPlanProtocol}
 import example.bankwealth.application.api._
 import example.bankwealth.application.projection._
-import example.bankwealth.application.saga._
+import example.bankwealth.application.process._
+import example.bankwealth.application.integration._
 import example.bankwealth.domain.values._
 import net.imadz.infra.saga.strict.StrictSagaCoordinator
 import net.imadz.monarch.persistence.PersistentMonarch

@@ -3,14 +3,15 @@ package example.bankwealth.bindings
 import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.util.Timeout
-import example.bankwealth.application.{BankCashPaymentExecution => Cash, BankPaymentHost => PaymentHost,
+import example.bankwealth.application.process.{BankCashPaymentExecution => Cash, BankPaymentHost => PaymentHost,
   BankIndependentRefundExecution => Refund, BankRefundHost => RefundHost}
 import example.bankwealth.application.aggregates.{FundOrderProtocol, SipPlanProtocol}
 import example.bankwealth.domain.entities.{FundOrderEntity, SipPlanEntity}
 import example.bankwealth.domain.invariants.params.FundOrderRuleParams
 import example.bankwealth.application.api._
 import example.bankwealth.application.projection._
-import example.bankwealth.application.saga._
+import example.bankwealth.application.process._
+import example.bankwealth.application.integration._
 import example.bankwealth.domain.values._
 import example.bankwealth.infrastructure.proto._
 import example.bankwealth.infrastructure.persistence.converters.DomainConverters

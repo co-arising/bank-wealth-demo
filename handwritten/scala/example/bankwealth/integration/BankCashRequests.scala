@@ -7,13 +7,15 @@ import example.bankwealth.application.aggregates.{FundOrderProtocol, SipPlanProt
 import example.bankwealth.domain.entities.{FundOrderEntity, SipPlanEntity}
 import example.bankwealth.application.api._
 import example.bankwealth.application.projection._
-import example.bankwealth.application.saga._
+import example.bankwealth.application.process._
+import example.bankwealth.application.integration._
 import example.bankwealth.domain.values._
+import example.bankwealth.infrastructure.persistence.BankCashPaymentStateCodec
 import example.bankwealth.infrastructure.persistence.converters.DomainConverters
 import example.bankwealth.security.BankDemoConfiguration
 import example.bankwealth.infrastructure.bootstrap.BankServiceContract._
 import net.imadz.monarch.persistence.PersistentMonarch
-import example.bankwealth.application.{BankCashPaymentExecution => Cash}
+import example.bankwealth.application.process.{BankCashPaymentExecution => Cash}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
 import scala.util.control.NonFatal
@@ -84,7 +86,7 @@ final class BankCashRequests(directory: BankRuntimeDirectory, config: BankDemoCo
           runtime.parent.ref.ask[PersistentMonarch.RunReply](r => PersistentMonarch.StartRun(original.operationId.value, state, r)).flatMap { _ =>
             journal.readAll(runtime.parent.persistenceId).map { events =>
               require(events.exists {
-                case started: PersistentMonarch.RunStarted => started.runId == original.operationId.value && java.util.Arrays.equals(started.initialSnapshot, Cash.codec.encode(state))
+                case started: PersistentMonarch.RunStarted => started.runId == original.operationId.value && java.util.Arrays.equals(started.initialSnapshot, BankCashPaymentStateCodec.codec.encode(state))
                 case _ => false
               }, "cash start acknowledgement lacks matching durable original start")
               Right(original)

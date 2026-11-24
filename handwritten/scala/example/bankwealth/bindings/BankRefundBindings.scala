@@ -3,14 +3,17 @@ package example.bankwealth.bindings
 import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.util.Timeout
-import example.bankwealth.application.{BankIndependentRefundExecution => Execution, BankRefundSagaDefinition => Definition, BankRefundHost => Host, BankRefundPorts, BankRefundPortBindings => Technical}
-import example.bankwealth.application.BankRefundPorts.{CompletionContext, OperationNotExecuted}
+import example.bankwealth.application.process.{BankIndependentRefundExecution => Execution, BankRefundSagaDefinition => Definition, BankRefundHost => Host, BankRefundPorts}
+import example.bankwealth.application.process.BankRefundPorts.{CompletionContext, OperationNotExecuted}
+import example.bankwealth.infrastructure.bootstrap.{BankRefundPortBindings => Technical, BankRefundProcessBootstrap => ProcessBootstrap}
+import example.bankwealth.infrastructure.persistence.BankRefundProcessCodecs
 import example.bankwealth.application.aggregates.{CreditBalanceProtocol, FundOrderProtocol}
 import example.bankwealth.domain.entities.{CreditBalanceEntity, FundOrderEntity}
 import example.bankwealth.domain.invariants.params.FundOrderRuleParams
 import example.bankwealth.application.api._
 import example.bankwealth.application.projection._
-import example.bankwealth.application.saga._
+import example.bankwealth.application.process._
+import example.bankwealth.application.integration._
 import example.bankwealth.domain.values._
 import example.bankwealth.infrastructure.proto._
 import example.bankwealth.infrastructure.persistence.converters.DomainConverters
@@ -35,9 +38,9 @@ final class BankRefundBindings(
     original.investorAccountId, original.fundCollectionAccountId, original.amount, original.refundOperationId))
   val operationId: String = Host.operationIdentity(parentInput)
   private val args = BankRefundArgs(original.fundCollectionAccountId, original.investorAccountId, original.amount)
-  private val argsBytes = Definition.argsCodec.encode(args)
+  private val argsBytes = BankRefundProcessCodecs.argsCodec.encode(args)
   private val argsDigest = MessageDigest.getInstance("SHA-256").digest(argsBytes.toByteArray).map(b => f"${b & 0xff}%02x").mkString
-  private lazy val definition = Definition.definition(Definition.fromTechnical(installed))
+  private lazy val definition = ProcessBootstrap.definition(ProcessBootstrap.portsFromTechnical(installed))
   private val participants = Vector("collectionCreditBalance", "investorCreditBalance")
   private val steps = Vector("debit-fund-collection", "credit-original-investor")
   private val resources = Vector(original.fundCollectionAccountId.value, original.investorAccountId.value)
@@ -47,7 +50,7 @@ final class BankRefundBindings(
   private def validateTransaction(id: TransactionIdentity): Unit = {
     require(id != null && id.transactionId == operationId && id.definitionName == definition.name &&
       id.definitionVersion == definition.version && id.definitionDigest == definition.definitionDigest &&
-      id.argsCodec == Definition.argsCodec.pin && id.argsDigest == argsDigest, "refund authority identity mismatch")
+      id.argsCodec == Definition.ArgsCodecPin && id.argsDigest == argsDigest, "refund authority identity mismatch")
   }
   private def validate(id: OperationIdentity, index: Int, phase: Phase): Unit = {
     validateTransaction(id.transaction)

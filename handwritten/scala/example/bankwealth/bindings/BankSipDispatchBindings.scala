@@ -3,12 +3,15 @@ package example.bankwealth.bindings
 import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.util.Timeout
-import example.bankwealth.application.{BankCashPaymentExecution => Cash, BankSipDispatchExecution => Dispatch, BankSipDispatchEffectHost => Host}
+import example.bankwealth.application.process.{BankCashPaymentExecution => Cash}
+import example.bankwealth.application.integration.{BankSipDispatchExecution => Dispatch, BankSipDispatchEffectHost => Host}
+import example.bankwealth.infrastructure.persistence.BankCashPaymentStateCodec
 import example.bankwealth.application.aggregates.{FundOrderProtocol, SipPlanProtocol}
 import example.bankwealth.domain.entities.{FundOrderEntity, SipPlanEntity}
 import example.bankwealth.application.api._
 import example.bankwealth.application.projection._
-import example.bankwealth.application.saga._
+import example.bankwealth.application.process._
+import example.bankwealth.application.integration._
 import example.bankwealth.domain.values._
 import example.bankwealth.infrastructure.proto.SipPlanEventPO
 import example.bankwealth.infrastructure.persistence.converters.DomainConverters
@@ -40,7 +43,7 @@ final class BankSipDispatchBindings(plan: ActorRef[SipPlanProtocol.Command], pla
     } yield o
   }
   private def started(o: SipOccurrence): Future[Boolean] = readJournal(cashPersistenceId).map(_.exists {
-    case p: PersistentMonarch.RunStarted => p.runId == o.operationId.value && java.util.Arrays.equals(p.initialSnapshot, Cash.codec.encode(cashState(o)))
+    case p: PersistentMonarch.RunStarted => p.runId == o.operationId.value && java.util.Arrays.equals(p.initialSnapshot, BankCashPaymentStateCodec.codec.encode(cashState(o)))
     case _ => false
   })
   private def observed(op: BankSipDispatchOperation): Future[Option[BankSipDispatchObservation]] = for {

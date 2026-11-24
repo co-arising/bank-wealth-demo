@@ -5,14 +5,16 @@ import akka.actor.typed.scaladsl.AskPattern._
 import akka.stream.{Materializer, SystemMaterializer}
 import akka.stream.scaladsl.Sink
 import akka.util.Timeout
-import example.bankwealth.application.{BankSipDispatchExecution => Dispatch}
+import example.bankwealth.application.integration.{BankSipDispatchExecution => Dispatch}
+import example.bankwealth.infrastructure.persistence.BankSipDispatchStateCodec
 import example.bankwealth.bindings.{BankSipTerminalBridge, StableSipIdentity}
 import example.bankwealth.application.aggregates.{FundOrderProtocol, SipPlanProtocol}
 import example.bankwealth.domain.entities.{FundOrderEntity, SipPlanEntity}
 import example.bankwealth.domain.invariants.params.SipPlanRuleParams
 import example.bankwealth.application.api._
 import example.bankwealth.application.projection._
-import example.bankwealth.application.saga._
+import example.bankwealth.application.process._
+import example.bankwealth.application.integration._
 import example.bankwealth.domain.values._
 import example.bankwealth.infrastructure.proto.SipPlanEventPO
 import example.bankwealth.infrastructure.persistence.converters.DomainConverters
@@ -307,7 +309,7 @@ final class BankSipApplication(directory: BankRuntimeDirectory, journal: BankJou
   private def matchingStart(e: PersistentMonarch.RunStarted, o: SipOccurrence, input: Dispatch.State): Boolean =
     // The pinned Monarch artifact persists stageName#index, not the execution's stage name alone.
     e.runId == o.occurrenceId.value && e.stageCursors == Vector("dispatch-cash#0") &&
-      java.util.Arrays.equals(e.initialSnapshot, Dispatch.codec.encode(input))
+      java.util.Arrays.equals(e.initialSnapshot, BankSipDispatchStateCodec.codec.encode(input))
 
   def recordTerminal(occurrence: SipOccurrence): Future[Outcome[Unit]] = serial {
     original(ids.plan(occurrence.planId)).flatMap {

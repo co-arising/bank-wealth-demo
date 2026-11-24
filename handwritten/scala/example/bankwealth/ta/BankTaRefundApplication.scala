@@ -5,15 +5,17 @@ import akka.actor.typed.scaladsl.AskPattern._
 import akka.stream.{KillSwitches, Materializer, SystemMaterializer}
 import akka.stream.scaladsl.{RestartSource, Sink, Source}
 import akka.util.Timeout
-import example.bankwealth.application.{BankIndependentRefundExecution => Refund, BankTaSubmissionExecution => Ta,
-  BankRefundHost => RefundHost, BankTaEffectHost => TaHost}
+import example.bankwealth.application.process.{BankIndependentRefundExecution => Refund, BankRefundHost => RefundHost}
+import example.bankwealth.application.integration.{BankTaSubmissionExecution => Ta, BankTaEffectHost => TaHost}
+import example.bankwealth.infrastructure.persistence.{BankIndependentRefundStateCodec, BankTaSubmissionStateCodec}
 import example.bankwealth.bindings.{BankTaBridge, BankTaEffectBindings, MockTAClient, StableOrderIdentity}
 import example.bankwealth.application.aggregates.FundOrderProtocol
 import example.bankwealth.domain.entities.FundOrderEntity
 import example.bankwealth.domain.invariants.params.FundOrderRuleParams
 import example.bankwealth.application.api._
 import example.bankwealth.application.projection._
-import example.bankwealth.application.saga._
+import example.bankwealth.application.process._
+import example.bankwealth.application.integration._
 import example.bankwealth.domain.values._
 import example.bankwealth.infrastructure.proto._
 import example.bankwealth.infrastructure.persistence.converters.DomainConverters
@@ -189,7 +191,7 @@ final class BankTaRefundApplication(directory: BankRuntimeDirectory, journal: Ba
         runtime <- directory.ensureTa(request)
         _ = require(runtime.request == request && runtime.host.persistenceId == ids.taHost(request.taRequestId) &&
           runtime.parent.persistenceId == ids.taRun(request.taRequestId), "TA runtime changed original identity")
-        _ <- startOriginal(runtime.parent, request.taRequestId.value, Ta.State(Ta.Inputs(request.taRequestId, id, request.paymentTxId)), Ta.codec, Vector("submit-ta#0"))
+        _ <- startOriginal(runtime.parent, request.taRequestId.value, Ta.State(Ta.Inputs(request.taRequestId, id, request.paymentTxId)), BankTaSubmissionStateCodec.codec, Vector("submit-ta#0"))
         _ <- recoverUnsubmitted(runtime)
         _ <- if (terminal(retained, retainedEvents).nonEmpty) Future.successful(())
           else { active(); bridge.reconcile(scenario).map(_ => ()) }
@@ -204,7 +206,7 @@ final class BankTaRefundApplication(directory: BankRuntimeDirectory, journal: Ba
     val input = Ta.State(Ta.Inputs(runtime.request.taRequestId, runtime.request.fundOrderId, runtime.request.paymentTxId))
     val intents = events.collect { case e: TaHost.Intent => e }
     require(intents.size <= 1, "duplicate TA effect intent")
-    intents.foreach(e => require(e.operation == TaHost.operationIdentity(input) && Ta.codec.decode(e.original.toByteArray) == input,
+    intents.foreach(e => require(e.operation == TaHost.operationIdentity(input) && BankTaSubmissionStateCodec.codec.decode(e.original.toByteArray) == input,
       "TA effect intent differs from original registered request"))
     val latest = events.collect { case e: TaHost.ObservationStored => e.value }.lastOption.filterNot(_.isEmpty)
       .map(bytes => DomainConverters.decodeBankTaEffectObservationPO(BankTaEffectObservationPO.parseFrom(bytes.toByteArray)))
@@ -248,7 +250,7 @@ final class BankTaRefundApplication(directory: BankRuntimeDirectory, journal: Ba
             runtime.transactionId != original.paymentTxId.value && runtime.parent.persistenceId == ids.refundRun(original.refundOperationId) &&
             runtime.host.persistenceId == ids.refundHost(original.refundOperationId) && runtime.coordinator.persistenceId == ids.refundSaga(original.refundOperationId),
             "refund must use its actual independent reverse Saga and parent")
-          _ <- startOriginal(runtime.parent, original.refundOperationId.value, input, Refund.codec, Vector("return-principal#0"))
+          _ <- startOriginal(runtime.parent, original.refundOperationId.value, input, BankIndependentRefundStateCodec.codec, Vector("return-principal#0"))
           current <- state(handle)
           currentEvents <- history(handle.persistenceId)
           _ <- if (current.refundOutcome == "succeeded" && current.refundFinalResults.get(TxId(runtime.transactionId)).contains("succeeded") && currentEvents.exists {

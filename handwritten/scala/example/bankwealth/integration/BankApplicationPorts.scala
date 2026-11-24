@@ -2,7 +2,8 @@ package example.bankwealth.integration
 
 import example.bankwealth.application.api._
 import example.bankwealth.application.projection._
-import example.bankwealth.application.saga._
+import example.bankwealth.application.process._
+import example.bankwealth.application.integration._
 import example.bankwealth.domain.values._
 import example.bankwealth.infrastructure.bootstrap.BankServiceContract.{Outcome, Principal}
 import scala.concurrent.Future

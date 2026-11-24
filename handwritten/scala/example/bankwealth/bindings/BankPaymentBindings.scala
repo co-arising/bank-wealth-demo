@@ -3,13 +3,16 @@ package example.bankwealth.bindings
 import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.util.Timeout
-import example.bankwealth.application.{BankCashPaymentExecution => Execution, BankPaymentSagaDefinition => Definition, BankPaymentHost => Host, BankPaymentPorts, BankPaymentPortBindings => Technical}
-import example.bankwealth.application.BankPaymentPorts.{CompletionContext, OperationNotExecuted}
+import example.bankwealth.application.process.{BankCashPaymentExecution => Execution, BankPaymentSagaDefinition => Definition, BankPaymentHost => Host, BankPaymentPorts}
+import example.bankwealth.application.process.BankPaymentPorts.{CompletionContext, OperationNotExecuted}
+import example.bankwealth.infrastructure.bootstrap.{BankPaymentPortBindings => Technical, BankPaymentProcessBootstrap => ProcessBootstrap}
+import example.bankwealth.infrastructure.persistence.BankPaymentProcessCodecs
 import example.bankwealth.application.aggregates.{CreditBalanceProtocol, FundOrderProtocol}
 import example.bankwealth.domain.entities.{CreditBalanceEntity, FundOrderEntity}
 import example.bankwealth.application.api._
 import example.bankwealth.application.projection._
-import example.bankwealth.application.saga._
+import example.bankwealth.application.process._
+import example.bankwealth.application.integration._
 import example.bankwealth.domain.values._
 import example.bankwealth.infrastructure.proto._
 import example.bankwealth.infrastructure.persistence.converters.DomainConverters
@@ -34,9 +37,9 @@ final class BankPaymentBindings(
     original.investorAccountId, original.fundOrderId, original.fundCollectionAccountId, original.amount, original.fundCode))
   val operationId: String = Host.operationIdentity(parentInput)
   private val args = BankPaymentArgs(original.investorAccountId, original.fundOrderId, original.fundCollectionAccountId, original.amount)
-  private val argsBytes = Definition.argsCodec.encode(args)
+  private val argsBytes = BankPaymentProcessCodecs.argsCodec.encode(args)
   private val argsDigest = MessageDigest.getInstance("SHA-256").digest(argsBytes.toByteArray).map(b => f"${b & 0xff}%02x").mkString
-  private lazy val definition = Definition.definition(Definition.fromTechnical(installed))
+  private lazy val definition = ProcessBootstrap.definition(ProcessBootstrap.portsFromTechnical(installed))
   private val participants = Vector("investorCreditBalance", "collectionCreditBalance", "orderFundOrderTCC")
   private val steps = Vector("reserve-investor-funds", "credit-fund-collection", "reserve-cash-fund-order")
   private val resources = Vector(original.investorAccountId.value, original.fundCollectionAccountId.value, original.fundOrderId.value)
@@ -46,7 +49,7 @@ final class BankPaymentBindings(
   private def validateTransaction(id: TransactionIdentity): Unit = {
     require(id != null && id.transactionId == operationId && id.definitionName == definition.name &&
       id.definitionVersion == definition.version && id.definitionDigest == definition.definitionDigest &&
-      id.argsCodec == Definition.argsCodec.pin && id.argsDigest == argsDigest, "payment authority identity mismatch")
+      id.argsCodec == Definition.ArgsCodecPin && id.argsDigest == argsDigest, "payment authority identity mismatch")
   }
   private def validate(id: OperationIdentity, index: Int, phase: Phase): Unit = {
     validateTransaction(id.transaction)
