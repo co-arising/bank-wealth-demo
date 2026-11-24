@@ -215,7 +215,8 @@ final class BankTaRefundApplication(directory: BankRuntimeDirectory, journal: Ba
         require(proof.operation == TaHost.operationIdentity(input) && proof.request == runtime.request && proof.result.isEmpty && proof.evidence.nonEmpty,
           "TA retry requires matching durable absence")
         active()
-        runtime.host.ref.ask[TaHost.Reply](reply => TaHost.Reconcile(input, "retry", BankTaEffectBindings.RecoveryAuthorization, reply)).map {
+        runtime.host.ref.ask[TaHost.Reply](reply => TaHost.Reconcile(input, TaHost.ReconcileDecision.Retry,
+          BankTaEffectBindings.RecoveryAuthorization, reply)).map {
           case _: TaHost.Completed | _: TaHost.Pending => ()
           case _: TaHost.Conflict => throw new IllegalStateException("TA retry rejected original identity")
         }

@@ -3,7 +3,8 @@ package example.bankwealth.bindings
 import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.util.Timeout
-import example.bankwealth.application.{BankCashPaymentExecution => Execution, BankPaymentSagaDefinition => Definition, BankPaymentHost => Host, BankPaymentPorts, BankPaymentPortBindings => Technical, CompletionContext, OperationNotExecuted}
+import example.bankwealth.application.{BankCashPaymentExecution => Execution, BankPaymentSagaDefinition => Definition, BankPaymentHost => Host, BankPaymentPorts, BankPaymentPortBindings => Technical}
+import example.bankwealth.application.BankPaymentPorts.{CompletionContext, OperationNotExecuted}
 import example.bankwealth.domain._
 import example.bankwealth.domain.values._
 import example.bankwealth.infrastructure.proto._

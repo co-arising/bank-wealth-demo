@@ -75,7 +75,7 @@ final class BankTaEffectBindings(order: ActorRef[FundOrderAggregate.Request], cl
       if (known) Some(BankTaEffectResult(operation.request.taRequestId)) else None)
   }
   private def authorizeRetry(input: BankTaEffectReconcile): Future[Boolean] = {
-    if (input == null || input.authorization != BankTaEffectBindings.RecoveryAuthorization || input.decision != "retry" ||
+    if (input == null || input.authorization != BankTaEffectBindings.RecoveryAuthorization || input.decision != Host.ReconcileDecision.Retry ||
         input.evidence == null || !input.evidence.exists(e => e != null && e.operation == input.operation &&
           e.request == input.request && e.status == "absent" && e.result.isEmpty && e.evidence != null && e.evidence.nonEmpty))
       Future.successful(false)
@@ -89,10 +89,10 @@ final class BankTaEffectBindings(order: ActorRef[FundOrderAggregate.Request], cl
     }
   }
   val installed: Host.Installed = Host.install(Host.Bindings(
-    Host.Implementation("bankwealth.BankTaEffectExecute", "bank-v1-1", (operation: BankTaEffectOperation) =>
+    execute = Host.EffectBinding("bankwealth.BankTaEffectExecute", "bank-v1-1", (operation: BankTaEffectOperation) =>
       verify(operation).flatMap(_ => bridge.submit(scenario)).map(observation(operation, _))),
-    Host.Implementation("bankwealth.BankTaEffectQuery", "bank-v1-1", (operation: BankTaEffectOperation) =>
+    query = Host.EffectBinding("bankwealth.BankTaEffectQuery", "bank-v1-1", (operation: BankTaEffectOperation) =>
       verify(operation).flatMap(_ => bridge.reconcile(scenario)).map(response => Some(observation(operation, response)))),
-    Host.Implementation("bankwealth.BankTaEffectReconcilePort", "bank-v1-1", authorizeRetry)
+    reconcile = Host.EffectBinding("bankwealth.BankTaEffectReconcilePort", "bank-v1-1", authorizeRetry)
   ))
 }
