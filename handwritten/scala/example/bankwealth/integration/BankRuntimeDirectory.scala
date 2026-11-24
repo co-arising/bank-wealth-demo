@@ -5,10 +5,7 @@ import example.bankwealth.application.{BankCashPaymentExecution => Cash, BankInd
   BankTaSubmissionExecution => Ta, BankSipDispatchExecution => SipDispatch,
   BankPaymentHost => PaymentHost, BankRefundHost => RefundHost,
   BankTaEffectHost => TaHost, BankSipDispatchEffectHost => SipHost}
-import example.bankwealth.application.aggregates.{CreditBalanceAggregate, FundOrderAggregate, SipPlanAggregate}
-import example.bankwealth.domain.entities.{CreditBalanceEntity, FundOrderEntity, SipPlanEntity}
-import example.bankwealth.domain.events.{CreditBalanceEvents => CreditBalanceProtocol, FundOrderEvents => FundOrderProtocol, SipPlanEvents => SipPlanProtocol}
-import example.bankwealth.domain.services.{CreditBalanceComputations, FundOrderComputations, SipPlanComputations}
+import example.bankwealth.application.aggregates.{CreditBalanceProtocol, FundOrderProtocol, SipPlanProtocol}
 import example.bankwealth.application.api._
 import example.bankwealth.application.projection._
 import example.bankwealth.application.saga._
@@ -30,9 +27,9 @@ final case class BankSipDispatchRuntime(occurrence: SipOccurrence, host: BankAct
   parent: BankActorHandle[PersistentMonarch.Command[SipDispatch.State]])
 
 trait BankRuntimeDirectory extends AutoCloseable {
-  def account(id: AccountId): Future[BankActorHandle[CreditBalanceAggregate.Request]]
-  def order(id: FundOrderId): Future[BankActorHandle[FundOrderAggregate.Request]]
-  def plan(id: PlanId): Future[BankActorHandle[SipPlanAggregate.Request]]
+  def account(id: AccountId): Future[BankActorHandle[CreditBalanceProtocol.Command]]
+  def order(id: FundOrderId): Future[BankActorHandle[FundOrderProtocol.Command]]
+  def plan(id: PlanId): Future[BankActorHandle[SipPlanProtocol.Command]]
   def ensureCash(original: BankPaymentOriginal): Future[BankCashRuntime]
   def ensureRefund(original: BankRefundOriginal): Future[BankRefundRuntime]
   def ensureTa(request: BankTaEffectRequest): Future[BankTaRuntime]

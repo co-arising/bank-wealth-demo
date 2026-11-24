@@ -3,10 +3,7 @@ package example.bankwealth.integration
 import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.util.Timeout
-import example.bankwealth.application.aggregates.{CreditBalanceAggregate, FundOrderAggregate, SipPlanAggregate}
-import example.bankwealth.domain.entities.{CreditBalanceEntity, FundOrderEntity, SipPlanEntity}
-import example.bankwealth.domain.events.{CreditBalanceEvents => CreditBalanceProtocol, FundOrderEvents => FundOrderProtocol, SipPlanEvents => SipPlanProtocol}
-import example.bankwealth.domain.services.{CreditBalanceComputations, FundOrderComputations, SipPlanComputations}
+import example.bankwealth.application.aggregates.CreditBalanceProtocol
 import example.bankwealth.infrastructure.proto.CreditBalanceEventPO
 import example.bankwealth.infrastructure.persistence.converters.DomainConverters
 import example.bankwealth.security.BankSeed
@@ -17,7 +14,7 @@ final class BankSeedAuthority(journal: BankJournal)(implicit system: ActorSystem
   implicit private val ec: ExecutionContext = system.executionContext
   implicit private val timeout: Timeout = Timeout(3.seconds)
 
-  def ensure(seed: BankSeed, account: BankActorHandle[CreditBalanceAggregate.Request]): Future[Unit] = {
+  def ensure(seed: BankSeed, account: BankActorHandle[CreditBalanceProtocol.Command]): Future[Unit] = {
     def initialized(): Future[Boolean] = journal.readPb(account.persistenceId).map { events =>
       val originals = events.collect { case e: CreditBalanceEventPO if e.event.isAccountInitialized => DomainConverters.decodeAccountInitializedPO(e.event.accountInitialized.get) }
       require(originals.size <= 1, "multiple account initialization facts")
@@ -29,8 +26,7 @@ final class BankSeedAuthority(journal: BankJournal)(implicit system: ActorSystem
     initialized().flatMap {
       case true => Future.successful(())
       case false =>
-        account.ref.ask[CreditBalanceAggregate.Reply](reply => CreditBalanceAggregate.Execute(
-          CreditBalanceProtocol.InitializeAccount(seed.accountId, seed.currency, seed.amount), reply))
+        account.ref.ask[CreditBalanceProtocol.Reply](CreditBalanceProtocol.InitializeAccount(seed.accountId, seed.currency, seed.amount, _))
           .transformWith { _ => initialized().map(exists => require(exists, "account initialization has no durable original fact")) }
     }
   }

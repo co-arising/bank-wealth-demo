@@ -4,9 +4,9 @@ import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.util.Timeout
 import com.fasterxml.jackson.databind.{JsonNode, ObjectMapper}
-import example.bankwealth.application.aggregates.FundOrderAggregate
+import example.bankwealth.application.aggregates.FundOrderProtocol
 import example.bankwealth.domain.entities.FundOrderEntity
-import example.bankwealth.domain.events.{FundOrderEvents => FundOrderProtocol}
+import example.bankwealth.domain.invariants.params.FundOrderRuleParams
 import example.bankwealth.application.api._
 import example.bankwealth.application.projection._
 import example.bankwealth.application.saga._
@@ -16,15 +16,15 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
 import scala.jdk.CollectionConverters._
 
-final class BankTaBridge(order: ActorRef[FundOrderAggregate.Request], ta: MockTAClient)(implicit system: ActorSystem[_]) {
+final class BankTaBridge(order: ActorRef[FundOrderProtocol.Command], ta: MockTAClient)(implicit system: ActorSystem[_]) {
   private val mapper = new ObjectMapper()
   implicit private val ec: ExecutionContext = system.executionContext
   implicit private val timeout: Timeout = Timeout(3.seconds)
-  private def state(): Future[FundOrderEntity.State] = order.ask[FundOrderEntity.State](FundOrderAggregate.GetState)
-  private def execute(command: FundOrderProtocol.Command): Future[Unit] =
-    order.ask[FundOrderAggregate.Reply](reply => FundOrderAggregate.Execute(command, reply)).map {
-      case FundOrderAggregate.Accepted(_) => ()
-      case FundOrderAggregate.Refused(code) => throw new IllegalArgumentException(code)
+  private def state(): Future[FundOrderEntity.State] = order.ask[FundOrderEntity.State](FundOrderProtocol.GetState)
+  private def execute(build: ActorRef[FundOrderProtocol.Reply] => FundOrderProtocol.Command): Future[Unit] =
+    order.ask[FundOrderProtocol.Reply](build).map {
+      case FundOrderProtocol.Accepted(_) => ()
+      case FundOrderProtocol.Refused(code) => throw new IllegalArgumentException(code)
     }
   private def fields(node: JsonNode, expected: Set[String]): Unit =
     require(node != null && node.isObject && node.fieldNames().asScala.toSet == expected, "TA receipt fields differ from exact contract")
@@ -53,16 +53,16 @@ final class BankTaBridge(order: ActorRef[FundOrderAggregate.Request], ta: MockTA
     before <- state()
     _ = paid(before)
     _ <- if (before.taRequestId.value.isEmpty)
-      execute(FundOrderProtocol.RegisterFundTASubmission(before.id, before.selectedPaymentTxId))
+      execute(FundOrderProtocol.RegisterFundTASubmission(before.id, before.selectedPaymentTxId, _))
       else {
         require(before.taRequestId == StableOrderIdentity.StableTaRequestId(before,
-          FundOrderProtocol.RegisterFundTASubmission(before.id, before.selectedPaymentTxId)), "retained TA identity is not the original")
+          FundOrderRuleParams.RegisterFundTASubmissionParams(before.id, before.selectedPaymentTxId)), "retained TA identity is not the original")
         Future.successful(())
       }
     retained <- state()
     _ = require(retained.id == before.id && retained.selectedPaymentTxId == before.selectedPaymentTxId &&
       retained.taRequestId == StableOrderIdentity.StableTaRequestId(retained,
-        FundOrderProtocol.RegisterFundTASubmission(retained.id, retained.selectedPaymentTxId)), "registered TA original changed")
+        FundOrderRuleParams.RegisterFundTASubmissionParams(retained.id, retained.selectedPaymentTxId)), "registered TA original changed")
   } yield BankTaEffectRequest(retained.taRequestId, retained.id, retained.selectedPaymentTxId)
 
   def submit(scenario: String): Future[JsonNode] = for {
@@ -98,7 +98,7 @@ final class BankTaBridge(order: ActorRef[FundOrderAggregate.Request], ta: MockTA
       rejected = response.get("canonicalReceipts").elements().asScala.toVector.filter(r => r.path("outcome").asText() == "rejected")
       _ = require(rejected.size == 1, "unique authoritative TA rejection required")
       _ <- ingest(rejected.head)
-      _ <- execute(FundOrderProtocol.RequestFundPurchaseRefund(before.id, before.selectedPaymentTxId))
+      _ <- execute(FundOrderProtocol.RequestFundPurchaseRefund(before.id, before.selectedPaymentTxId, _))
       retained <- state()
       _ = require(retained.id == before.id && retained.selectedPaymentTxId == before.selectedPaymentTxId && retained.refundOperationId.value.nonEmpty,
         "durable independent refund intent missing or changed")
@@ -158,13 +158,13 @@ final class BankTaBridge(order: ActorRef[FundOrderAggregate.Request], ta: MockTA
       money, principal, text(receipt, "receiptId"), mapper.writeValueAsString(receipt), text(receipt, "taReference"), outcome,
       share.shares, share.nav, if (outcome == "rejected") text(receipt, "reason") else "")
   }
-  private def command(r: TaReceipt): FundOrderProtocol.Command = {
+  private def command(r: TaReceipt): ActorRef[FundOrderProtocol.Reply] => FundOrderProtocol.Command = {
     import FundOrderProtocol._
     r.status match {
-      case "accepted" => RecordFundTAAccepted(r.fundOrderId, r.paymentTxId, r.taRequestId, r.taReference, r.receiptId, r.receiptBody, r.fundCode, r.amount.currency)
-      case "unknown" => RecordFundTAUnknown(r.fundOrderId, r.paymentTxId, r.taRequestId, r.taReference, r.receiptId, r.receiptBody, r.fundCode, r.amount.currency)
-      case "rejected" => RecordFundTARejected(r.fundOrderId, r.paymentTxId, r.taRequestId, r.taReference, r.receiptId, r.receiptBody, r.fundCode, r.amount.currency, r.reason)
-      case "confirmed" => RecordFundTAConfirmed(r.fundOrderId, r.paymentTxId, r.taRequestId, r.taReference, r.receiptId, r.receiptBody, r.fundCode, r.amount.currency, FundShare(r.fundCode, r.shares, r.nav))
+      case "accepted" => RecordFundTAAccepted(r.fundOrderId, r.paymentTxId, r.taRequestId, r.taReference, r.receiptId, r.receiptBody, r.fundCode, r.amount.currency, _)
+      case "unknown" => RecordFundTAUnknown(r.fundOrderId, r.paymentTxId, r.taRequestId, r.taReference, r.receiptId, r.receiptBody, r.fundCode, r.amount.currency, _)
+      case "rejected" => RecordFundTARejected(r.fundOrderId, r.paymentTxId, r.taRequestId, r.taReference, r.receiptId, r.receiptBody, r.fundCode, r.amount.currency, r.reason, _)
+      case "confirmed" => RecordFundTAConfirmed(r.fundOrderId, r.paymentTxId, r.taRequestId, r.taReference, r.receiptId, r.receiptBody, r.fundCode, r.amount.currency, FundShare(r.fundCode, r.shares, r.nav), _)
     }
   }
 }

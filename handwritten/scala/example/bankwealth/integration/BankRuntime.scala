@@ -10,10 +10,8 @@ import example.bankwealth.application.{BankCashPaymentExecution => Cash, BankInd
   BankPaymentHost => PaymentHost, BankRefundHost => RefundHost,
   BankTaEffectHost => TaHost, BankSipDispatchEffectHost => SipHost}
 import example.bankwealth.bindings._
-import example.bankwealth.application.aggregates.{CreditBalanceAggregate, FundOrderAggregate, SipPlanAggregate}
+import example.bankwealth.application.aggregates.{CreditBalanceProtocol, FundOrderProtocol, SipPlanProtocol}
 import example.bankwealth.domain.entities.{CreditBalanceEntity, FundOrderEntity, SipPlanEntity}
-import example.bankwealth.domain.events.{CreditBalanceEvents => CreditBalanceProtocol, FundOrderEvents => FundOrderProtocol, SipPlanEvents => SipPlanProtocol}
-import example.bankwealth.domain.services.{CreditBalanceComputations, FundOrderComputations, SipPlanComputations}
 import example.bankwealth.application.api._
 import example.bankwealth.application.projection._
 import example.bankwealth.application.saga._
@@ -28,7 +26,7 @@ final class BankRuntime(
     namespace: String,
     journal: BankJournal,
     reconcileAuthorizer: ReconcileAuthorizer,
-    taBindings: ActorRef[FundOrderAggregate.Request] => TaHost.Installed
+    taBindings: ActorRef[FundOrderProtocol.Command] => TaHost.Installed
 )(implicit system: ActorSystem[_]) extends BankRuntimeDirectory {
   implicit private val ec: ExecutionContext = system.executionContext
   implicit private val timeout: Timeout = Timeout(3.seconds)
@@ -41,7 +39,7 @@ final class BankRuntime(
     (pid, behavior) => spawn(pid, behavior).ref)
   private val orders = new example.bankwealth.infrastructure.repositories.aggregate.FundOrderRepositoryImpl[FundOrderId](ids.order,
     (id, pid) => example.bankwealth.infrastructure.bootstrap.FundOrderBootstrap.create(pid, FundOrderEntity.empty.copy(id = id), StableOrderIdentity,
-      new FundOrderAggregate.ExternalAuthority { def authorize(producer: String, authorization: String, identity: Vector[String]): Boolean = false }),
+      new FundOrderProtocol.ExternalAuthority { def authorize(producer: String, authorization: String, identity: Vector[String]): Boolean = false }),
     (pid, behavior) => spawn(pid, behavior).ref)
   private val plans = new example.bankwealth.infrastructure.repositories.aggregate.SipPlanRepositoryImpl[PlanId](ids.plan,
     (id, pid) => example.bankwealth.infrastructure.bootstrap.SipPlanBootstrap.create(pid, SipPlanEntity.empty.copy(id = id), StableSipIdentity),
@@ -60,17 +58,17 @@ final class BankRuntime(
     activePersistenceIds += pid
     BankActorHandle(pid, ref)
   }
-  def account(id: AccountId): Future[BankActorHandle[CreditBalanceAggregate.Request]] = synchronized {
+  def account(id: AccountId): Future[BankActorHandle[CreditBalanceProtocol.Command]] = synchronized {
     require(!closed)
     val handle = accounts.get(id)
     Future.successful(BankActorHandle(handle.persistenceId, handle.ref))
   }
-  def order(id: FundOrderId): Future[BankActorHandle[FundOrderAggregate.Request]] = synchronized {
+  def order(id: FundOrderId): Future[BankActorHandle[FundOrderProtocol.Command]] = synchronized {
     require(!closed)
     val handle = orders.get(id)
     Future.successful(BankActorHandle(handle.persistenceId, handle.ref))
   }
-  def plan(id: PlanId): Future[BankActorHandle[SipPlanAggregate.Request]] = synchronized {
+  def plan(id: PlanId): Future[BankActorHandle[SipPlanProtocol.Command]] = synchronized {
     require(!closed)
     val handle = plans.get(id)
     Future.successful(BankActorHandle(handle.persistenceId, handle.ref))
@@ -99,7 +97,7 @@ final class BankRuntime(
       investor <- account(original.investorAccountId)
       collection <- account(original.fundCollectionAccountId)
       destination <- order(original.fundOrderId)
-      state <- destination.ref.ask[FundOrderEntity.State](FundOrderAggregate.GetState)
+      state <- destination.ref.ask[FundOrderEntity.State](FundOrderProtocol.GetState)
       _ = verifyPayment(state, original)
     } yield synchronized {
       var coordinator: ActorRef[StrictSagaCoordinator.Command] = null
@@ -118,7 +116,7 @@ final class BankRuntime(
       investor <- account(original.investorAccountId)
       collection <- account(original.fundCollectionAccountId)
       destination <- order(original.fundOrderId)
-      state <- destination.ref.ask[FundOrderEntity.State](FundOrderAggregate.GetState)
+      state <- destination.ref.ask[FundOrderEntity.State](FundOrderProtocol.GetState)
       _ = require(state.id == original.fundOrderId && state.selectedPaymentTxId == original.paymentTxId && state.refundOperationId == original.refundOperationId &&
         state.investorAccountId == original.investorAccountId && state.fundCollectionAccountId == original.fundCollectionAccountId && state.amount == original.amount,
         "refund graph requires retained original refund intent")
@@ -137,7 +135,7 @@ final class BankRuntime(
   def ensureTa(request: BankTaEffectRequest): Future[BankTaRuntime] = cached(taRuns, request.taRequestId, ids.taHost(request.taRequestId)) {
     for {
       destination <- order(request.fundOrderId)
-      state <- destination.ref.ask[FundOrderEntity.State](FundOrderAggregate.GetState)
+      state <- destination.ref.ask[FundOrderEntity.State](FundOrderProtocol.GetState)
       _ = require(state.taRequestId == request.taRequestId && state.selectedPaymentTxId == request.paymentTxId && state.cashPaymentFinalResults.get(request.paymentTxId).contains("succeeded"), "TA graph requires original paid submission")
     } yield synchronized {
       val host = spawn(ids.taHost(request.taRequestId), TaHost(ids.taHost(request.taRequestId), taBindings(destination.ref)))
@@ -149,14 +147,14 @@ final class BankRuntime(
   def ensureSipDispatch(occurrence: SipOccurrence): Future[BankSipDispatchRuntime] = cached(dispatchRuns, occurrence.occurrenceId, ids.sipHost(occurrence.occurrenceId)) {
     for {
       source <- plan(occurrence.planId)
-      state <- source.ref.ask[SipPlanEntity.State](SipPlanAggregate.GetState)
+      state <- source.ref.ask[SipPlanEntity.State](SipPlanProtocol.GetState)
       _ = require(state.occurrences.get(occurrence.dueSlot).contains(occurrence), "dispatch graph requires retained occurrence")
       destination <- order(occurrence.fundOrderId)
       original = BankPaymentOriginal(occurrence.operationId, occurrence.fundOrderId, occurrence.config.investorAccountId,
         occurrence.config.fundCollectionAccountId, occurrence.config.fundCode, occurrence.config.amount)
-      reply <- destination.ref.ask[FundOrderAggregate.Reply](r => FundOrderAggregate.Execute(FundOrderProtocol.RequestFundPurchaseSettlement(original.operationId,
-        original.fundOrderId, original.investorAccountId, original.fundCollectionAccountId, original.fundCode, original.amount), r))
-      _ = require(reply.isInstanceOf[FundOrderAggregate.Accepted], "persisted occurrence settlement rejected")
+      reply <- destination.ref.ask[FundOrderProtocol.Reply](FundOrderProtocol.RequestFundPurchaseSettlement(original.operationId,
+        original.fundOrderId, original.investorAccountId, original.fundCollectionAccountId, original.fundCode, original.amount, _))
+      _ = require(reply.isInstanceOf[FundOrderProtocol.Accepted], "persisted occurrence settlement rejected")
       cash <- ensureCash(original)
     } yield synchronized {
       val bindings = new BankSipDispatchBindings(source.ref, source.persistenceId, destination.ref, cash.parent.ref, cash.parent.persistenceId, journal.readAll(_))

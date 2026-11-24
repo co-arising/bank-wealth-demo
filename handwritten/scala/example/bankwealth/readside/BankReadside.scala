@@ -3,10 +3,7 @@ package example.bankwealth.readside
 import akka.NotUsed
 import akka.actor.typed.ActorSystem
 import akka.stream.scaladsl.Source
-import example.bankwealth.application.aggregates.{CreditBalanceAggregate, FundOrderAggregate, SipPlanAggregate}
 import example.bankwealth.domain.entities.{CreditBalanceEntity, FundOrderEntity, SipPlanEntity}
-import example.bankwealth.domain.events.{CreditBalanceEvents => CreditBalanceProtocol, FundOrderEvents => FundOrderProtocol, SipPlanEvents => SipPlanProtocol}
-import example.bankwealth.domain.services.{CreditBalanceComputations, FundOrderComputations, SipPlanComputations}
 import example.bankwealth.application.api._
 import example.bankwealth.application.projection._
 import example.bankwealth.application.saga._

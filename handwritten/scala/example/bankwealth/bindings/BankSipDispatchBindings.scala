@@ -4,10 +4,8 @@ import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.util.Timeout
 import example.bankwealth.application.{BankCashPaymentExecution => Cash, BankSipDispatchExecution => Dispatch, BankSipDispatchEffectHost => Host}
-import example.bankwealth.application.aggregates.{CreditBalanceAggregate, FundOrderAggregate, SipPlanAggregate}
-import example.bankwealth.domain.entities.{CreditBalanceEntity, FundOrderEntity, SipPlanEntity}
-import example.bankwealth.domain.events.{CreditBalanceEvents => CreditBalanceProtocol, FundOrderEvents => FundOrderProtocol, SipPlanEvents => SipPlanProtocol}
-import example.bankwealth.domain.services.{CreditBalanceComputations, FundOrderComputations, SipPlanComputations}
+import example.bankwealth.application.aggregates.{FundOrderProtocol, SipPlanProtocol}
+import example.bankwealth.domain.entities.{FundOrderEntity, SipPlanEntity}
 import example.bankwealth.application.api._
 import example.bankwealth.application.projection._
 import example.bankwealth.application.saga._
@@ -18,8 +16,8 @@ import net.imadz.monarch.persistence.PersistentMonarch
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
 
-final class BankSipDispatchBindings(plan: ActorRef[SipPlanAggregate.Request], planPersistenceId: String,
-    order: ActorRef[FundOrderAggregate.Request], cash: ActorRef[PersistentMonarch.Command[Cash.State]], cashPersistenceId: String,
+final class BankSipDispatchBindings(plan: ActorRef[SipPlanProtocol.Command], planPersistenceId: String,
+    order: ActorRef[FundOrderProtocol.Command], cash: ActorRef[PersistentMonarch.Command[Cash.State]], cashPersistenceId: String,
     readJournal: String => Future[Vector[Any]])(implicit system: ActorSystem[_]) {
   implicit private val ec: ExecutionContext = system.executionContext
   implicit private val timeout: Timeout = Timeout(3.seconds)
@@ -29,12 +27,12 @@ final class BankSipDispatchBindings(plan: ActorRef[SipPlanAggregate.Request], pl
     val o = operation.request.occurrence
     require(operation.request.occurrenceId == o.occurrenceId && operation.operation == Host.operationIdentity(Dispatch.State(Dispatch.Inputs(o.occurrenceId, o))), "SIP dispatch operation mismatch")
     for {
-      s <- plan.ask[SipPlanEntity.State](SipPlanAggregate.GetState)
+      s <- plan.ask[SipPlanEntity.State](SipPlanProtocol.GetState)
       events <- readJournal(planPersistenceId)
       _ = require(s.id == o.planId && s.occurrences.get(o.dueSlot).contains(o), "SIP original occurrence missing or changed")
       _ = require(events.exists {
         case p: SipPlanEventPO => DomainConverters.decodeSipPlanEventPO(p) match {
-          case e: SipPlanProtocol.SipInstallmentTriggered => e.occurrence == o
+          case e: SipPlanEntity.SipInstallmentTriggered => e.occurrence == o
           case _ => false
         }
         case _ => false
@@ -47,7 +45,7 @@ final class BankSipDispatchBindings(plan: ActorRef[SipPlanAggregate.Request], pl
   })
   private def observed(op: BankSipDispatchOperation): Future[Option[BankSipDispatchObservation]] = for {
     o <- verify(op)
-    state <- order.ask[FundOrderEntity.State](FundOrderAggregate.GetState)
+    state <- order.ask[FundOrderEntity.State](FundOrderProtocol.GetState)
     exists <- started(o)
   } yield {
     require(state.id == o.fundOrderId, "SIP destination differs from original")
@@ -61,9 +59,9 @@ final class BankSipDispatchBindings(plan: ActorRef[SipPlanAggregate.Request], pl
   }
   private def execute(op: BankSipDispatchOperation): Future[BankSipDispatchObservation] = for {
     o <- verify(op)
-    reply <- order.ask[FundOrderAggregate.Reply](r => FundOrderAggregate.Execute(FundOrderProtocol.RequestFundPurchaseSettlement(
-      o.operationId, o.fundOrderId, o.config.investorAccountId, o.config.fundCollectionAccountId, o.config.fundCode, o.config.amount), r))
-    _ = require(reply.isInstanceOf[FundOrderAggregate.Accepted], "SIP cash request rejected")
+    reply <- order.ask[FundOrderProtocol.Reply](FundOrderProtocol.RequestFundPurchaseSettlement(
+      o.operationId, o.fundOrderId, o.config.investorAccountId, o.config.fundCollectionAccountId, o.config.fundCode, o.config.amount, _))
+    _ = require(reply.isInstanceOf[FundOrderProtocol.Accepted], "SIP cash request rejected")
     _ <- cash.ask[PersistentMonarch.RunReply](r => PersistentMonarch.StartRun(o.operationId.value, cashState(o), r))
     proof <- observed(op)
   } yield proof.getOrElse(throw new IllegalStateException("cash run has no matching durable start"))

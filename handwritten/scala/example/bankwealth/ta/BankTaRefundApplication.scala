@@ -8,10 +8,9 @@ import akka.util.Timeout
 import example.bankwealth.application.{BankIndependentRefundExecution => Refund, BankTaSubmissionExecution => Ta,
   BankRefundHost => RefundHost, BankTaEffectHost => TaHost}
 import example.bankwealth.bindings.{BankTaBridge, BankTaEffectBindings, MockTAClient, StableOrderIdentity}
-import example.bankwealth.application.aggregates.{CreditBalanceAggregate, FundOrderAggregate, SipPlanAggregate}
-import example.bankwealth.domain.entities.{CreditBalanceEntity, FundOrderEntity, SipPlanEntity}
-import example.bankwealth.domain.events.{CreditBalanceEvents => CreditBalanceProtocol, FundOrderEvents => FundOrderProtocol, SipPlanEvents => SipPlanProtocol}
-import example.bankwealth.domain.services.{CreditBalanceComputations, FundOrderComputations, SipPlanComputations}
+import example.bankwealth.application.aggregates.FundOrderProtocol
+import example.bankwealth.domain.entities.FundOrderEntity
+import example.bankwealth.domain.invariants.params.FundOrderRuleParams
 import example.bankwealth.application.api._
 import example.bankwealth.application.projection._
 import example.bankwealth.application.saga._
@@ -114,8 +113,8 @@ final class BankTaRefundApplication(directory: BankRuntimeDirectory, journal: Ba
       }
     }
   }
-  private def state(handle: BankActorHandle[FundOrderAggregate.Request]): Future[FundOrderEntity.State] = {
-    active(); handle.ref.ask[FundOrderEntity.State](FundOrderAggregate.GetState)
+  private def state(handle: BankActorHandle[FundOrderProtocol.Command]): Future[FundOrderEntity.State] = {
+    active(); handle.ref.ask[FundOrderEntity.State](FundOrderProtocol.GetState)
   }
   private def paid(s: FundOrderEntity.State, events: Vector[Any]): Unit = {
     s.cashRequestSource.foreach { original =>
@@ -129,32 +128,32 @@ final class BankTaRefundApplication(directory: BankRuntimeDirectory, journal: Ba
     require(s.amount.currency == "CNY" && s.amount.amount > 0 && s.investorAccountId != s.fundCollectionAccountId &&
       s.selectedPaymentTxId.value.nonEmpty && s.cashPaymentFinalResults.get(s.selectedPaymentTxId).contains("succeeded"), "original guarded payment success required")
     require(events.exists {
-      case e: FundOrderProtocol.FundPurchaseSettlementRequested => e.fundOrderId == s.id && e.operationId == s.operationId &&
+      case e: FundOrderEntity.FundPurchaseSettlementRequested => e.fundOrderId == s.id && e.operationId == s.operationId &&
         e.investorAccountId == s.investorAccountId && e.fundCollectionAccountId == s.fundCollectionAccountId && e.fundCode == s.fundCode && e.amount == s.amount
       case _ => false
     } && events.exists {
-      case e: FundOrderProtocol.FundSubscriptionPaymentConfirmed => e.txid == s.selectedPaymentTxId && e.resource == s.id && e.amount == s.amount
+      case e: FundOrderEntity.FundSubscriptionPaymentConfirmed => e.txid == s.selectedPaymentTxId && e.resource == s.id && e.amount == s.amount
       case _ => false
     } && events.exists {
-      case e: FundOrderProtocol.FundCashPaymentSucceeded => e.txid == s.selectedPaymentTxId && e.kind == "succeeded"
+      case e: FundOrderEntity.FundCashPaymentSucceeded => e.txid == s.selectedPaymentTxId && e.kind == "succeeded"
       case _ => false
     }, "exact original payment journal evidence required")
   }
   private def registered(s: FundOrderEntity.State, events: Vector[Any]): Unit = {
-    require(s.taRequestId == StableOrderIdentity.StableTaRequestId(s, FundOrderProtocol.RegisterFundTASubmission(s.id, s.selectedPaymentTxId)) &&
+    require(s.taRequestId == StableOrderIdentity.StableTaRequestId(s, FundOrderRuleParams.RegisterFundTASubmissionParams(s.id, s.selectedPaymentTxId)) &&
       events.exists {
-        case e: FundOrderProtocol.FundTASubmissionRegistered => e.fundOrderId == s.id && e.paymentTxId == s.selectedPaymentTxId && e.taRequestId == s.taRequestId
+        case e: FundOrderEntity.FundTASubmissionRegistered => e.fundOrderId == s.id && e.paymentTxId == s.selectedPaymentTxId && e.taRequestId == s.taRequestId
         case _ => false
       }, "exact durable TA registration required")
   }
   /** First related generated terminal event, not effect completion or accepted status. */
   private def terminal(s: FundOrderEntity.State, events: Vector[Any]): Option[String] = events.collectFirst {
-    case e: FundOrderProtocol.FundTASharesConfirmed if e.fundOrderId == s.id && e.paymentTxId == s.selectedPaymentTxId && e.taRequestId == s.taRequestId =>
+    case e: FundOrderEntity.FundTASharesConfirmed if e.fundOrderId == s.id && e.paymentTxId == s.selectedPaymentTxId && e.taRequestId == s.taRequestId =>
       require(s.taStatus == "confirmed" && s.taReceipts.get(e.receiptId).contains(e.receiptBody) &&
         s.taReceiptOutcomes.get(e.receiptId).contains("confirmed") && e.taReference == s.taReference && e.fundCode == s.fundCode &&
         e.currency == s.amount.currency && e.shares == s.taConfirmedShares, "first TA confirmation differs from retained generated state")
       "confirmed"
-    case e: FundOrderProtocol.FundTARejected if e.fundOrderId == s.id && e.paymentTxId == s.selectedPaymentTxId && e.taRequestId == s.taRequestId =>
+    case e: FundOrderEntity.FundTARejected if e.fundOrderId == s.id && e.paymentTxId == s.selectedPaymentTxId && e.taRequestId == s.taRequestId =>
       require(s.taStatus == "rejected" && s.taReceipts.get(e.receiptId).contains(e.receiptBody) &&
         s.taReceiptOutcomes.get(e.receiptId).contains("rejected") && e.taReference == s.taReference && e.fundCode == s.fundCode &&
         e.currency == s.amount.currency && e.reason == s.taRejectionReason, "first TA rejection differs from retained generated state")
@@ -223,7 +222,7 @@ final class BankTaRefundApplication(directory: BankRuntimeDirectory, journal: Ba
     }
   }
 
-  private def finish(handle: BankActorHandle[FundOrderAggregate.Request], s: FundOrderEntity.State, events: Vector[Any],
+  private def finish(handle: BankActorHandle[FundOrderProtocol.Command], s: FundOrderEntity.State, events: Vector[Any],
       bridge: BankTaBridge): Future[Outcome[Unit]] = {
     paid(s, events); registered(s, events)
     terminal(s, events) match {
@@ -235,9 +234,9 @@ final class BankTaRefundApplication(directory: BankRuntimeDirectory, journal: Ba
           retained <- state(handle)
           evidence <- history(handle.persistenceId)
           _ = require(original.refundOperationId == StableOrderIdentity.StableRefundOperationId(retained,
-            FundOrderProtocol.RequestFundPurchaseRefund(original.fundOrderId, original.paymentTxId)), "refund identity must be stable and independent")
+            FundOrderRuleParams.RequestFundPurchaseRefundParams(original.fundOrderId, original.paymentTxId)), "refund identity must be stable and independent")
           _ = require(evidence.exists {
-            case e: FundOrderProtocol.FundPurchaseRefundRequested => BankRefundOriginal(e.fundOrderId, e.paymentTxId,
+            case e: FundOrderEntity.FundPurchaseRefundRequested => BankRefundOriginal(e.fundOrderId, e.paymentTxId,
               e.investorAccountId, e.fundCollectionAccountId, e.amount, e.refundOperationId) == original
             case _ => false
           }, "independent refund must be durably requested before assembly")
@@ -253,7 +252,7 @@ final class BankTaRefundApplication(directory: BankRuntimeDirectory, journal: Ba
           current <- state(handle)
           currentEvents <- history(handle.persistenceId)
           _ <- if (current.refundOutcome == "succeeded" && current.refundFinalResults.get(TxId(runtime.transactionId)).contains("succeeded") && currentEvents.exists {
-            case e: FundOrderProtocol.FundRefundSucceeded => e.refundOperationId == original.refundOperationId && e.refundTxId.value == runtime.transactionId
+            case e: FundOrderEntity.FundRefundSucceeded => e.refundOperationId == original.refundOperationId && e.refundTxId.value == runtime.transactionId
             case _ => false
           }) { active(); onTerminal(s.id) } else Future.successful(())
         } yield Right(())

@@ -3,10 +3,8 @@ package example.bankwealth.integration
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.util.Timeout
-import example.bankwealth.application.aggregates.{CreditBalanceAggregate, FundOrderAggregate, SipPlanAggregate}
-import example.bankwealth.domain.entities.{CreditBalanceEntity, FundOrderEntity, SipPlanEntity}
-import example.bankwealth.domain.events.{CreditBalanceEvents => CreditBalanceProtocol, FundOrderEvents => FundOrderProtocol, SipPlanEvents => SipPlanProtocol}
-import example.bankwealth.domain.services.{CreditBalanceComputations, FundOrderComputations, SipPlanComputations}
+import example.bankwealth.application.aggregates.{FundOrderProtocol, SipPlanProtocol}
+import example.bankwealth.domain.entities.{FundOrderEntity, SipPlanEntity}
 import example.bankwealth.application.api._
 import example.bankwealth.application.projection._
 import example.bankwealth.application.saga._
@@ -29,10 +27,10 @@ final class BankCashRequests(directory: BankRuntimeDirectory, config: BankDemoCo
     case Left(error) => Future.successful(Left(error))
     case Right(original) =>
       directory.order(original.payment.fundOrderId).flatMap { handle =>
-        handle.ref.ask[FundOrderAggregate.Reply](r => FundOrderAggregate.Execute(FundOrderProtocol.RecordCashRequestSource(original, Some(original)), r)).flatMap {
-          case _: FundOrderAggregate.Refused => Future.successful(Left(RequestConflict))
-          case _: FundOrderAggregate.Accepted =>
-            handle.ref.ask[FundOrderEntity.State](FundOrderAggregate.GetState).flatMap { state =>
+        handle.ref.ask[FundOrderProtocol.Reply](FundOrderProtocol.RecordCashRequestSource(original, Some(original), _)).flatMap {
+          case _: FundOrderProtocol.Refused => Future.successful(Left(RequestConflict))
+          case _: FundOrderProtocol.Accepted =>
+            handle.ref.ask[FundOrderEntity.State](FundOrderProtocol.GetState).flatMap { state =>
               require(state.cashRequestSource.contains(original), "accepted original source was not retained")
               admission.validateCash(state.cashRequestSource.get)
               start(original.payment).map(_.map(_ => BankCashAcknowledgement(original, "accepted")))
@@ -48,7 +46,7 @@ final class BankCashRequests(directory: BankRuntimeDirectory, config: BankDemoCo
         val id = try Right(BankRequestIdentity.order(customer.id, clientRequestId)) catch { case NonFatal(_) => Left(InvalidRequest) }
         id match {
           case Left(error) => Future.successful(Left(error))
-          case Right(orderId) => directory.order(orderId).flatMap(_.ref.ask[FundOrderEntity.State](FundOrderAggregate.GetState)).map { state =>
+          case Right(orderId) => directory.order(orderId).flatMap(_.ref.ask[FundOrderEntity.State](FundOrderProtocol.GetState)).map { state =>
             state.cashRequestSource match {
               case None => Left(MissingResource)
               case Some(original) if original.principalId != customer.id || original.clientRequestId != clientRequestId => Left(NotAuthorized)
@@ -61,14 +59,14 @@ final class BankCashRequests(directory: BankRuntimeDirectory, config: BankDemoCo
 
   def resumePersisted(original: BankCashOriginal): Future[Outcome[BankPaymentOriginal]] = {
     admission.validateCash(original)
-    directory.order(original.payment.fundOrderId).flatMap(_.ref.ask[FundOrderEntity.State](FundOrderAggregate.GetState)).flatMap { state =>
+    directory.order(original.payment.fundOrderId).flatMap(_.ref.ask[FundOrderEntity.State](FundOrderProtocol.GetState)).flatMap { state =>
       require(state.cashRequestSource.contains(original), "recovery requires retained full original source")
       start(original.payment)
     }.recover { case NonFatal(_) => Left(Unavailable) }
   }
 
   def submitOccurrence(occurrence: SipOccurrence): Future[Outcome[BankPaymentOriginal]] = {
-    directory.plan(occurrence.planId).flatMap(_.ref.ask[SipPlanEntity.State](SipPlanAggregate.GetState)).flatMap { state =>
+    directory.plan(occurrence.planId).flatMap(_.ref.ask[SipPlanEntity.State](SipPlanProtocol.GetState)).flatMap { state =>
       require(state.occurrences.get(occurrence.dueSlot).contains(occurrence), "machine cash requires original persisted occurrence")
       start(BankPaymentOriginal(occurrence.operationId, occurrence.fundOrderId, occurrence.config.investorAccountId,
         occurrence.config.fundCollectionAccountId, occurrence.config.fundCode, occurrence.config.amount))
@@ -77,10 +75,10 @@ final class BankCashRequests(directory: BankRuntimeDirectory, config: BankDemoCo
 
   private def start(original: BankPaymentOriginal): Future[Outcome[BankPaymentOriginal]] = {
     directory.order(original.fundOrderId).flatMap { handle =>
-      handle.ref.ask[FundOrderAggregate.Reply](r => FundOrderAggregate.Execute(FundOrderProtocol.RequestFundPurchaseSettlement(
-        original.operationId, original.fundOrderId, original.investorAccountId, original.fundCollectionAccountId, original.fundCode, original.amount), r)).flatMap {
-        case _: FundOrderAggregate.Refused => Future.successful(Left(RequestConflict))
-        case _: FundOrderAggregate.Accepted => directory.ensureCash(original).flatMap { runtime =>
+      handle.ref.ask[FundOrderProtocol.Reply](FundOrderProtocol.RequestFundPurchaseSettlement(
+        original.operationId, original.fundOrderId, original.investorAccountId, original.fundCollectionAccountId, original.fundCode, original.amount, _)).flatMap {
+        case _: FundOrderProtocol.Refused => Future.successful(Left(RequestConflict))
+        case _: FundOrderProtocol.Accepted => directory.ensureCash(original).flatMap { runtime =>
           val state = Cash.State(Cash.Inputs(original.operationId, original.operationId, original.investorAccountId,
             original.fundOrderId, original.fundCollectionAccountId, original.amount, original.fundCode))
           runtime.parent.ref.ask[PersistentMonarch.RunReply](r => PersistentMonarch.StartRun(original.operationId.value, state, r)).flatMap { _ =>

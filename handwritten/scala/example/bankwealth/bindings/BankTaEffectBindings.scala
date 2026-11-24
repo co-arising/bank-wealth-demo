@@ -4,7 +4,7 @@ import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.util.Timeout
 import example.bankwealth.application.{BankTaEffectHost => Host, BankTaSubmissionExecution => Execution}
-import example.bankwealth.application.aggregates.FundOrderAggregate
+import example.bankwealth.application.aggregates.FundOrderProtocol
 import example.bankwealth.domain.entities.FundOrderEntity
 import example.bankwealth.application.api._
 import example.bankwealth.application.projection._
@@ -33,7 +33,7 @@ object BankTaEffectBindings {
     * scenario from the same trusted deployment function, never an HTTP field.
     */
   def forOrders(client: MockTAClient, scenarioForOrder: FundOrderId => String)
-      (implicit system: ActorSystem[_]): ActorRef[FundOrderAggregate.Request] => Host.Installed = {
+      (implicit system: ActorSystem[_]): ActorRef[FundOrderProtocol.Command] => Host.Installed = {
     require(client != null && !client.usesLegacyConfiguration && scenarioForOrder != null,
       "explicit MockTA configuration and trusted per-order scenarios required")
     order => {
@@ -55,7 +55,7 @@ object BankTaEffectBindings {
   }
 }
 
-final class BankTaEffectBindings(order: ActorRef[FundOrderAggregate.Request], client: MockTAClient, bridge: BankTaBridge,
+final class BankTaEffectBindings(order: ActorRef[FundOrderProtocol.Command], client: MockTAClient, bridge: BankTaBridge,
     scenario: String)(implicit system: ActorSystem[_]) {
   require(order != null && client != null && bridge != null && scenario != null && scenario.nonEmpty,
     "complete trusted TA effect binding required")
@@ -65,7 +65,7 @@ final class BankTaEffectBindings(order: ActorRef[FundOrderAggregate.Request], cl
     val request = operation.request
     val parent = Execution.State(Execution.Inputs(request.taRequestId, request.fundOrderId, request.paymentTxId))
     require(operation.operation == Host.operationIdentity(parent), "TA effect operation identity mismatch")
-    order.ask[FundOrderEntity.State](FundOrderAggregate.GetState).map { state =>
+    order.ask[FundOrderEntity.State](FundOrderProtocol.GetState).map { state =>
       require(state.id == request.fundOrderId && state.selectedPaymentTxId == request.paymentTxId && state.taRequestId == request.taRequestId &&
         state.cashPaymentFinalResults.get(request.paymentTxId).contains("succeeded"), "TA effect requires exact retained paid request")
       state

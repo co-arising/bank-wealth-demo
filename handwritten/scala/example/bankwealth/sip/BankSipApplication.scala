@@ -1,16 +1,15 @@
 package example.bankwealth.sip
 
-import akka.actor.typed.ActorSystem
+import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.stream.{Materializer, SystemMaterializer}
 import akka.stream.scaladsl.Sink
 import akka.util.Timeout
 import example.bankwealth.application.{BankSipDispatchExecution => Dispatch}
 import example.bankwealth.bindings.{BankSipTerminalBridge, StableSipIdentity}
-import example.bankwealth.application.aggregates.{CreditBalanceAggregate, FundOrderAggregate, SipPlanAggregate}
-import example.bankwealth.domain.entities.{CreditBalanceEntity, FundOrderEntity, SipPlanEntity}
-import example.bankwealth.domain.events.{CreditBalanceEvents => CreditBalanceProtocol, FundOrderEvents => FundOrderProtocol, SipPlanEvents => SipPlanProtocol}
-import example.bankwealth.domain.services.{CreditBalanceComputations, FundOrderComputations, SipPlanComputations}
+import example.bankwealth.application.aggregates.{FundOrderProtocol, SipPlanProtocol}
+import example.bankwealth.domain.entities.{FundOrderEntity, SipPlanEntity}
+import example.bankwealth.domain.invariants.params.SipPlanRuleParams
 import example.bankwealth.application.api._
 import example.bankwealth.application.projection._
 import example.bankwealth.application.saga._
@@ -56,17 +55,17 @@ final class BankSipApplication(directory: BankRuntimeDirectory, journal: BankJou
     }
   }
 
-  private def execute(handle: BankActorHandle[SipPlanAggregate.Request], command: SipPlanProtocol.Command): Future[Unit] =
-    handle.ref.ask[SipPlanAggregate.Reply](r => SipPlanAggregate.Execute(command, r)).map {
-      case _: SipPlanAggregate.Accepted => ()
-      case _: SipPlanAggregate.Refused => reject(RequestConflict)
+  private def execute(handle: BankActorHandle[SipPlanProtocol.Command], build: ActorRef[SipPlanProtocol.Reply] => SipPlanProtocol.Command): Future[Unit] =
+    handle.ref.ask[SipPlanProtocol.Reply](build).map {
+      case _: SipPlanProtocol.Accepted => ()
+      case _: SipPlanProtocol.Refused => reject(RequestConflict)
     }
-  private def state(handle: BankActorHandle[SipPlanAggregate.Request]): Future[SipPlanEntity.State] =
-    handle.ref.ask[SipPlanEntity.State](SipPlanAggregate.GetState)
+  private def state(handle: BankActorHandle[SipPlanProtocol.Command]): Future[SipPlanEntity.State] =
+    handle.ref.ask[SipPlanEntity.State](SipPlanProtocol.GetState)
 
   private def original(pid: String): Future[Option[BankSipCreateIntent]] = journal.readPb(pid).map { events =>
     val intents = events.collect { case raw: SipPlanEventPO => DomainConverters.decodeSipPlanEventPO(raw) }.collect {
-      case event: SipPlanProtocol.SipCreateIntentRecorded =>
+      case event: SipPlanEntity.SipCreateIntentRecorded =>
         validateIntent(event.intent)
         check(event.source.contains(event.intent) && pid == ids.plan(event.intent.planId))
         event.intent
@@ -77,7 +76,7 @@ final class BankSipApplication(directory: BankRuntimeDirectory, journal: BankJou
 
   // Read trusted ownership evidence BEFORE obtaining the plan actor/state. Never derive a
   // client-supplied planId from a guessed requestId, nor trust its investor field as ownership.
-  private def owned(principal: Principal, planId: PlanId): Future[(BankActorHandle[SipPlanAggregate.Request], BankSipCreateIntent)] = {
+  private def owned(principal: Principal, planId: PlanId): Future[(BankActorHandle[SipPlanProtocol.Command], BankSipCreateIntent)] = {
     val customer = config.customer(principal).getOrElse(reject(NotAuthorized))
     val pid = try ids.plan(planId) catch { case NonFatal(_) => reject(InvalidRequest) }
     original(pid).flatMap {
@@ -86,7 +85,7 @@ final class BankSipApplication(directory: BankRuntimeDirectory, journal: BankJou
       case Some(intent) => handle(intent).map(_ -> intent)
     }
   }
-  private def handle(intent: BankSipCreateIntent): Future[BankActorHandle[SipPlanAggregate.Request]] =
+  private def handle(intent: BankSipCreateIntent): Future[BankActorHandle[SipPlanProtocol.Command]] =
     directory.plan(intent.planId).map { h => check(h.persistenceId == ids.plan(intent.planId)); h }
 
   /** Membership is insufficient: validate the positional prefix and the inverse persisted
@@ -111,17 +110,17 @@ final class BankSipApplication(directory: BankRuntimeDirectory, journal: BankJou
     } else check(s.scheduleCount == 0L && !s.scheduleSealed && s.revisions.isEmpty && s.occurrences.isEmpty)
   }
 
-  private def restoreSchedule(h: BankActorHandle[SipPlanAggregate.Request], intent: BankSipCreateIntent): Future[SipPlanEntity.State] = for {
+  private def restoreSchedule(h: BankActorHandle[SipPlanProtocol.Command], intent: BankSipCreateIntent): Future[SipPlanEntity.State] = for {
     before <- state(h)
     _ = validatePrefix(before, intent)
-    _ <- execute(h, SipPlanProtocol.CreateSipPlan(intent.planId, intent.config))
+    _ <- execute(h, SipPlanProtocol.CreateSipPlan(intent.planId, intent.config, _))
     _ <- intent.request.dueSlots.zipWithIndex.drop(before.scheduleCount.toInt).foldLeft(Future.successful(())) {
-      case (previous, (slot, position)) => previous.flatMap(_ => execute(h, SipPlanProtocol.AppendSipDueSlot(position.toLong, slot)))
+      case (previous, (slot, position)) => previous.flatMap(_ => execute(h, SipPlanProtocol.AppendSipDueSlot(position.toLong, slot, _)))
     }
     complete <- state(h)
     _ = validatePrefix(complete, intent)
     _ = check(complete.scheduleCount == intent.request.dueSlots.size.toLong)
-    _ <- execute(h, SipPlanProtocol.SealSipSchedule())
+    _ <- execute(h, SipPlanProtocol.SealSipSchedule(_))
     sealedState <- state(h)
     _ = validatePrefix(sealedState, intent)
     _ = check(sealedState.scheduleSealed)
@@ -132,7 +131,7 @@ final class BankSipApplication(directory: BankRuntimeDirectory, journal: BankJou
       case Left(error) => reject(error)
       case Right(intent) => for {
         h <- handle(intent)
-        _ <- execute(h, SipPlanProtocol.RecordSipCreateIntent(intent, Some(intent)))
+        _ <- execute(h, SipPlanProtocol.RecordSipCreateIntent(intent, Some(intent), _))
         persisted <- original(h.persistenceId)
         _ = check(persisted.contains(intent))
         _ <- restoreSchedule(h, intent)
@@ -154,7 +153,7 @@ final class BankSipApplication(directory: BankRuntimeDirectory, journal: BankJou
         SipRevisionConfig(input.request.revision, input.request.effectiveSlot, customer.accountId,
           fund.collectionAccountId, fund.code, amount)
       } catch { case r: RejectedRequest => throw r; case NonFatal(_) => reject(InvalidRequest) }
-      _ <- execute(h, SipPlanProtocol.ReviseSipPlan(revised))
+      _ <- execute(h, SipPlanProtocol.ReviseSipPlan(revised, _))
     } yield BankSipAcknowledgement(intent.planId, "accepted")
   }
 
@@ -164,7 +163,7 @@ final class BankSipApplication(directory: BankRuntimeDirectory, journal: BankJou
       (h, intent) = pair
       s <- restoreSchedule(h, intent)
       // No guessed wall clock: pause at the last generated durable business tick.
-      _ <- execute(h, SipPlanProtocol.PauseSipPlan(if (s.paused) s.pauseTick else s.currentTick))
+      _ <- execute(h, SipPlanProtocol.PauseSipPlan(if (s.paused) s.pauseTick else s.currentTick, _))
       _ <- classify(h)
     } yield BankSipAcknowledgement(intent.planId, "paused")
   }
@@ -176,7 +175,7 @@ final class BankSipApplication(directory: BankRuntimeDirectory, journal: BankJou
       _ <- restoreSchedule(h, intent)
       _ <- classify(h) // Classify the entire elapsed paused interval BEFORE resuming.
       s <- state(h)
-      _ <- execute(h, SipPlanProtocol.ResumeSipPlan(s.currentTick))
+      _ <- execute(h, SipPlanProtocol.ResumeSipPlan(s.currentTick, _))
       _ <- drive(h)
     } yield BankSipAcknowledgement(intent.planId, "active")
   }
@@ -191,7 +190,7 @@ final class BankSipApplication(directory: BankRuntimeDirectory, journal: BankJou
       }
       // Preflight ALL plan clocks before mutating any: a lower repeated tick is a conflict,
       // including after application restart. Partial fanout is safely completed by replay.
-      plans <- intents.foldLeft(Future.successful(Vector.empty[(BankActorHandle[SipPlanAggregate.Request], BankSipCreateIntent)])) {
+      plans <- intents.foldLeft(Future.successful(Vector.empty[(BankActorHandle[SipPlanProtocol.Command], BankSipCreateIntent)])) {
         (previous, intent) => previous.flatMap(found => handle(intent).flatMap(h => state(h).map { s =>
           validatePrefix(s, intent)
           if (request.slot < s.currentTick) reject(RequestConflict)
@@ -200,7 +199,7 @@ final class BankSipApplication(directory: BankRuntimeDirectory, journal: BankJou
       }
       _ <- plans.foldLeft(Future.successful(())) { case (previous, (h, intent)) => previous.flatMap { _ => for {
         _ <- restoreSchedule(h, intent)
-        _ <- execute(h, SipPlanProtocol.AdvanceSipClock(request.slot))
+        _ <- execute(h, SipPlanProtocol.AdvanceSipClock(request.slot, _))
         _ <- classify(h)
         _ <- trigger(h)
       } yield () } }
@@ -220,30 +219,31 @@ final class BankSipApplication(directory: BankRuntimeDirectory, journal: BankJou
     }
   }
 
-  private def classify(h: BankActorHandle[SipPlanAggregate.Request]): Future[Unit] = state(h).flatMap { s =>
+  private def classify(h: BankActorHandle[SipPlanProtocol.Command]): Future[Unit] = state(h).flatMap { s =>
     s.slots.get(s.observedCount) match {
       case Some(slot) if slot <= s.currentTick =>
-        val command = if (s.paused && slot >= s.pauseTick) SipPlanProtocol.SkipPausedSipDueSlot(s.observedCount, slot)
-          else SipPlanProtocol.ObserveSipDueSlot(s.observedCount, slot)
-        execute(h, command).flatMap(_ => classify(h))
+        val buildCommand: ActorRef[SipPlanProtocol.Reply] => SipPlanProtocol.Command =
+          if (s.paused && slot >= s.pauseTick) SipPlanProtocol.SkipPausedSipDueSlot(s.observedCount, slot, _)
+          else SipPlanProtocol.ObserveSipDueSlot(s.observedCount, slot, _)
+        execute(h, buildCommand).flatMap(_ => classify(h))
       case _ => Future.successful(())
     }
   }
 
-  private def trigger(h: BankActorHandle[SipPlanAggregate.Request]): Future[Unit] = state(h).flatMap { s =>
+  private def trigger(h: BankActorHandle[SipPlanProtocol.Command]): Future[Unit] = state(h).flatMap { s =>
     s.slots.get(s.startCount) match {
       case Some(slot) if s.slotDisposition.get(slot).contains("skipped") =>
-        execute(h, SipPlanProtocol.AdvanceSkippedSipSlot(s.startCount, slot)).flatMap(_ => trigger(h))
+        execute(h, SipPlanProtocol.AdvanceSkippedSipSlot(s.startCount, slot, _)).flatMap(_ => trigger(h))
       case Some(slot) if !s.paused && s.slotDisposition.get(slot).contains("backlog") =>
         val candidates = s.revisions.values.filter(c => c.effectiveSlot <= slot && s.revisionEnds.get(c.revision).forall(slot < _)).toVector
         check(candidates.size == 1)
         val c = candidates.head
-        execute(h, SipPlanProtocol.TriggerSipInstallment(s.startCount, slot, c.revision, c)).flatMap(_ => trigger(h))
+        execute(h, SipPlanProtocol.TriggerSipInstallment(s.startCount, slot, c.revision, c, _)).flatMap(_ => trigger(h))
       case _ => Future.successful(())
     }
   }
 
-  private def drive(h: BankActorHandle[SipPlanAggregate.Request]): Future[Unit] =
+  private def drive(h: BankActorHandle[SipPlanProtocol.Command]): Future[Unit] =
     classify(h).flatMap(_ => trigger(h)).flatMap(_ => replayOccurrences(h))
 
   // Attempt the next due occurrence even if another dispatch is unavailable/unknown.
@@ -255,34 +255,34 @@ final class BankSipApplication(directory: BankRuntimeDirectory, journal: BankJou
       })
     }.flatMap { case Some(error) => Future.failed(error); case None => Future.successful(()) }
 
-  private def replayOccurrences(h: BankActorHandle[SipPlanAggregate.Request]): Future[Unit] = state(h).flatMap { s =>
+  private def replayOccurrences(h: BankActorHandle[SipPlanProtocol.Command]): Future[Unit] = state(h).flatMap { s =>
     attemptAll(s.occurrences.toVector.sortBy(_._1).map { case (_, o) => () => {
       val start = if (s.firstTerminals.contains(o.occurrenceId)) Future.successful(()) else dispatch(h, o)
       start.flatMap(_ => terminal(h, o))
     } })
   }
 
-  private def verifyOccurrence(h: BankActorHandle[SipPlanAggregate.Request], o: SipOccurrence): Future[Unit] = for {
+  private def verifyOccurrence(h: BankActorHandle[SipPlanProtocol.Command], o: SipOccurrence): Future[Unit] = for {
     persisted <- original(h.persistenceId)
     intent = persisted.getOrElse(reject(MissingResource))
     s <- state(h)
     _ = validatePrefix(s, intent)
     _ = check(s.id == o.planId && s.occurrences.get(o.dueSlot).contains(o) && s.scheduleSealed)
     position = s.slots.collectFirst { case (p, slot) if slot == o.dueSlot => p }.getOrElse(reject(RequestConflict))
-    expected = StableSipIdentity.StableSipOccurrence(s, SipPlanProtocol.TriggerSipInstallment(position, o.dueSlot, o.revision, o.config))
+    expected = StableSipIdentity.StableSipOccurrence(s, SipPlanRuleParams.TriggerSipInstallmentParams(position, o.dueSlot, o.revision, o.config))
     _ = check(expected == o && s.revisions.get(o.revision).contains(o.config) &&
       o.dueSlot >= o.config.effectiveSlot && s.revisionEnds.get(o.revision).forall(o.dueSlot < _))
     events <- journal.readPb(h.persistenceId)
     _ = check(events.exists {
       case raw: SipPlanEventPO => DomainConverters.decodeSipPlanEventPO(raw) match {
-        case e: SipPlanProtocol.SipInstallmentTriggered => e.position == position && e.occurrence == o
+        case e: SipPlanEntity.SipInstallmentTriggered => e.position == position && e.occurrence == o
         case _ => false
       }
       case _ => false
     })
   } yield ()
 
-  private def dispatch(h: BankActorHandle[SipPlanAggregate.Request], o: SipOccurrence): Future[Unit] = for {
+  private def dispatch(h: BankActorHandle[SipPlanProtocol.Command], o: SipOccurrence): Future[Unit] = for {
     _ <- verifyOccurrence(h, o) // Persisted occurrence BEFORE graph/cash/dispatch creation.
     runtime <- directory.ensureSipDispatch(o)
     _ = check(runtime.occurrence == o && runtime.parent.persistenceId == ids.sipRun(o.occurrenceId) && runtime.host.persistenceId == ids.sipHost(o.occurrenceId))
@@ -315,10 +315,10 @@ final class BankSipApplication(directory: BankRuntimeDirectory, journal: BankJou
       case Some(intent) => handle(intent).flatMap(h => verifyOccurrence(h, occurrence).flatMap(_ => terminal(h, occurrence)))
     }
   }
-  private def terminal(h: BankActorHandle[SipPlanAggregate.Request], o: SipOccurrence): Future[Unit] = for {
+  private def terminal(h: BankActorHandle[SipPlanProtocol.Command], o: SipOccurrence): Future[Unit] = for {
     order <- directory.order(o.fundOrderId)
     _ = check(order.persistenceId == ids.order(o.fundOrderId))
-    s <- order.ref.ask[FundOrderEntity.State](FundOrderAggregate.GetState)
+    s <- order.ref.ask[FundOrderEntity.State](FundOrderProtocol.GetState)
     // A persisted occurrence may precede its original order. It is not a business failure.
     _ <- if (s.status == "new") state(h).map { p =>
       check(!p.firstTerminals.contains(o.occurrenceId))

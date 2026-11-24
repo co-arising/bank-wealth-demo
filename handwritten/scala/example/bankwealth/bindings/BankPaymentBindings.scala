@@ -5,10 +5,8 @@ import akka.actor.typed.scaladsl.AskPattern._
 import akka.util.Timeout
 import example.bankwealth.application.{BankCashPaymentExecution => Execution, BankPaymentSagaDefinition => Definition, BankPaymentHost => Host, BankPaymentPorts, BankPaymentPortBindings => Technical}
 import example.bankwealth.application.BankPaymentPorts.{CompletionContext, OperationNotExecuted}
-import example.bankwealth.application.aggregates.{CreditBalanceAggregate, FundOrderAggregate, SipPlanAggregate}
-import example.bankwealth.domain.entities.{CreditBalanceEntity, FundOrderEntity, SipPlanEntity}
-import example.bankwealth.domain.events.{CreditBalanceEvents => CreditBalanceProtocol, FundOrderEvents => FundOrderProtocol, SipPlanEvents => SipPlanProtocol}
-import example.bankwealth.domain.services.{CreditBalanceComputations, FundOrderComputations, SipPlanComputations}
+import example.bankwealth.application.aggregates.{CreditBalanceProtocol, FundOrderProtocol}
+import example.bankwealth.domain.entities.{CreditBalanceEntity, FundOrderEntity}
 import example.bankwealth.application.api._
 import example.bankwealth.application.projection._
 import example.bankwealth.application.saga._
@@ -23,9 +21,9 @@ import scala.concurrent.duration._
 
 final class BankPaymentBindings(
     val original: BankPaymentOriginal,
-    investor: ActorRef[CreditBalanceAggregate.Request], investorPersistenceId: String,
-    collection: ActorRef[CreditBalanceAggregate.Request], collectionPersistenceId: String,
-    order: ActorRef[FundOrderAggregate.Request], orderPersistenceId: String,
+    investor: ActorRef[CreditBalanceProtocol.Command], investorPersistenceId: String,
+    collection: ActorRef[CreditBalanceProtocol.Command], collectionPersistenceId: String,
+    order: ActorRef[FundOrderProtocol.Command], orderPersistenceId: String,
     readJournal: String => Future[Vector[GeneratedMessage]],
     coordinator: () => ActorRef[StrictSagaCoordinator.Command]
 )(implicit system: ActorSystem[_]) {
@@ -55,10 +53,10 @@ final class BankPaymentBindings(
     require(id.participantId == participants(index) && id.resource == resources(index) && id.stepId == steps(index) && id.phase == phase,
       "payment operation resource or phase mismatch")
   }
-  private def ledger(index: Int): ActorRef[CreditBalanceAggregate.Request] = if (index == 0) investor else collection
+  private def ledger(index: Int): ActorRef[CreditBalanceProtocol.Command] = if (index == 0) investor else collection
   private def persistence(index: Int): String = Vector(investorPersistenceId, collectionPersistenceId, orderPersistenceId)(index)
-  private def ledgerState(index: Int): Future[CreditBalanceEntity.State] = ledger(index).ask[CreditBalanceEntity.State](CreditBalanceAggregate.GetState)
-  private def orderState(): Future[FundOrderEntity.State] = order.ask[FundOrderEntity.State](FundOrderAggregate.GetState)
+  private def ledgerState(index: Int): Future[CreditBalanceEntity.State] = ledger(index).ask[CreditBalanceEntity.State](CreditBalanceProtocol.GetState)
+  private def orderState(): Future[FundOrderEntity.State] = order.ask[FundOrderEntity.State](FundOrderProtocol.GetState)
   private def event(raw: GeneratedMessage): Any = raw match {
     case x: CreditBalanceEventPO => DomainConverters.decodeCreditBalanceEventPO(x)
     case x: FundOrderEventPO => DomainConverters.decodeFundOrderEventPO(x)
@@ -66,48 +64,48 @@ final class BankPaymentBindings(
   }
   private def history(index: Int): Future[Vector[Any]] = readJournal(persistence(index)).map(_.map(event))
   private def ledgerEvidence(index: Int, phase: Phase, events: Vector[Any]): Option[Product] = events.collectFirst {
-    case e: CreditBalanceProtocol.ReserveFundsConfirmed if index == 0 && phase == Phase.Prepare && e.txid.value == operationId && e.resource.value == resources(index) && e.amount == original.amount => e
-    case e: CreditBalanceProtocol.DeductFundsConfirmed if index == 0 && phase == Phase.Commit && e.txid.value == operationId && e.resource.value == resources(index) && e.amount == original.amount => e
-    case e: CreditBalanceProtocol.ReleaseReservedFundsConfirmed if index == 0 && phase == Phase.Compensate && e.txid.value == operationId && e.resource.value == resources(index) && e.amount == original.amount => e
-    case e: CreditBalanceProtocol.RecordIncomingCreditsConfirmed if index == 1 && phase == Phase.Prepare && e.txid.value == operationId && e.resource.value == resources(index) && e.amount == original.amount => e
-    case e: CreditBalanceProtocol.CommitIncomingCreditsConfirmed if index == 1 && phase == Phase.Commit && e.txid.value == operationId && e.resource.value == resources(index) && e.amount == original.amount => e
-    case e: CreditBalanceProtocol.CancelIncomingCreditConfirmed if index == 1 && phase == Phase.Compensate && e.txid.value == operationId && e.resource.value == resources(index) && e.amount == original.amount => e
+    case e: CreditBalanceEntity.ReserveFundsConfirmed if index == 0 && phase == Phase.Prepare && e.txid.value == operationId && e.resource.value == resources(index) && e.amount == original.amount => e
+    case e: CreditBalanceEntity.DeductFundsConfirmed if index == 0 && phase == Phase.Commit && e.txid.value == operationId && e.resource.value == resources(index) && e.amount == original.amount => e
+    case e: CreditBalanceEntity.ReleaseReservedFundsConfirmed if index == 0 && phase == Phase.Compensate && e.txid.value == operationId && e.resource.value == resources(index) && e.amount == original.amount => e
+    case e: CreditBalanceEntity.RecordIncomingCreditsConfirmed if index == 1 && phase == Phase.Prepare && e.txid.value == operationId && e.resource.value == resources(index) && e.amount == original.amount => e
+    case e: CreditBalanceEntity.CommitIncomingCreditsConfirmed if index == 1 && phase == Phase.Commit && e.txid.value == operationId && e.resource.value == resources(index) && e.amount == original.amount => e
+    case e: CreditBalanceEntity.CancelIncomingCreditConfirmed if index == 1 && phase == Phase.Compensate && e.txid.value == operationId && e.resource.value == resources(index) && e.amount == original.amount => e
   }
   private def orderEvidence(phase: Phase, events: Vector[Any]): Option[Product] = events.collectFirst {
-    case e: FundOrderProtocol.ReserveFundSubscriptionConfirmed if phase == Phase.Prepare && e.txid.value == operationId && e.resource == original.fundOrderId && e.amount == original.amount => e
-    case e: FundOrderProtocol.FundSubscriptionPaymentConfirmed if phase == Phase.Commit && e.txid.value == operationId && e.resource == original.fundOrderId && e.amount == original.amount => e
-    case e: FundOrderProtocol.CashFundSubscriptionCanceled if phase == Phase.Compensate && e.txid.value == operationId && e.resource == original.fundOrderId && e.amount == original.amount => e
+    case e: FundOrderEntity.ReserveFundSubscriptionConfirmed if phase == Phase.Prepare && e.txid.value == operationId && e.resource == original.fundOrderId && e.amount == original.amount => e
+    case e: FundOrderEntity.FundSubscriptionPaymentConfirmed if phase == Phase.Commit && e.txid.value == operationId && e.resource == original.fundOrderId && e.amount == original.amount => e
+    case e: FundOrderEntity.CashFundSubscriptionCanceled if phase == Phase.Compensate && e.txid.value == operationId && e.resource == original.fundOrderId && e.amount == original.amount => e
   }
   private def query(index: Int, phase: Phase, id: OperationIdentity): Future[Option[Product]] = {
     validate(id, index, phase)
     history(index).map(events => if (index == 2) orderEvidence(phase, events) else ledgerEvidence(index, phase, events))
   }
-  private def ledgerCommand(index: Int, phase: Phase): CreditBalanceProtocol.Command = {
+  private def ledgerCommand(index: Int, phase: Phase)(replyTo: ActorRef[CreditBalanceProtocol.Reply]): CreditBalanceProtocol.Command = {
     import CreditBalanceProtocol._
     val tx = TxId(operationId); val resource = AccountId(resources(index)); val amount = original.amount
     (index, phase) match {
-      case (0, Phase.Prepare) => ReserveFunds(tx, resource, amount)
-      case (0, Phase.Commit) => DeductFunds(tx, resource, amount)
-      case (0, Phase.Compensate) => ReleaseReservedFunds(tx, resource, amount)
-      case (1, Phase.Prepare) => RecordIncomingCredits(tx, resource, amount)
-      case (1, Phase.Commit) => CommitIncomingCredits(tx, resource, amount)
-      case (1, Phase.Compensate) => CancelIncomingCredit(tx, resource, amount)
+      case (0, Phase.Prepare) => ReserveFunds(tx, resource, amount, replyTo)
+      case (0, Phase.Commit) => DeductFunds(tx, resource, amount, replyTo)
+      case (0, Phase.Compensate) => ReleaseReservedFunds(tx, resource, amount, replyTo)
+      case (1, Phase.Prepare) => RecordIncomingCredits(tx, resource, amount, replyTo)
+      case (1, Phase.Commit) => CommitIncomingCredits(tx, resource, amount, replyTo)
+      case (1, Phase.Compensate) => CancelIncomingCredit(tx, resource, amount, replyTo)
       case _ => throw new IllegalArgumentException("unknown bank ledger participant")
     }
   }
-  private def orderCommand(phase: Phase): FundOrderProtocol.Command = phase match {
-    case Phase.Prepare => FundOrderProtocol.ReserveFundSubscription(TxId(operationId), original.fundOrderId, original.amount)
-    case Phase.Commit => FundOrderProtocol.ConfirmFundSubscriptionPayment(TxId(operationId), original.fundOrderId, original.amount)
-    case Phase.Compensate => FundOrderProtocol.CancelCashFundSubscription(TxId(operationId), original.fundOrderId, original.amount)
+  private def orderCommand(phase: Phase)(replyTo: ActorRef[FundOrderProtocol.Reply]): FundOrderProtocol.Command = phase match {
+    case Phase.Prepare => FundOrderProtocol.ReserveFundSubscription(TxId(operationId), original.fundOrderId, original.amount, replyTo)
+    case Phase.Commit => FundOrderProtocol.ConfirmFundSubscriptionPayment(TxId(operationId), original.fundOrderId, original.amount, replyTo)
+    case Phase.Compensate => FundOrderProtocol.CancelCashFundSubscription(TxId(operationId), original.fundOrderId, original.amount, replyTo)
   }
   private def send(index: Int, phase: Phase): Future[Either[String, Unit]] = if (index == 2) {
-    order.ask[FundOrderAggregate.Reply](reply => FundOrderAggregate.Execute(orderCommand(phase), reply)).map {
-      case FundOrderAggregate.Accepted(_) => Right(())
-      case FundOrderAggregate.Refused(code) => Left(code)
+    order.ask[FundOrderProtocol.Reply](orderCommand(phase)).map {
+      case FundOrderProtocol.Accepted(_) => Right(())
+      case FundOrderProtocol.Refused(code) => Left(code)
     }
-  } else ledger(index).ask[CreditBalanceAggregate.Reply](reply => CreditBalanceAggregate.Execute(ledgerCommand(index, phase), reply)).map {
-    case CreditBalanceAggregate.Accepted(_) => Right(())
-    case CreditBalanceAggregate.Refused(code) => Left(code)
+  } else ledger(index).ask[CreditBalanceProtocol.Reply](ledgerCommand(index, phase)).map {
+    case CreditBalanceProtocol.Accepted(_) => Right(())
+    case CreditBalanceProtocol.Refused(code) => Left(code)
   }
   private def execute(index: Int, phase: Phase, id: OperationIdentity): Future[Product] = {
     validate(id, index, phase)
@@ -136,7 +134,7 @@ final class BankPaymentBindings(
     } yield a.initialized && b.initialized && a.id == original.investorAccountId && b.id == original.fundCollectionAccountId &&
       o.id == original.fundOrderId && o.operationId == original.operationId && o.investorAccountId == a.id &&
       o.fundCollectionAccountId == b.id && o.fundCode == original.fundCode && o.amount == original.amount && events.exists {
-        case e: FundOrderProtocol.FundPurchaseSettlementRequested => e.operationId == original.operationId && e.fundOrderId == original.fundOrderId &&
+        case e: FundOrderEntity.FundPurchaseSettlementRequested => e.operationId == original.operationId && e.fundOrderId == original.fundOrderId &&
           e.investorAccountId == original.investorAccountId && e.fundCollectionAccountId == original.fundCollectionAccountId && e.fundCode == original.fundCode && e.amount == original.amount
         case _ => false
       }
@@ -160,16 +158,16 @@ final class BankPaymentBindings(
   private def deliver(kind: String, input: BankPaymentResult, context: CompletionContext): Future[Boolean] = {
     authority(kind, context.original, context).flatMap { actual =>
       require(actual == input, "completion result changed")
-      val command: FundOrderProtocol.Command = kind match {
-        case "succeeded" => FundOrderProtocol.RecordFundCashPaymentSucceeded(input.txid)
-        case "rejected-before-effects" => FundOrderProtocol.RecordFundCashPaymentRejectedBeforeEffects(input.txid)
-        case "compensated" => FundOrderProtocol.RecordFundCashPaymentCompensated(input.txid)
-        case "recovery-required" => FundOrderProtocol.RecordFundCashPaymentRecoveryRequired(input.txid)
-        case "outcome-unknown" => FundOrderProtocol.RecordFundCashPaymentOutcomeUnknown(input.txid)
+      val buildCommand: ActorRef[FundOrderProtocol.Reply] => FundOrderProtocol.Command = kind match {
+        case "succeeded" => FundOrderProtocol.RecordFundCashPaymentSucceeded(input.txid, _)
+        case "rejected-before-effects" => FundOrderProtocol.RecordFundCashPaymentRejectedBeforeEffects(input.txid, _)
+        case "compensated" => FundOrderProtocol.RecordFundCashPaymentCompensated(input.txid, _)
+        case "recovery-required" => FundOrderProtocol.RecordFundCashPaymentRecoveryRequired(input.txid, _)
+        case "outcome-unknown" => FundOrderProtocol.RecordFundCashPaymentOutcomeUnknown(input.txid, _)
       }
-      order.ask[FundOrderAggregate.Reply](reply => FundOrderAggregate.Execute(command, reply)).map {
-        case FundOrderAggregate.Accepted(_) => true
-        case FundOrderAggregate.Refused(_) => false
+      order.ask[FundOrderProtocol.Reply](buildCommand).map {
+        case FundOrderProtocol.Accepted(_) => true
+        case FundOrderProtocol.Refused(_) => false
       }
     }
   }
@@ -192,75 +190,75 @@ final class BankPaymentBindings(
     association = simple[BankPaymentOriginal, Boolean]("BankPaymentAssociation")(entry),
     reserveInvestorFundsPrepareExecute = operation[ReserveInvestorFundsPrepareInput, ReserveInvestorFundsPrepareReceipt]("ReserveInvestorFundsPrepareExecute") { (p, id) =>
       input(p.txid, p.resource.value, p.amount, 0)
-      execute(0, Phase.Prepare, id).map { case e: CreditBalanceProtocol.ReserveFundsConfirmed => ReserveInvestorFundsPrepareReceipt(TxId(id.transaction.transactionId), id.transaction.definitionVersion.toString, id.transaction.argsDigest, id.participantId, AccountId(id.resource), id.stepId, id.phase.toString.toLowerCase(java.util.Locale.ROOT), e.txid, e.resource, e.amount, e.currency, e.available); case _ => throw new IllegalStateException("wrong persisted phase event") }
+      execute(0, Phase.Prepare, id).map { case e: CreditBalanceEntity.ReserveFundsConfirmed => ReserveInvestorFundsPrepareReceipt(TxId(id.transaction.transactionId), id.transaction.definitionVersion.toString, id.transaction.argsDigest, id.participantId, AccountId(id.resource), id.stepId, id.phase.toString.toLowerCase(java.util.Locale.ROOT), e.txid, e.resource, e.amount, e.currency, e.available); case _ => throw new IllegalStateException("wrong persisted phase event") }
     },
     reserveInvestorFundsPrepareQuery = operation[ReserveInvestorFundsPrepareQuery, Option[ReserveInvestorFundsPrepareReceipt]]("ReserveInvestorFundsPrepareQueryPort") { (p, id) =>
       queryInput(p.transaction, p.definitionVersion, p.argsDigest, p.participant, p.resource.value, p.step, p.phase, id)
-      query(0, Phase.Prepare, id).map(_.map { case e: CreditBalanceProtocol.ReserveFundsConfirmed => ReserveInvestorFundsPrepareReceipt(TxId(id.transaction.transactionId), id.transaction.definitionVersion.toString, id.transaction.argsDigest, id.participantId, AccountId(id.resource), id.stepId, id.phase.toString.toLowerCase(java.util.Locale.ROOT), e.txid, e.resource, e.amount, e.currency, e.available); case _ => throw new IllegalStateException("wrong persisted phase event") })
+      query(0, Phase.Prepare, id).map(_.map { case e: CreditBalanceEntity.ReserveFundsConfirmed => ReserveInvestorFundsPrepareReceipt(TxId(id.transaction.transactionId), id.transaction.definitionVersion.toString, id.transaction.argsDigest, id.participantId, AccountId(id.resource), id.stepId, id.phase.toString.toLowerCase(java.util.Locale.ROOT), e.txid, e.resource, e.amount, e.currency, e.available); case _ => throw new IllegalStateException("wrong persisted phase event") })
     },
     reserveInvestorFundsCommitExecute = operation[ReserveInvestorFundsCommitInput, ReserveInvestorFundsCommitReceipt]("ReserveInvestorFundsCommitExecute") { (p, id) =>
       input(p.txid, p.resource.value, p.amount, 0)
-      execute(0, Phase.Commit, id).map { case e: CreditBalanceProtocol.DeductFundsConfirmed => ReserveInvestorFundsCommitReceipt(TxId(id.transaction.transactionId), id.transaction.definitionVersion.toString, id.transaction.argsDigest, id.participantId, AccountId(id.resource), id.stepId, id.phase.toString.toLowerCase(java.util.Locale.ROOT), e.txid, e.resource, e.amount); case _ => throw new IllegalStateException("wrong persisted phase event") }
+      execute(0, Phase.Commit, id).map { case e: CreditBalanceEntity.DeductFundsConfirmed => ReserveInvestorFundsCommitReceipt(TxId(id.transaction.transactionId), id.transaction.definitionVersion.toString, id.transaction.argsDigest, id.participantId, AccountId(id.resource), id.stepId, id.phase.toString.toLowerCase(java.util.Locale.ROOT), e.txid, e.resource, e.amount); case _ => throw new IllegalStateException("wrong persisted phase event") }
     },
     reserveInvestorFundsCommitQuery = operation[ReserveInvestorFundsCommitQuery, Option[ReserveInvestorFundsCommitReceipt]]("ReserveInvestorFundsCommitQueryPort") { (p, id) =>
       queryInput(p.transaction, p.definitionVersion, p.argsDigest, p.participant, p.resource.value, p.step, p.phase, id)
-      query(0, Phase.Commit, id).map(_.map { case e: CreditBalanceProtocol.DeductFundsConfirmed => ReserveInvestorFundsCommitReceipt(TxId(id.transaction.transactionId), id.transaction.definitionVersion.toString, id.transaction.argsDigest, id.participantId, AccountId(id.resource), id.stepId, id.phase.toString.toLowerCase(java.util.Locale.ROOT), e.txid, e.resource, e.amount); case _ => throw new IllegalStateException("wrong persisted phase event") })
+      query(0, Phase.Commit, id).map(_.map { case e: CreditBalanceEntity.DeductFundsConfirmed => ReserveInvestorFundsCommitReceipt(TxId(id.transaction.transactionId), id.transaction.definitionVersion.toString, id.transaction.argsDigest, id.participantId, AccountId(id.resource), id.stepId, id.phase.toString.toLowerCase(java.util.Locale.ROOT), e.txid, e.resource, e.amount); case _ => throw new IllegalStateException("wrong persisted phase event") })
     },
     reserveInvestorFundsCompensateExecute = operation[ReserveInvestorFundsCompensateInput, ReserveInvestorFundsCompensateReceipt]("ReserveInvestorFundsCompensateExecute") { (p, id) =>
       input(p.txid, p.resource.value, p.amount, 0)
-      execute(0, Phase.Compensate, id).map { case e: CreditBalanceProtocol.ReleaseReservedFundsConfirmed => ReserveInvestorFundsCompensateReceipt(TxId(id.transaction.transactionId), id.transaction.definitionVersion.toString, id.transaction.argsDigest, id.participantId, AccountId(id.resource), id.stepId, id.phase.toString.toLowerCase(java.util.Locale.ROOT), e.txid, e.resource, e.amount, e.currency, e.available); case _ => throw new IllegalStateException("wrong persisted phase event") }
+      execute(0, Phase.Compensate, id).map { case e: CreditBalanceEntity.ReleaseReservedFundsConfirmed => ReserveInvestorFundsCompensateReceipt(TxId(id.transaction.transactionId), id.transaction.definitionVersion.toString, id.transaction.argsDigest, id.participantId, AccountId(id.resource), id.stepId, id.phase.toString.toLowerCase(java.util.Locale.ROOT), e.txid, e.resource, e.amount, e.currency, e.available); case _ => throw new IllegalStateException("wrong persisted phase event") }
     },
     reserveInvestorFundsCompensateQuery = operation[ReserveInvestorFundsCompensateQuery, Option[ReserveInvestorFundsCompensateReceipt]]("ReserveInvestorFundsCompensateQueryPort") { (p, id) =>
       queryInput(p.transaction, p.definitionVersion, p.argsDigest, p.participant, p.resource.value, p.step, p.phase, id)
-      query(0, Phase.Compensate, id).map(_.map { case e: CreditBalanceProtocol.ReleaseReservedFundsConfirmed => ReserveInvestorFundsCompensateReceipt(TxId(id.transaction.transactionId), id.transaction.definitionVersion.toString, id.transaction.argsDigest, id.participantId, AccountId(id.resource), id.stepId, id.phase.toString.toLowerCase(java.util.Locale.ROOT), e.txid, e.resource, e.amount, e.currency, e.available); case _ => throw new IllegalStateException("wrong persisted phase event") })
+      query(0, Phase.Compensate, id).map(_.map { case e: CreditBalanceEntity.ReleaseReservedFundsConfirmed => ReserveInvestorFundsCompensateReceipt(TxId(id.transaction.transactionId), id.transaction.definitionVersion.toString, id.transaction.argsDigest, id.participantId, AccountId(id.resource), id.stepId, id.phase.toString.toLowerCase(java.util.Locale.ROOT), e.txid, e.resource, e.amount, e.currency, e.available); case _ => throw new IllegalStateException("wrong persisted phase event") })
     },
     creditFundCollectionPrepareExecute = operation[CreditFundCollectionPrepareInput, CreditFundCollectionPrepareReceipt]("CreditFundCollectionPrepareExecute") { (p, id) =>
       input(p.txid, p.resource.value, p.amount, 1)
-      execute(1, Phase.Prepare, id).map { case e: CreditBalanceProtocol.RecordIncomingCreditsConfirmed => CreditFundCollectionPrepareReceipt(TxId(id.transaction.transactionId), id.transaction.definitionVersion.toString, id.transaction.argsDigest, id.participantId, AccountId(id.resource), id.stepId, id.phase.toString.toLowerCase(java.util.Locale.ROOT), e.txid, e.resource, e.amount); case _ => throw new IllegalStateException("wrong persisted phase event") }
+      execute(1, Phase.Prepare, id).map { case e: CreditBalanceEntity.RecordIncomingCreditsConfirmed => CreditFundCollectionPrepareReceipt(TxId(id.transaction.transactionId), id.transaction.definitionVersion.toString, id.transaction.argsDigest, id.participantId, AccountId(id.resource), id.stepId, id.phase.toString.toLowerCase(java.util.Locale.ROOT), e.txid, e.resource, e.amount); case _ => throw new IllegalStateException("wrong persisted phase event") }
     },
     creditFundCollectionPrepareQuery = operation[CreditFundCollectionPrepareQuery, Option[CreditFundCollectionPrepareReceipt]]("CreditFundCollectionPrepareQueryPort") { (p, id) =>
       queryInput(p.transaction, p.definitionVersion, p.argsDigest, p.participant, p.resource.value, p.step, p.phase, id)
-      query(1, Phase.Prepare, id).map(_.map { case e: CreditBalanceProtocol.RecordIncomingCreditsConfirmed => CreditFundCollectionPrepareReceipt(TxId(id.transaction.transactionId), id.transaction.definitionVersion.toString, id.transaction.argsDigest, id.participantId, AccountId(id.resource), id.stepId, id.phase.toString.toLowerCase(java.util.Locale.ROOT), e.txid, e.resource, e.amount); case _ => throw new IllegalStateException("wrong persisted phase event") })
+      query(1, Phase.Prepare, id).map(_.map { case e: CreditBalanceEntity.RecordIncomingCreditsConfirmed => CreditFundCollectionPrepareReceipt(TxId(id.transaction.transactionId), id.transaction.definitionVersion.toString, id.transaction.argsDigest, id.participantId, AccountId(id.resource), id.stepId, id.phase.toString.toLowerCase(java.util.Locale.ROOT), e.txid, e.resource, e.amount); case _ => throw new IllegalStateException("wrong persisted phase event") })
     },
     creditFundCollectionCommitExecute = operation[CreditFundCollectionCommitInput, CreditFundCollectionCommitReceipt]("CreditFundCollectionCommitExecute") { (p, id) =>
       input(p.txid, p.resource.value, p.amount, 1)
-      execute(1, Phase.Commit, id).map { case e: CreditBalanceProtocol.CommitIncomingCreditsConfirmed => CreditFundCollectionCommitReceipt(TxId(id.transaction.transactionId), id.transaction.definitionVersion.toString, id.transaction.argsDigest, id.participantId, AccountId(id.resource), id.stepId, id.phase.toString.toLowerCase(java.util.Locale.ROOT), e.txid, e.resource, e.amount, e.currency, e.available); case _ => throw new IllegalStateException("wrong persisted phase event") }
+      execute(1, Phase.Commit, id).map { case e: CreditBalanceEntity.CommitIncomingCreditsConfirmed => CreditFundCollectionCommitReceipt(TxId(id.transaction.transactionId), id.transaction.definitionVersion.toString, id.transaction.argsDigest, id.participantId, AccountId(id.resource), id.stepId, id.phase.toString.toLowerCase(java.util.Locale.ROOT), e.txid, e.resource, e.amount, e.currency, e.available); case _ => throw new IllegalStateException("wrong persisted phase event") }
     },
     creditFundCollectionCommitQuery = operation[CreditFundCollectionCommitQuery, Option[CreditFundCollectionCommitReceipt]]("CreditFundCollectionCommitQueryPort") { (p, id) =>
       queryInput(p.transaction, p.definitionVersion, p.argsDigest, p.participant, p.resource.value, p.step, p.phase, id)
-      query(1, Phase.Commit, id).map(_.map { case e: CreditBalanceProtocol.CommitIncomingCreditsConfirmed => CreditFundCollectionCommitReceipt(TxId(id.transaction.transactionId), id.transaction.definitionVersion.toString, id.transaction.argsDigest, id.participantId, AccountId(id.resource), id.stepId, id.phase.toString.toLowerCase(java.util.Locale.ROOT), e.txid, e.resource, e.amount, e.currency, e.available); case _ => throw new IllegalStateException("wrong persisted phase event") })
+      query(1, Phase.Commit, id).map(_.map { case e: CreditBalanceEntity.CommitIncomingCreditsConfirmed => CreditFundCollectionCommitReceipt(TxId(id.transaction.transactionId), id.transaction.definitionVersion.toString, id.transaction.argsDigest, id.participantId, AccountId(id.resource), id.stepId, id.phase.toString.toLowerCase(java.util.Locale.ROOT), e.txid, e.resource, e.amount, e.currency, e.available); case _ => throw new IllegalStateException("wrong persisted phase event") })
     },
     creditFundCollectionCompensateExecute = operation[CreditFundCollectionCompensateInput, CreditFundCollectionCompensateReceipt]("CreditFundCollectionCompensateExecute") { (p, id) =>
       input(p.txid, p.resource.value, p.amount, 1)
-      execute(1, Phase.Compensate, id).map { case e: CreditBalanceProtocol.CancelIncomingCreditConfirmed => CreditFundCollectionCompensateReceipt(TxId(id.transaction.transactionId), id.transaction.definitionVersion.toString, id.transaction.argsDigest, id.participantId, AccountId(id.resource), id.stepId, id.phase.toString.toLowerCase(java.util.Locale.ROOT), e.txid, e.resource, e.amount); case _ => throw new IllegalStateException("wrong persisted phase event") }
+      execute(1, Phase.Compensate, id).map { case e: CreditBalanceEntity.CancelIncomingCreditConfirmed => CreditFundCollectionCompensateReceipt(TxId(id.transaction.transactionId), id.transaction.definitionVersion.toString, id.transaction.argsDigest, id.participantId, AccountId(id.resource), id.stepId, id.phase.toString.toLowerCase(java.util.Locale.ROOT), e.txid, e.resource, e.amount); case _ => throw new IllegalStateException("wrong persisted phase event") }
     },
     creditFundCollectionCompensateQuery = operation[CreditFundCollectionCompensateQuery, Option[CreditFundCollectionCompensateReceipt]]("CreditFundCollectionCompensateQueryPort") { (p, id) =>
       queryInput(p.transaction, p.definitionVersion, p.argsDigest, p.participant, p.resource.value, p.step, p.phase, id)
-      query(1, Phase.Compensate, id).map(_.map { case e: CreditBalanceProtocol.CancelIncomingCreditConfirmed => CreditFundCollectionCompensateReceipt(TxId(id.transaction.transactionId), id.transaction.definitionVersion.toString, id.transaction.argsDigest, id.participantId, AccountId(id.resource), id.stepId, id.phase.toString.toLowerCase(java.util.Locale.ROOT), e.txid, e.resource, e.amount); case _ => throw new IllegalStateException("wrong persisted phase event") })
+      query(1, Phase.Compensate, id).map(_.map { case e: CreditBalanceEntity.CancelIncomingCreditConfirmed => CreditFundCollectionCompensateReceipt(TxId(id.transaction.transactionId), id.transaction.definitionVersion.toString, id.transaction.argsDigest, id.participantId, AccountId(id.resource), id.stepId, id.phase.toString.toLowerCase(java.util.Locale.ROOT), e.txid, e.resource, e.amount); case _ => throw new IllegalStateException("wrong persisted phase event") })
     },
     reserveCashFundOrderPrepareExecute = operation[ReserveCashFundOrderPrepareInput, ReserveCashFundOrderPrepareReceipt]("ReserveCashFundOrderPrepareExecute") { (p, id) =>
       input(p.txid, p.resource.value, p.amount, 2)
-      execute(2, Phase.Prepare, id).map { case e: FundOrderProtocol.ReserveFundSubscriptionConfirmed => ReserveCashFundOrderPrepareReceipt(TxId(id.transaction.transactionId), id.transaction.definitionVersion.toString, id.transaction.argsDigest, id.participantId, FundOrderId(id.resource), id.stepId, id.phase.toString.toLowerCase(java.util.Locale.ROOT), e.txid, e.resource, e.amount); case _ => throw new IllegalStateException("wrong persisted phase event") }
+      execute(2, Phase.Prepare, id).map { case e: FundOrderEntity.ReserveFundSubscriptionConfirmed => ReserveCashFundOrderPrepareReceipt(TxId(id.transaction.transactionId), id.transaction.definitionVersion.toString, id.transaction.argsDigest, id.participantId, FundOrderId(id.resource), id.stepId, id.phase.toString.toLowerCase(java.util.Locale.ROOT), e.txid, e.resource, e.amount); case _ => throw new IllegalStateException("wrong persisted phase event") }
     },
     reserveCashFundOrderPrepareQuery = operation[ReserveCashFundOrderPrepareQuery, Option[ReserveCashFundOrderPrepareReceipt]]("ReserveCashFundOrderPrepareQueryPort") { (p, id) =>
       queryInput(p.transaction, p.definitionVersion, p.argsDigest, p.participant, p.resource.value, p.step, p.phase, id)
-      query(2, Phase.Prepare, id).map(_.map { case e: FundOrderProtocol.ReserveFundSubscriptionConfirmed => ReserveCashFundOrderPrepareReceipt(TxId(id.transaction.transactionId), id.transaction.definitionVersion.toString, id.transaction.argsDigest, id.participantId, FundOrderId(id.resource), id.stepId, id.phase.toString.toLowerCase(java.util.Locale.ROOT), e.txid, e.resource, e.amount); case _ => throw new IllegalStateException("wrong persisted phase event") })
+      query(2, Phase.Prepare, id).map(_.map { case e: FundOrderEntity.ReserveFundSubscriptionConfirmed => ReserveCashFundOrderPrepareReceipt(TxId(id.transaction.transactionId), id.transaction.definitionVersion.toString, id.transaction.argsDigest, id.participantId, FundOrderId(id.resource), id.stepId, id.phase.toString.toLowerCase(java.util.Locale.ROOT), e.txid, e.resource, e.amount); case _ => throw new IllegalStateException("wrong persisted phase event") })
     },
     reserveCashFundOrderCommitExecute = operation[ReserveCashFundOrderCommitInput, ReserveCashFundOrderCommitReceipt]("ReserveCashFundOrderCommitExecute") { (p, id) =>
       input(p.txid, p.resource.value, p.amount, 2)
-      execute(2, Phase.Commit, id).map { case e: FundOrderProtocol.FundSubscriptionPaymentConfirmed => ReserveCashFundOrderCommitReceipt(TxId(id.transaction.transactionId), id.transaction.definitionVersion.toString, id.transaction.argsDigest, id.participantId, FundOrderId(id.resource), id.stepId, id.phase.toString.toLowerCase(java.util.Locale.ROOT), e.txid, e.resource, e.amount); case _ => throw new IllegalStateException("wrong persisted phase event") }
+      execute(2, Phase.Commit, id).map { case e: FundOrderEntity.FundSubscriptionPaymentConfirmed => ReserveCashFundOrderCommitReceipt(TxId(id.transaction.transactionId), id.transaction.definitionVersion.toString, id.transaction.argsDigest, id.participantId, FundOrderId(id.resource), id.stepId, id.phase.toString.toLowerCase(java.util.Locale.ROOT), e.txid, e.resource, e.amount); case _ => throw new IllegalStateException("wrong persisted phase event") }
     },
     reserveCashFundOrderCommitQuery = operation[ReserveCashFundOrderCommitQuery, Option[ReserveCashFundOrderCommitReceipt]]("ReserveCashFundOrderCommitQueryPort") { (p, id) =>
       queryInput(p.transaction, p.definitionVersion, p.argsDigest, p.participant, p.resource.value, p.step, p.phase, id)
-      query(2, Phase.Commit, id).map(_.map { case e: FundOrderProtocol.FundSubscriptionPaymentConfirmed => ReserveCashFundOrderCommitReceipt(TxId(id.transaction.transactionId), id.transaction.definitionVersion.toString, id.transaction.argsDigest, id.participantId, FundOrderId(id.resource), id.stepId, id.phase.toString.toLowerCase(java.util.Locale.ROOT), e.txid, e.resource, e.amount); case _ => throw new IllegalStateException("wrong persisted phase event") })
+      query(2, Phase.Commit, id).map(_.map { case e: FundOrderEntity.FundSubscriptionPaymentConfirmed => ReserveCashFundOrderCommitReceipt(TxId(id.transaction.transactionId), id.transaction.definitionVersion.toString, id.transaction.argsDigest, id.participantId, FundOrderId(id.resource), id.stepId, id.phase.toString.toLowerCase(java.util.Locale.ROOT), e.txid, e.resource, e.amount); case _ => throw new IllegalStateException("wrong persisted phase event") })
     },
     reserveCashFundOrderCompensateExecute = operation[ReserveCashFundOrderCompensateInput, ReserveCashFundOrderCompensateReceipt]("ReserveCashFundOrderCompensateExecute") { (p, id) =>
       input(p.txid, p.resource.value, p.amount, 2)
-      execute(2, Phase.Compensate, id).map { case e: FundOrderProtocol.CashFundSubscriptionCanceled => ReserveCashFundOrderCompensateReceipt(TxId(id.transaction.transactionId), id.transaction.definitionVersion.toString, id.transaction.argsDigest, id.participantId, FundOrderId(id.resource), id.stepId, id.phase.toString.toLowerCase(java.util.Locale.ROOT), e.txid, e.resource, e.amount); case _ => throw new IllegalStateException("wrong persisted phase event") }
+      execute(2, Phase.Compensate, id).map { case e: FundOrderEntity.CashFundSubscriptionCanceled => ReserveCashFundOrderCompensateReceipt(TxId(id.transaction.transactionId), id.transaction.definitionVersion.toString, id.transaction.argsDigest, id.participantId, FundOrderId(id.resource), id.stepId, id.phase.toString.toLowerCase(java.util.Locale.ROOT), e.txid, e.resource, e.amount); case _ => throw new IllegalStateException("wrong persisted phase event") }
     },
     reserveCashFundOrderCompensateQuery = operation[ReserveCashFundOrderCompensateQuery, Option[ReserveCashFundOrderCompensateReceipt]]("ReserveCashFundOrderCompensateQueryPort") { (p, id) =>
       queryInput(p.transaction, p.definitionVersion, p.argsDigest, p.participant, p.resource.value, p.step, p.phase, id)
-      query(2, Phase.Compensate, id).map(_.map { case e: FundOrderProtocol.CashFundSubscriptionCanceled => ReserveCashFundOrderCompensateReceipt(TxId(id.transaction.transactionId), id.transaction.definitionVersion.toString, id.transaction.argsDigest, id.participantId, FundOrderId(id.resource), id.stepId, id.phase.toString.toLowerCase(java.util.Locale.ROOT), e.txid, e.resource, e.amount); case _ => throw new IllegalStateException("wrong persisted phase event") })
+      query(2, Phase.Compensate, id).map(_.map { case e: FundOrderEntity.CashFundSubscriptionCanceled => ReserveCashFundOrderCompensateReceipt(TxId(id.transaction.transactionId), id.transaction.definitionVersion.toString, id.transaction.argsDigest, id.participantId, FundOrderId(id.resource), id.stepId, id.phase.toString.toLowerCase(java.util.Locale.ROOT), e.txid, e.resource, e.amount); case _ => throw new IllegalStateException("wrong persisted phase event") })
     },
     succeededAuthority = completion[BankPaymentOriginal, BankPaymentResult]("BankPaymentSucceededAuthority")((input, context) => authority("succeeded", input, context)),
     succeededDelivery = completion[BankPaymentResult, Boolean]("BankPaymentSucceededDelivery")((input, context) => deliver("succeeded", input, context)),

@@ -4,7 +4,7 @@ import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
 import java.util.Base64
 import example.bankwealth.domain.entities.SipPlanEntity
-import example.bankwealth.domain.events.{SipPlanEvents => SipPlanProtocol}
+import example.bankwealth.domain.invariants.params.SipPlanRuleParams._
 import example.bankwealth.domain.services.SipPlanComputations
 import example.bankwealth.application.api._
 import example.bankwealth.application.projection._
@@ -17,7 +17,7 @@ object StableSipIdentity extends SipPlanComputations {
     ByteBuffer.allocate(4 + bytes.length).putInt(bytes.length).put(bytes).array()
   }
 
-  def StableSipOccurrence(state: SipPlanEntity.State, p: SipPlanProtocol.TriggerSipInstallment): SipOccurrence = {
+  def StableSipOccurrence(state: SipPlanEntity.State, p: TriggerSipInstallmentParams): SipOccurrence = {
     require(state.id.value.nonEmpty && p.revision.value.nonEmpty && p.dueSlot >= 0,
       "retained plan/revision/due-slot identity required")
     val bytes = component(state.id.value) ++ component(p.revision.value) ++ ByteBuffer.allocate(8).putLong(p.dueSlot).array()
