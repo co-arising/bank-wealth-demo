@@ -62,7 +62,8 @@ final class BankRecovery(directory: BankRuntimeDirectory, journal: BankJournal, 
       Future.traverse(pids)(pid => journal.readPb(pid)).flatMap { streams =>
         val rows = streams.flatten
         val refunds = rows.collect { case pb: FundOrderEventPO if pb.event.isFundPurchaseRefundRequested => DomainConverters.decodeFundPurchaseRefundRequestedPO(pb.event.fundPurchaseRefundRequested.get) }
-        val originals = rows.collect { case pb: FundOrderEventPO if pb.event.isCashRequestSourceRecorded => DomainConverters.decodeCashRequestSourceRecordedPO(pb.event.cashRequestSourceRecorded.get).original }
+        val admission = new BankTrustedAdmission(config)
+        val originals = rows.collect { case pb: FundOrderEventPO if pb.event.isCashRequestSourceRecorded => admission.toCashOriginal(DomainConverters.decodeCashRequestSourceRecordedPO(pb.event.cashRequestSourceRecorded.get).original) }
         val occurrences = rows.collect { case pb: SipPlanEventPO if pb.event.isSipInstallmentTriggered => DomainConverters.decodeSipInstallmentTriggeredPO(pb.event.sipInstallmentTriggered.get).occurrence }
         refunds.find(_.refundOperationId == key.operationId) match {
           case Some(r) =>

@@ -51,7 +51,12 @@ final class BankRecoveryLoop(journal: BankJournal, cash: BankCashRequests, ta: B
       if (closed.get()) Future.successful(pending)
       else {
         journal.readPb(pid).flatMap { rows =>
-          val originals = rows.collect { case pb: FundOrderEventPO if pb.event.isCashRequestSourceRecorded => DomainConverters.decodeCashRequestSourceRecordedPO(pb.event.cashRequestSourceRecorded.get).original }.distinct
+          val originals = rows.collect { case pb: FundOrderEventPO if pb.event.isCashRequestSourceRecorded =>
+            val s = DomainConverters.decodeCashRequestSourceRecordedPO(pb.event.cashRequestSourceRecorded.get).original
+            example.bankwealth.application.api.BankCashOriginal(s.principalId, s.clientRequestId, s.authorityVersion,
+              example.bankwealth.application.api.BankCashSubmit(s.clientRequestId, s.fundCode, DomainConverters.MoneyToWire(s.amount)),
+              example.bankwealth.application.api.BankPaymentOriginal(s.operationId, s.fundOrderId, s.investorAccountId, s.fundCollectionAccountId, s.fundCode, s.amount))
+          }.distinct
           val plans = rows.collect { case pb: SipPlanEventPO if pb.event.isSipCreateIntentRecorded => DomainConverters.decodeSipCreateIntentRecordedPO(pb.event.sipCreateIntentRecorded.get).intent.planId }.distinct
           val settlements = rows.collect { case pb: FundOrderEventPO if pb.event.isFundPurchaseSettlementRequested => DomainConverters.decodeFundPurchaseSettlementRequestedPO(pb.event.fundPurchaseSettlementRequested.get) }.distinct
           val refunds = rows.collect { case pb: FundOrderEventPO if pb.event.isFundPurchaseRefundRequested => DomainConverters.decodeFundPurchaseRefundRequestedPO(pb.event.fundPurchaseRefundRequested.get) }.distinct
@@ -59,10 +64,10 @@ final class BankRecoveryLoop(journal: BankJournal, cash: BankCashRequests, ta: B
           for {
             cashResults <- Future.traverse(originals)(o => attempt(cash.resumePersisted(o)))
             sipResults <- Future.traverse(plans)(p => attempt(sip.recoverExisting(p)))
-            paymentResults <- Future.traverse(settlements)(s => attempt(recovery.resumePayment(example.bankwealth.domain.values.BankPaymentOriginal(
+            paymentResults <- Future.traverse(settlements)(s => attempt(recovery.resumePayment(example.bankwealth.application.api.BankPaymentOriginal(
               s.operationId, s.fundOrderId, s.investorAccountId, s.fundCollectionAccountId, s.fundCode, s.amount))))
             taResults <- Future.traverse(orders)(o => attempt(ta.resumeExisting(o)))
-            refundResults <- Future.traverse(refunds)(r => attempt(recovery.resumeRefund(example.bankwealth.domain.values.BankRefundOriginal(
+            refundResults <- Future.traverse(refunds)(r => attempt(recovery.resumeRefund(example.bankwealth.application.api.BankRefundOriginal(
               r.fundOrderId, r.paymentTxId, r.investorAccountId, r.fundCollectionAccountId, r.amount, r.refundOperationId))))
           } yield if ((cashResults ++ sipResults ++ paymentResults ++ taResults ++ refundResults).forall(identity)) pending else pending :+ pid
         }.recover { case NonFatal(_) => pending :+ pid }

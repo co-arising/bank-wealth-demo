@@ -36,8 +36,8 @@ payload:
       "terminalReceiptBodies: \"Map[String, String]\" = []",
       "successTotal: Long = \"0\"",
       "failureTotal: Long = \"0\"",
-      "createIntent: \"Option[BankSipCreateIntent]\" = {\"present\":false,\"value\":null}",
-      "sipCreateIntents: \"Map[String, BankSipCreateIntent]\" = []",
+      "createIntent: \"Option[SipPlanOrigination]\" = {\"present\":false,\"value\":null}",
+      "sipCreateIntents: \"Map[String, SipPlanOrigination]\" = []",
       "createIntentDueSlots: \"Vector[Long]\" = []",
       "intentAppendedDueSlots: \"Map[Long, Long]\" = []"
     ],

@@ -119,11 +119,11 @@ final class BankTaRefundApplication(directory: BankRuntimeDirectory, journal: Ba
     active(); handle.ref.ask[FundOrderEntity.State](FundOrderProtocol.GetState)
   }
   private def paid(s: FundOrderEntity.State, events: Vector[Any]): Unit = {
-    s.cashRequestSource.foreach { original =>
-      admission.validateCash(original)
-      require(original.payment.fundOrderId == s.id && original.payment.operationId == s.operationId &&
-        original.payment.investorAccountId == s.investorAccountId && original.payment.fundCollectionAccountId == s.fundCollectionAccountId &&
-        original.payment.fundCode == s.fundCode && original.payment.amount == s.amount, "retained cash source differs from paid order")
+    s.cashRequestSource.foreach { source =>
+      admission.validateCashSource(source)
+      require(source.fundOrderId == s.id && source.operationId == s.operationId &&
+        source.investorAccountId == s.investorAccountId && source.fundCollectionAccountId == s.fundCollectionAccountId &&
+        source.fundCode == s.fundCode && source.amount == s.amount, "retained cash source differs from paid order")
     }
     require(config.principals.exists(p => p.roles.contains("customer") && p.accountId == s.investorAccountId) &&
       config.fund(s.fundCode).exists(_.collectionAccountId == s.fundCollectionAccountId), "paid order is outside trusted bank configuration")

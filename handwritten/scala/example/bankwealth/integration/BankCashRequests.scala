@@ -28,13 +28,14 @@ final class BankCashRequests(directory: BankRuntimeDirectory, config: BankDemoCo
   def submit(principal: Principal, request: BankCashSubmit): Future[Outcome[BankCashAcknowledgement]] = admission.cash(principal, request) match {
     case Left(error) => Future.successful(Left(error))
     case Right(original) =>
+      val source = admission.toCashSource(original)
       directory.order(original.payment.fundOrderId).flatMap { handle =>
-        handle.ref.ask[FundOrderProtocol.Reply](FundOrderProtocol.RecordCashRequestSource(original, Some(original), _)).flatMap {
+        handle.ref.ask[FundOrderProtocol.Reply](FundOrderProtocol.RecordCashRequestSource(source, Some(source), _)).flatMap {
           case _: FundOrderProtocol.Refused => Future.successful(Left(RequestConflict))
           case _: FundOrderProtocol.Accepted =>
             handle.ref.ask[FundOrderEntity.State](FundOrderProtocol.GetState).flatMap { state =>
-              require(state.cashRequestSource.contains(original), "accepted original source was not retained")
-              admission.validateCash(state.cashRequestSource.get)
+              require(state.cashRequestSource.contains(source), "accepted original source was not retained")
+              admission.validateCashSource(state.cashRequestSource.get)
               start(original.payment).map(_.map(_ => BankCashAcknowledgement(original, "accepted")))
             }
         }
@@ -51,8 +52,11 @@ final class BankCashRequests(directory: BankRuntimeDirectory, config: BankDemoCo
           case Right(orderId) => directory.order(orderId).flatMap(_.ref.ask[FundOrderEntity.State](FundOrderProtocol.GetState)).map { state =>
             state.cashRequestSource match {
               case None => Left(MissingResource)
-              case Some(original) if original.principalId != customer.id || original.clientRequestId != clientRequestId => Left(NotAuthorized)
-              case Some(original) => admission.validateCash(original); Right(original)
+              case Some(source) if source.principalId != customer.id || source.clientRequestId != clientRequestId => Left(NotAuthorized)
+              case Some(source) =>
+                val original = admission.toCashOriginal(source)
+                admission.validateCash(original)
+                Right(original)
             }
           }.recover { case NonFatal(_) => Left(Unavailable) }
         }
@@ -61,8 +65,9 @@ final class BankCashRequests(directory: BankRuntimeDirectory, config: BankDemoCo
 
   def resumePersisted(original: BankCashOriginal): Future[Outcome[BankPaymentOriginal]] = {
     admission.validateCash(original)
+    val expected = admission.toCashSource(original)
     directory.order(original.payment.fundOrderId).flatMap(_.ref.ask[FundOrderEntity.State](FundOrderProtocol.GetState)).flatMap { state =>
-      require(state.cashRequestSource.contains(original), "recovery requires retained full original source")
+      require(state.cashRequestSource.contains(expected), "recovery requires retained full original source")
       start(original.payment)
     }.recover { case NonFatal(_) => Left(Unavailable) }
   }

@@ -57,20 +57,22 @@ final class BankReadside(journal: BankJournal, config: BankDemoConfiguration, da
   private val ownership = new BankJournalReadsideDomain.Ownership {
     def account(r: Row, next: CreditBalanceEntity.State): (Option[String], Option[String]) = (Some(r.resource), None)
     def order(r: Row, next: FundOrderEntity.State): (Option[String], Option[String]) = {
+      val admission = new BankTrustedAdmission(config)
       next.cashRequestSource.foreach { source =>
-        require(source.payment.fundOrderId.value == r.resource, "cash source identity mismatch")
-        new BankTrustedAdmission(config).validateCash(source)
+        require(source.fundOrderId.value == r.resource, "cash source identity mismatch")
+        admission.validateCashSource(source)
       }
-      val owner = next.cashRequestSource.map(_.payment.investorAccountId.value).orElse(text(next.investorAccountId.value))
+      val owner = next.cashRequestSource.map(_.investorAccountId.value).orElse(text(next.investorAccountId.value))
       val principal = next.cashRequestSource.map(_.principalId)
       require(r.account.isEmpty || owner.isEmpty || r.account == owner, "order owner conflict")
       require(r.principal.isEmpty || principal.isEmpty || r.principal == principal, "order principal conflict")
       (owner.orElse(r.account), principal.orElse(r.principal))
     }
     def plan(r: Row, next: SipPlanEntity.State): (Option[String], Option[String]) = {
+      val admission = new BankTrustedAdmission(config)
       next.createIntent.foreach { source =>
         require(source.planId.value == r.resource, "SIP intent identity mismatch")
-        new BankTrustedAdmission(config).validateSip(source)
+        admission.validateSipOrigination(source)
       }
       val owner = next.createIntent.map(_.config.investorAccountId.value)
         .orElse(next.revisions.get(next.latestRevision).map(_.investorAccountId.value))
@@ -119,7 +121,7 @@ final class BankReadside(journal: BankJournal, config: BankDemoConfiguration, da
   private def indexes(c: Session, r: Row): Unit = r.kind match {
     case "order" =>
       val s = orderState(r)
-      val op = text(s.operationId.value).map(OperationId.apply).orElse(s.cashRequestSource.map(_.payment.operationId))
+      val op = text(s.operationId.value).map(OperationId.apply).orElse(s.cashRequestSource.map(_.operationId))
       op.foreach { operation =>
         val payment = paymentStatus(s)
         if (!Set("succeeded", "rejected-before-effects", "compensated")(payment))
@@ -179,7 +181,7 @@ final class BankReadside(journal: BankJournal, config: BankDemoConfiguration, da
   }
   private def orderView(r: Row): Option[BankOrderView] = {
     val s = orderState(r)
-    val source = s.cashRequestSource.map(_.payment)
+    val source = s.cashRequestSource
     val op = text(s.operationId.value).map(OperationId.apply).orElse(source.map(_.operationId))
     val investor = text(s.investorAccountId.value).map(AccountId.apply).orElse(source.map(_.investorAccountId))
     val collection = text(s.fundCollectionAccountId.value).map(AccountId.apply).orElse(source.map(_.fundCollectionAccountId))
@@ -194,7 +196,8 @@ final class BankReadside(journal: BankJournal, config: BankDemoConfiguration, da
   }
   private def planView(r: Row): BankSipPlanView = {
     val s = planState(r)
-    BankSipPlanView(PlanId(r.resource), s.createIntent, s.initialized, s.scheduleSealed, s.paused, s.currentTick,
+    val admission = new BankTrustedAdmission(config)
+    BankSipPlanView(PlanId(r.resource), s.createIntent.map(admission.toSipCreateIntent), s.initialized, s.scheduleSealed, s.paused, s.currentTick,
       s.slots.toVector.sortBy(_._1).map(_._2), s.revisions.values.toVector.sortBy(x => (x.effectiveSlot, x.revision.value))
         .map(x => BankSipRevisionView(x, s.revisionEnds.get(x.revision))),
       s.scheduleCount, s.observedCount, s.startCount, s.successTotal, s.failureTotal)
@@ -216,9 +219,10 @@ final class BankReadside(journal: BankJournal, config: BankDemoConfiguration, da
     val r = owned(c, pid, who)
     val view = r.flatMap { x =>
       val s = orderState(x)
-      s.cashRequestSource.map { original =>
-        require(original.principalId == who.id && original.clientRequestId == key.clientRequestId, "cash source ownership mismatch")
-        BankCashRequestView(original, paymentStatus(s), taStatus(s), refundStatus(s))
+      val admission = new BankTrustedAdmission(config)
+      s.cashRequestSource.map { source =>
+        require(source.principalId == who.id && source.clientRequestId == key.clientRequestId, "cash source ownership mismatch")
+        BankCashRequestView(admission.toCashOriginal(source), paymentStatus(s), taStatus(s), refundStatus(s))
       }
     }
     BankCashRequestResponse(metadata(r.toVector, absent = view.isEmpty), view)

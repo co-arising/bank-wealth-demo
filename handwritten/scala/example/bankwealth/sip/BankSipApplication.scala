@@ -68,9 +68,10 @@ final class BankSipApplication(directory: BankRuntimeDirectory, journal: BankJou
   private def original(pid: String): Future[Option[BankSipCreateIntent]] = journal.readPb(pid).map { events =>
     val intents = events.collect { case raw: SipPlanEventPO => DomainConverters.decodeSipPlanEventPO(raw) }.collect {
       case event: SipPlanEntity.SipCreateIntentRecorded =>
-        validateIntent(event.intent)
+        val intent = admission.toSipCreateIntent(event.intent)
+        validateIntent(intent)
         check(event.source.contains(event.intent) && pid == ids.plan(event.intent.planId))
-        event.intent
+        intent
     }
     check(intents.distinct.size <= 1)
     intents.headOption
@@ -96,7 +97,8 @@ final class BankSipApplication(directory: BankRuntimeDirectory, journal: BankJou
   private def validatePrefix(s: SipPlanEntity.State, intent: BankSipCreateIntent): Unit = {
     validateIntent(intent)
     val due = intent.request.dueSlots
-    check(s.id == intent.planId && s.createIntent.contains(intent) && s.sipCreateIntents.get("original").contains(intent))
+    val expected = admission.toSipOrigination(intent)
+    check(s.id == intent.planId && s.createIntent.contains(expected) && s.sipCreateIntents.get("original").contains(expected))
     check(s.createIntentDueSlots == due && s.scheduleCount >= 0L && s.scheduleCount <= due.size.toLong)
     val prefix = due.take(s.scheduleCount.toInt).zipWithIndex.map { case (slot, position) => position.toLong -> slot }.toMap
     check(s.slots == prefix && s.intentAppendedDueSlots == prefix.map { case (position, slot) => slot -> position })
@@ -133,7 +135,8 @@ final class BankSipApplication(directory: BankRuntimeDirectory, journal: BankJou
       case Left(error) => reject(error)
       case Right(intent) => for {
         h <- handle(intent)
-        _ <- execute(h, SipPlanProtocol.RecordSipCreateIntent(intent, Some(intent), _))
+        origination = admission.toSipOrigination(intent)
+        _ <- execute(h, SipPlanProtocol.RecordSipCreateIntent(origination, Some(origination), _))
         persisted <- original(h.persistenceId)
         _ = check(persisted.contains(intent))
         _ <- restoreSchedule(h, intent)

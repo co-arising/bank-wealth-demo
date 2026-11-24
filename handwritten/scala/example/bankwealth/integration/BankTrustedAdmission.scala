@@ -68,5 +68,26 @@ final class BankTrustedAdmission(config: BankDemoConfiguration) {
     require(due != null && due.nonEmpty && due.size <= 1024 && intent.request.effectiveSlot >= 0)
     require(due.forall(_ >= intent.request.effectiveSlot) && due.sliding(2).forall(pair => pair.size < 2 || pair.head < pair.last), "finite strictly increasing complete schedule required")
   }
+  def toCashSource(original: BankCashOriginal): CashPurchaseSource =
+    CashPurchaseSource(original.principalId, original.clientRequestId, original.authorityVersion,
+      original.payment.operationId, original.payment.fundOrderId, original.payment.investorAccountId,
+      original.payment.fundCollectionAccountId, original.payment.fundCode, original.payment.amount)
+  def toCashOriginal(source: CashPurchaseSource): BankCashOriginal = {
+    val submit = BankCashSubmit(source.clientRequestId, source.fundCode, DomainConverters.MoneyToWire(source.amount))
+    val payment = BankPaymentOriginal(source.operationId, source.fundOrderId, source.investorAccountId,
+      source.fundCollectionAccountId, source.fundCode, source.amount)
+    BankCashOriginal(source.principalId, source.clientRequestId, source.authorityVersion, submit, payment)
+  }
+  def toSipOrigination(intent: BankSipCreateIntent): SipPlanOrigination =
+    SipPlanOrigination(intent.principalId, intent.clientRequestId, intent.authorityVersion,
+      intent.planId, intent.config, intent.request.dueSlots)
+  def toSipCreateIntent(origination: SipPlanOrigination): BankSipCreateIntent = {
+    val request = BankSipCreate(origination.clientRequestId, origination.config.fundCode,
+      DomainConverters.MoneyToWire(origination.config.amount), origination.config.effectiveSlot, origination.dueSlots)
+    BankSipCreateIntent(origination.principalId, origination.clientRequestId, origination.authorityVersion,
+      request, origination.planId, origination.config)
+  }
+  def validateCashSource(source: CashPurchaseSource): Unit = validateCash(toCashOriginal(source))
+  def validateSipOrigination(origination: SipPlanOrigination): Unit = validateSip(toSipCreateIntent(origination))
   private def checked[A](body: => A): Outcome[A] = try Right(body) catch { case NonFatal(_) => Left(InvalidRequest) }
 }
