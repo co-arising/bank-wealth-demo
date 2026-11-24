@@ -5,7 +5,10 @@ import example.bankwealth.application.{BankCashPaymentExecution => Cash, BankInd
   BankTaSubmissionExecution => Ta, BankSipDispatchExecution => SipDispatch,
   BankPaymentHost => PaymentHost, BankRefundHost => RefundHost,
   BankTaEffectHost => TaHost, BankSipDispatchEffectHost => SipHost}
-import example.bankwealth.domain._
+import example.bankwealth.application.aggregates.{CreditBalanceAggregate, FundOrderAggregate, SipPlanAggregate}
+import example.bankwealth.domain.entities.{CreditBalanceEntity, FundOrderEntity, SipPlanEntity}
+import example.bankwealth.domain.events.{CreditBalanceEvents => CreditBalanceProtocol, FundOrderEvents => FundOrderProtocol, SipPlanEvents => SipPlanProtocol}
+import example.bankwealth.domain.services.{CreditBalanceComputations, FundOrderComputations, SipPlanComputations}
 import example.bankwealth.domain.values._
 import net.imadz.infra.saga.strict.StrictSagaCoordinator
 import net.imadz.monarch.persistence.PersistentMonarch

@@ -4,9 +4,11 @@ import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.util.Timeout
 import com.fasterxml.jackson.databind.{JsonNode, ObjectMapper}
-import example.bankwealth.domain.{FundOrderAggregate, FundOrderProtocol, FundOrderState}
+import example.bankwealth.application.aggregates.FundOrderAggregate
+import example.bankwealth.domain.entities.FundOrderEntity
+import example.bankwealth.domain.events.{FundOrderEvents => FundOrderProtocol}
 import example.bankwealth.domain.values._
-import example.bankwealth.infrastructure.serialization.DomainConverters
+import example.bankwealth.infrastructure.persistence.converters.DomainConverters
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
 import scala.jdk.CollectionConverters._
@@ -15,7 +17,7 @@ final class BankTaBridge(order: ActorRef[FundOrderAggregate.Request], ta: MockTA
   private val mapper = new ObjectMapper()
   implicit private val ec: ExecutionContext = system.executionContext
   implicit private val timeout: Timeout = Timeout(3.seconds)
-  private def state(): Future[FundOrderState] = order.ask[FundOrderState](FundOrderAggregate.GetState)
+  private def state(): Future[FundOrderEntity.State] = order.ask[FundOrderEntity.State](FundOrderAggregate.GetState)
   private def execute(command: FundOrderProtocol.Command): Future[Unit] =
     order.ask[FundOrderAggregate.Reply](reply => FundOrderAggregate.Execute(command, reply)).map {
       case FundOrderAggregate.Accepted(_) => ()
@@ -33,9 +35,9 @@ final class BankTaBridge(order: ActorRef[FundOrderAggregate.Request], ta: MockTA
     require(value.matches("(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?") && value.exists(c => c >= '1' && c <= '9'), "positive exact TA decimal text required")
     TaExactText(value)
   }
-  private def paid(s: FundOrderState): Unit =
+  private def paid(s: FundOrderEntity.State): Unit =
     require(s.selectedPaymentTxId.value.nonEmpty && s.cashPaymentFinalResults.get(s.selectedPaymentTxId).contains("succeeded"), "TA requires guarded payment success")
-  private def request(s: FundOrderState, scenario: String): JsonNode = {
+  private def request(s: FundOrderEntity.State, scenario: String): JsonNode = {
     paid(s); require(s.taRequestId.value.nonEmpty, "durable TA request identity required")
     val wire = DomainConverters.MoneyToWire(s.amount)
     val result = mapper.createObjectNode().put("requestId", s.taRequestId.value).put("orderId", s.id.value)
@@ -99,10 +101,10 @@ final class BankTaBridge(order: ActorRef[FundOrderAggregate.Request], ta: MockTA
         "durable independent refund intent missing or changed")
     } yield refundOriginal(retained)
   }
-  private def refundOriginal(s: FundOrderState): BankRefundOriginal =
+  private def refundOriginal(s: FundOrderEntity.State): BankRefundOriginal =
     BankRefundOriginal(s.id, s.selectedPaymentTxId, s.investorAccountId, s.fundCollectionAccountId, s.amount, s.refundOperationId)
 
-  private def responseAssociation(response: JsonNode, s: FundOrderState): Unit = {
+  private def responseAssociation(response: JsonNode, s: FundOrderEntity.State): Unit = {
     require(response != null && response.isObject && text(response, "requestId") == s.taRequestId.value &&
       response.path("canonicalReceipts").isArray, "complete same-request authoritative TA response required")
     val original = response.get("request")
@@ -129,7 +131,7 @@ final class BankTaBridge(order: ActorRef[FundOrderAggregate.Request], ta: MockTA
       _ <- execute(command(decoded))
     } yield ()
   }
-  private def decode(receipt: JsonNode, s: FundOrderState): TaReceipt = {
+  private def decode(receipt: JsonNode, s: FundOrderEntity.State): TaReceipt = {
     val outcome = text(receipt, "outcome")
     require(Set("accepted", "confirmed", "rejected", "unknown")(outcome), "unknown TA outcome")
     val base = Set("receiptId", "requestId", "orderId", "paymentTxId", "taReference", "investorAccountId", "fundCollectionAccountId", "fundCode", "amount", "outcome", "businessTick")

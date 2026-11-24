@@ -1,7 +1,7 @@
 package example.bankwealth.integration
 
 import example.bankwealth.domain.values._
-import example.bankwealth.service.BankServiceService.{Bindings, Endpoint, Outcome, Principal}
+import example.bankwealth.infrastructure.bootstrap.BankServiceContract.{Bindings, Endpoint, Outcome, Principal}
 import play.api.libs.json.{Reads, Writes}
 import scala.concurrent.Future
 

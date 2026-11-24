@@ -3,15 +3,19 @@ package example.bankwealth.readside
 import akka.NotUsed
 import akka.actor.typed.ActorSystem
 import akka.stream.scaladsl.Source
-import example.bankwealth.domain._
+import example.bankwealth.application.aggregates.{CreditBalanceAggregate, FundOrderAggregate, SipPlanAggregate}
+import example.bankwealth.domain.entities.{CreditBalanceEntity, FundOrderEntity, SipPlanEntity}
+import example.bankwealth.domain.events.{CreditBalanceEvents => CreditBalanceProtocol, FundOrderEvents => FundOrderProtocol, SipPlanEvents => SipPlanProtocol}
+import example.bankwealth.domain.services.{CreditBalanceComputations, FundOrderComputations, SipPlanComputations}
 import example.bankwealth.domain.values._
 import example.bankwealth.infrastructure.proto.SipOccurrencePO
-import example.bankwealth.infrastructure.serialization.DomainConverters
-import example.bankwealth.infrastructure.projection.{BankJournalReadsideDomain, BankJournalReadsideProjection, BankJournalReadsideRepository}
-import example.bankwealth.infrastructure.projection.BankJournalReadsideRepository.{Row, State, Pending, Occurrence, hash}
+import example.bankwealth.infrastructure.persistence.converters.DomainConverters
+import example.bankwealth.application.projection.{BankJournalReadsideDomain, BankJournalReadsideProjection}
+import example.bankwealth.infrastructure.repositories.projection.BankJournalReadsideRepository
+import example.bankwealth.infrastructure.repositories.projection.BankJournalReadsideRepository.{Row, State, Pending, Occurrence, hash}
 import example.bankwealth.integration._
 import example.bankwealth.security.{BankDemoConfiguration, BankDemoPrincipal}
-import example.bankwealth.service.BankServiceService._
+import example.bankwealth.infrastructure.bootstrap.BankServiceContract._
 import javax.sql.DataSource
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
@@ -50,8 +54,8 @@ final class BankReadside(journal: BankJournal, config: BankDemoConfiguration, da
   }
 
   private val ownership = new BankJournalReadsideDomain.Ownership {
-    def account(r: Row, next: CreditBalanceState): (Option[String], Option[String]) = (Some(r.resource), None)
-    def order(r: Row, next: FundOrderState): (Option[String], Option[String]) = {
+    def account(r: Row, next: CreditBalanceEntity.State): (Option[String], Option[String]) = (Some(r.resource), None)
+    def order(r: Row, next: FundOrderEntity.State): (Option[String], Option[String]) = {
       next.cashRequestSource.foreach { source =>
         require(source.payment.fundOrderId.value == r.resource, "cash source identity mismatch")
         new BankTrustedAdmission(config).validateCash(source)
@@ -62,7 +66,7 @@ final class BankReadside(journal: BankJournal, config: BankDemoConfiguration, da
       require(r.principal.isEmpty || principal.isEmpty || r.principal == principal, "order principal conflict")
       (owner.orElse(r.account), principal.orElse(r.principal))
     }
-    def plan(r: Row, next: SipPlanState): (Option[String], Option[String]) = {
+    def plan(r: Row, next: SipPlanEntity.State): (Option[String], Option[String]) = {
       next.createIntent.foreach { source =>
         require(source.planId.value == r.resource, "SIP intent identity mismatch")
         new BankTrustedAdmission(config).validateSip(source)
@@ -97,14 +101,14 @@ final class BankReadside(journal: BankJournal, config: BankDemoConfiguration, da
   def shutdown(): Future[Unit] = projection.shutdown()
   def close(): Unit = projection.close()
 
-  private def accountState(r: Row): CreditBalanceState = BankJournalReadsideDomain.accountState(r)
-  private def orderState(r: Row): FundOrderState = BankJournalReadsideDomain.orderState(r)
-  private def planState(r: Row): SipPlanState = BankJournalReadsideDomain.planState(r)
+  private def accountState(r: Row): CreditBalanceEntity.State = BankJournalReadsideDomain.accountState(r)
+  private def orderState(r: Row): FundOrderEntity.State = BankJournalReadsideDomain.orderState(r)
+  private def planState(r: Row): SipPlanEntity.State = BankJournalReadsideDomain.planState(r)
   private def text(value: String): Option[String] = Option(value).filter(_.nonEmpty)
-  private def paymentStatus(s: FundOrderState): String = s.cashPaymentFinalResults.get(s.selectedPaymentTxId)
+  private def paymentStatus(s: FundOrderEntity.State): String = s.cashPaymentFinalResults.get(s.selectedPaymentTxId)
     .orElse(text(s.paymentOutcome)).getOrElse(if (s.status == "new") "intent-recorded" else s.status)
-  private def taStatus(s: FundOrderState): String = text(s.taStatus).getOrElse("not-submitted")
-  private def refundStatus(s: FundOrderState): String = text(s.refundOutcome)
+  private def taStatus(s: FundOrderEntity.State): String = text(s.taStatus).getOrElse("not-submitted")
+  private def refundStatus(s: FundOrderEntity.State): String = text(s.refundOutcome)
     .getOrElse(if (s.taStatus == "rejected" && paymentStatus(s) == "succeeded") "refund-in-progress" else "not-required")
 
   private def pendingPut(c: Session, value: BankPendingOperationView, pid: String): Unit =

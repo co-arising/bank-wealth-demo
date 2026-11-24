@@ -4,7 +4,8 @@ import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.util.Timeout
 import example.bankwealth.application.{BankTaEffectHost => Host, BankTaSubmissionExecution => Execution}
-import example.bankwealth.domain.{FundOrderAggregate, FundOrderState}
+import example.bankwealth.application.aggregates.FundOrderAggregate
+import example.bankwealth.domain.entities.FundOrderEntity
 import example.bankwealth.domain.values._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
@@ -57,11 +58,11 @@ final class BankTaEffectBindings(order: ActorRef[FundOrderAggregate.Request], cl
     "complete trusted TA effect binding required")
   implicit private val ec: ExecutionContext = system.executionContext
   implicit private val timeout: Timeout = Timeout(3.seconds)
-  private def verify(operation: BankTaEffectOperation): Future[FundOrderState] = {
+  private def verify(operation: BankTaEffectOperation): Future[FundOrderEntity.State] = {
     val request = operation.request
     val parent = Execution.State(Execution.Inputs(request.taRequestId, request.fundOrderId, request.paymentTxId))
     require(operation.operation == Host.operationIdentity(parent), "TA effect operation identity mismatch")
-    order.ask[FundOrderState](FundOrderAggregate.GetState).map { state =>
+    order.ask[FundOrderEntity.State](FundOrderAggregate.GetState).map { state =>
       require(state.id == request.fundOrderId && state.selectedPaymentTxId == request.paymentTxId && state.taRequestId == request.taRequestId &&
         state.cashPaymentFinalResults.get(request.paymentTxId).contains("succeeded"), "TA effect requires exact retained paid request")
       state

@@ -1,6 +1,8 @@
 package example.bankwealth.bindings
 
-import example.bankwealth.domain.{FundOrderComputations, FundOrderProtocol, FundOrderState}
+import example.bankwealth.domain.entities.FundOrderEntity
+import example.bankwealth.domain.events.{FundOrderEvents => FundOrderProtocol}
+import example.bankwealth.domain.services.FundOrderComputations
 import example.bankwealth.domain.values.{OperationId, TaRequestId}
 import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
@@ -15,8 +17,8 @@ object StableOrderIdentity extends FundOrderComputations {
     }
     Base64.getUrlEncoder.withoutPadding.encodeToString(bytes)
   }
-  def StableTaRequestId(state: FundOrderState, p: FundOrderProtocol.RegisterFundTASubmission): TaRequestId =
+  def StableTaRequestId(state: FundOrderEntity.State, p: FundOrderProtocol.RegisterFundTASubmission): TaRequestId =
     TaRequestId("bank-ta-v1/" + identity(p.fundOrderId.value, p.paymentTxId.value))
-  def StableRefundOperationId(state: FundOrderState, p: FundOrderProtocol.RequestFundPurchaseRefund): OperationId =
+  def StableRefundOperationId(state: FundOrderEntity.State, p: FundOrderProtocol.RequestFundPurchaseRefund): OperationId =
     OperationId("bank-refund-v1/" + identity(p.fundOrderId.value, p.paymentTxId.value))
 }

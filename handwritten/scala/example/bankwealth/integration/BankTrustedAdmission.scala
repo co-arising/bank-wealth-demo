@@ -1,9 +1,9 @@
 package example.bankwealth.integration
 
 import example.bankwealth.domain.values._
-import example.bankwealth.infrastructure.serialization.DomainConverters
+import example.bankwealth.infrastructure.persistence.converters.DomainConverters
 import example.bankwealth.security.BankDemoConfiguration
-import example.bankwealth.service.BankServiceService._
+import example.bankwealth.infrastructure.bootstrap.BankServiceContract._
 import scala.util.control.NonFatal
 
 final class BankTrustedAdmission(config: BankDemoConfiguration) {

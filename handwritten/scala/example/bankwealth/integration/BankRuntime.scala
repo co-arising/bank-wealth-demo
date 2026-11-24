@@ -10,7 +10,10 @@ import example.bankwealth.application.{BankCashPaymentExecution => Cash, BankInd
   BankPaymentHost => PaymentHost, BankRefundHost => RefundHost,
   BankTaEffectHost => TaHost, BankSipDispatchEffectHost => SipHost}
 import example.bankwealth.bindings._
-import example.bankwealth.domain._
+import example.bankwealth.application.aggregates.{CreditBalanceAggregate, FundOrderAggregate, SipPlanAggregate}
+import example.bankwealth.domain.entities.{CreditBalanceEntity, FundOrderEntity, SipPlanEntity}
+import example.bankwealth.domain.events.{CreditBalanceEvents => CreditBalanceProtocol, FundOrderEvents => FundOrderProtocol, SipPlanEvents => SipPlanProtocol}
+import example.bankwealth.domain.services.{CreditBalanceComputations, FundOrderComputations, SipPlanComputations}
 import example.bankwealth.domain.values._
 import net.imadz.infra.saga.strict._
 import net.imadz.monarch.persistence.RunObserver
@@ -30,15 +33,15 @@ final class BankRuntime(
   require(journal.namespace == namespace && reconcileAuthorizer != null && taBindings != null)
   private val actors = mutable.ArrayBuffer.empty[ActorRef[_]]
   private val activePersistenceIds = mutable.Set.empty[String]
-  private val accounts = new example.bankwealth.application.aggregates.CreditBalanceRepository[AccountId](ids.account,
-    (id, pid) => example.bankwealth.infrastructure.bootstrap.CreditBalanceBootstrap.create(pid, CreditBalanceState.empty.copy(id = id), BankBalanceComputations),
+  private val accounts = new example.bankwealth.infrastructure.repositories.aggregate.CreditBalanceRepositoryImpl[AccountId](ids.account,
+    (id, pid) => example.bankwealth.infrastructure.bootstrap.CreditBalanceBootstrap.create(pid, CreditBalanceEntity.empty.copy(id = id), BankBalanceComputations),
     (pid, behavior) => spawn(pid, behavior).ref)
-  private val orders = new example.bankwealth.application.aggregates.FundOrderRepository[FundOrderId](ids.order,
-    (id, pid) => example.bankwealth.infrastructure.bootstrap.FundOrderBootstrap.create(pid, FundOrderState.empty.copy(id = id), StableOrderIdentity,
+  private val orders = new example.bankwealth.infrastructure.repositories.aggregate.FundOrderRepositoryImpl[FundOrderId](ids.order,
+    (id, pid) => example.bankwealth.infrastructure.bootstrap.FundOrderBootstrap.create(pid, FundOrderEntity.empty.copy(id = id), StableOrderIdentity,
       new FundOrderAggregate.ExternalAuthority { def authorize(producer: String, authorization: String, identity: Vector[String]): Boolean = false }),
     (pid, behavior) => spawn(pid, behavior).ref)
-  private val plans = new example.bankwealth.application.aggregates.SipPlanRepository[PlanId](ids.plan,
-    (id, pid) => example.bankwealth.infrastructure.bootstrap.SipPlanBootstrap.create(pid, SipPlanState.empty.copy(id = id), StableSipIdentity),
+  private val plans = new example.bankwealth.infrastructure.repositories.aggregate.SipPlanRepositoryImpl[PlanId](ids.plan,
+    (id, pid) => example.bankwealth.infrastructure.bootstrap.SipPlanBootstrap.create(pid, SipPlanEntity.empty.copy(id = id), StableSipIdentity),
     (pid, behavior) => spawn(pid, behavior).ref)
   private val cashRuns = mutable.Map.empty[OperationId, Future[BankCashRuntime]]
   private val refundRuns = mutable.Map.empty[OperationId, Future[BankRefundRuntime]]
@@ -83,7 +86,7 @@ final class BankRuntime(
         result
     }
   }
-  private def verifyPayment(state: FundOrderState, original: BankPaymentOriginal): Unit = {
+  private def verifyPayment(state: FundOrderEntity.State, original: BankPaymentOriginal): Unit = {
     require(state.id == original.fundOrderId && state.status != "new" && state.operationId == original.operationId &&
       state.investorAccountId == original.investorAccountId && state.fundCollectionAccountId == original.fundCollectionAccountId &&
       state.amount == original.amount && state.fundCode == original.fundCode, "cash graph requires retained complete original settlement")
@@ -93,7 +96,7 @@ final class BankRuntime(
       investor <- account(original.investorAccountId)
       collection <- account(original.fundCollectionAccountId)
       destination <- order(original.fundOrderId)
-      state <- destination.ref.ask[FundOrderState](FundOrderAggregate.GetState)
+      state <- destination.ref.ask[FundOrderEntity.State](FundOrderAggregate.GetState)
       _ = verifyPayment(state, original)
     } yield synchronized {
       var coordinator: ActorRef[StrictSagaCoordinator.Command] = null
@@ -112,7 +115,7 @@ final class BankRuntime(
       investor <- account(original.investorAccountId)
       collection <- account(original.fundCollectionAccountId)
       destination <- order(original.fundOrderId)
-      state <- destination.ref.ask[FundOrderState](FundOrderAggregate.GetState)
+      state <- destination.ref.ask[FundOrderEntity.State](FundOrderAggregate.GetState)
       _ = require(state.id == original.fundOrderId && state.selectedPaymentTxId == original.paymentTxId && state.refundOperationId == original.refundOperationId &&
         state.investorAccountId == original.investorAccountId && state.fundCollectionAccountId == original.fundCollectionAccountId && state.amount == original.amount,
         "refund graph requires retained original refund intent")
@@ -131,7 +134,7 @@ final class BankRuntime(
   def ensureTa(request: BankTaEffectRequest): Future[BankTaRuntime] = cached(taRuns, request.taRequestId, ids.taHost(request.taRequestId)) {
     for {
       destination <- order(request.fundOrderId)
-      state <- destination.ref.ask[FundOrderState](FundOrderAggregate.GetState)
+      state <- destination.ref.ask[FundOrderEntity.State](FundOrderAggregate.GetState)
       _ = require(state.taRequestId == request.taRequestId && state.selectedPaymentTxId == request.paymentTxId && state.cashPaymentFinalResults.get(request.paymentTxId).contains("succeeded"), "TA graph requires original paid submission")
     } yield synchronized {
       val host = spawn(ids.taHost(request.taRequestId), TaHost(ids.taHost(request.taRequestId), taBindings(destination.ref)))
@@ -143,7 +146,7 @@ final class BankRuntime(
   def ensureSipDispatch(occurrence: SipOccurrence): Future[BankSipDispatchRuntime] = cached(dispatchRuns, occurrence.occurrenceId, ids.sipHost(occurrence.occurrenceId)) {
     for {
       source <- plan(occurrence.planId)
-      state <- source.ref.ask[SipPlanState](SipPlanAggregate.GetState)
+      state <- source.ref.ask[SipPlanEntity.State](SipPlanAggregate.GetState)
       _ = require(state.occurrences.get(occurrence.dueSlot).contains(occurrence), "dispatch graph requires retained occurrence")
       destination <- order(occurrence.fundOrderId)
       original = BankPaymentOriginal(occurrence.operationId, occurrence.fundOrderId, occurrence.config.investorAccountId,

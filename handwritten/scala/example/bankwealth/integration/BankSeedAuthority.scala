@@ -3,9 +3,12 @@ package example.bankwealth.integration
 import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.util.Timeout
-import example.bankwealth.domain._
+import example.bankwealth.application.aggregates.{CreditBalanceAggregate, FundOrderAggregate, SipPlanAggregate}
+import example.bankwealth.domain.entities.{CreditBalanceEntity, FundOrderEntity, SipPlanEntity}
+import example.bankwealth.domain.events.{CreditBalanceEvents => CreditBalanceProtocol, FundOrderEvents => FundOrderProtocol, SipPlanEvents => SipPlanProtocol}
+import example.bankwealth.domain.services.{CreditBalanceComputations, FundOrderComputations, SipPlanComputations}
 import example.bankwealth.infrastructure.proto.CreditBalanceEventPO
-import example.bankwealth.infrastructure.serialization.DomainConverters
+import example.bankwealth.infrastructure.persistence.converters.DomainConverters
 import example.bankwealth.security.BankSeed
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._

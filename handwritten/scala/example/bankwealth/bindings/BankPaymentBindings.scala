@@ -5,10 +5,13 @@ import akka.actor.typed.scaladsl.AskPattern._
 import akka.util.Timeout
 import example.bankwealth.application.{BankCashPaymentExecution => Execution, BankPaymentSagaDefinition => Definition, BankPaymentHost => Host, BankPaymentPorts, BankPaymentPortBindings => Technical}
 import example.bankwealth.application.BankPaymentPorts.{CompletionContext, OperationNotExecuted}
-import example.bankwealth.domain._
+import example.bankwealth.application.aggregates.{CreditBalanceAggregate, FundOrderAggregate, SipPlanAggregate}
+import example.bankwealth.domain.entities.{CreditBalanceEntity, FundOrderEntity, SipPlanEntity}
+import example.bankwealth.domain.events.{CreditBalanceEvents => CreditBalanceProtocol, FundOrderEvents => FundOrderProtocol, SipPlanEvents => SipPlanProtocol}
+import example.bankwealth.domain.services.{CreditBalanceComputations, FundOrderComputations, SipPlanComputations}
 import example.bankwealth.domain.values._
 import example.bankwealth.infrastructure.proto._
-import example.bankwealth.infrastructure.serialization.DomainConverters
+import example.bankwealth.infrastructure.persistence.converters.DomainConverters
 import net.imadz.infra.saga.strict._
 import scalapb.GeneratedMessage
 import java.security.MessageDigest
@@ -51,8 +54,8 @@ final class BankPaymentBindings(
   }
   private def ledger(index: Int): ActorRef[CreditBalanceAggregate.Request] = if (index == 0) investor else collection
   private def persistence(index: Int): String = Vector(investorPersistenceId, collectionPersistenceId, orderPersistenceId)(index)
-  private def ledgerState(index: Int): Future[CreditBalanceState] = ledger(index).ask[CreditBalanceState](CreditBalanceAggregate.GetState)
-  private def orderState(): Future[FundOrderState] = order.ask[FundOrderState](FundOrderAggregate.GetState)
+  private def ledgerState(index: Int): Future[CreditBalanceEntity.State] = ledger(index).ask[CreditBalanceEntity.State](CreditBalanceAggregate.GetState)
+  private def orderState(): Future[FundOrderEntity.State] = order.ask[FundOrderEntity.State](FundOrderAggregate.GetState)
   private def event(raw: GeneratedMessage): Any = raw match {
     case x: CreditBalanceEventPO => DomainConverters.decodeCreditBalanceEventPO(x)
     case x: FundOrderEventPO => DomainConverters.decodeFundOrderEventPO(x)

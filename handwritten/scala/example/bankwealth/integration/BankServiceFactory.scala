@@ -7,13 +7,13 @@ import akka.persistence.query.PersistenceQuery
 import akka.stream.SystemMaterializer
 import akka.stream.scaladsl.Sink
 import example.bankwealth.bindings._
-import example.bankwealth.domain.SipPlanProtocol
+import example.bankwealth.domain.events.{SipPlanEvents => SipPlanProtocol}
 import example.bankwealth.domain.values._
 import example.bankwealth.infrastructure.proto.SipPlanEventPO
-import example.bankwealth.infrastructure.serialization.DomainConverters
+import example.bankwealth.infrastructure.persistence.converters.DomainConverters
 import example.bankwealth.readside.BankReadside
 import example.bankwealth.security._
-import example.bankwealth.service.{BankServiceConfiguration, BankServiceService}
+import example.bankwealth.infrastructure.bootstrap.{BankServiceConfiguration, BankServiceContract => BankServiceService}
 import example.bankwealth.sip.BankSipApplication
 import example.bankwealth.ta.BankTaRefundApplication
 import net.imadz.infra.saga.strict.{ReconcileAuthorizer, TransactionIdentity}

@@ -1,7 +1,7 @@
 package example.bankwealth.security
 
 import example.bankwealth.domain.values._
-import example.bankwealth.service.BankServiceService.{Authority, Principal}
+import example.bankwealth.infrastructure.bootstrap.BankServiceContract.{Authority, Principal}
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 import play.api.mvc.RequestHeader

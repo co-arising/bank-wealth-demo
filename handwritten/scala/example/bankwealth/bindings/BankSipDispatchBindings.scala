@@ -4,10 +4,13 @@ import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.util.Timeout
 import example.bankwealth.application.{BankCashPaymentExecution => Cash, BankSipDispatchExecution => Dispatch, BankSipDispatchEffectHost => Host}
-import example.bankwealth.domain._
+import example.bankwealth.application.aggregates.{CreditBalanceAggregate, FundOrderAggregate, SipPlanAggregate}
+import example.bankwealth.domain.entities.{CreditBalanceEntity, FundOrderEntity, SipPlanEntity}
+import example.bankwealth.domain.events.{CreditBalanceEvents => CreditBalanceProtocol, FundOrderEvents => FundOrderProtocol, SipPlanEvents => SipPlanProtocol}
+import example.bankwealth.domain.services.{CreditBalanceComputations, FundOrderComputations, SipPlanComputations}
 import example.bankwealth.domain.values._
 import example.bankwealth.infrastructure.proto.SipPlanEventPO
-import example.bankwealth.infrastructure.serialization.DomainConverters
+import example.bankwealth.infrastructure.persistence.converters.DomainConverters
 import net.imadz.monarch.persistence.PersistentMonarch
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
@@ -23,7 +26,7 @@ final class BankSipDispatchBindings(plan: ActorRef[SipPlanAggregate.Request], pl
     val o = operation.request.occurrence
     require(operation.request.occurrenceId == o.occurrenceId && operation.operation == Host.operationIdentity(Dispatch.State(Dispatch.Inputs(o.occurrenceId, o))), "SIP dispatch operation mismatch")
     for {
-      s <- plan.ask[SipPlanState](SipPlanAggregate.GetState)
+      s <- plan.ask[SipPlanEntity.State](SipPlanAggregate.GetState)
       events <- readJournal(planPersistenceId)
       _ = require(s.id == o.planId && s.occurrences.get(o.dueSlot).contains(o), "SIP original occurrence missing or changed")
       _ = require(events.exists {
@@ -41,7 +44,7 @@ final class BankSipDispatchBindings(plan: ActorRef[SipPlanAggregate.Request], pl
   })
   private def observed(op: BankSipDispatchOperation): Future[Option[BankSipDispatchObservation]] = for {
     o <- verify(op)
-    state <- order.ask[FundOrderState](FundOrderAggregate.GetState)
+    state <- order.ask[FundOrderEntity.State](FundOrderAggregate.GetState)
     exists <- started(o)
   } yield {
     require(state.id == o.fundOrderId, "SIP destination differs from original")

@@ -1,7 +1,7 @@
 package example.bankwealth.integration
 
 import example.bankwealth.domain.values._
-import example.bankwealth.infrastructure.serialization.DomainConverters
+import example.bankwealth.infrastructure.persistence.converters.DomainConverters
 import play.api.libs.json._
 import scala.util.control.NonFatal
 

@@ -3,7 +3,7 @@ package example.bankwealth.web
 import example.bankwealth.integration._
 import example.bankwealth.security.BankDemoConfiguration
 import example.bankwealth.service.BankReadHttpIdentity
-import example.bankwealth.service.BankServiceService._
+import example.bankwealth.infrastructure.bootstrap.BankServiceContract._
 import play.api.libs.json._
 import play.api.mvc._
 import scala.concurrent.{ExecutionContext, Future}

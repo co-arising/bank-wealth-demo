@@ -7,9 +7,9 @@ import akka.stream.scaladsl.Sink
 import akka.util.Timeout
 import example.bankwealth.domain.values._
 import example.bankwealth.infrastructure.proto._
-import example.bankwealth.infrastructure.serialization.DomainConverters
+import example.bankwealth.infrastructure.persistence.converters.DomainConverters
 import example.bankwealth.security.BankDemoConfiguration
-import example.bankwealth.service.BankServiceService._
+import example.bankwealth.infrastructure.bootstrap.BankServiceContract._
 import net.imadz.infra.saga.strict._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._

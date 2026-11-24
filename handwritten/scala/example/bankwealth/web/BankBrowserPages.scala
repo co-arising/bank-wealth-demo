@@ -1,6 +1,6 @@
 package example.bankwealth.web
 
-import example.bankwealth.service.BankServiceService
+import example.bankwealth.infrastructure.bootstrap.{BankServiceContract => BankServiceService}
 import play.api.libs.json._
 
 /** Static, optional renderer installed by the composition root, never another router.

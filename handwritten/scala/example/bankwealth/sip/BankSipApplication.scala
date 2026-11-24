@@ -7,13 +7,16 @@ import akka.stream.scaladsl.Sink
 import akka.util.Timeout
 import example.bankwealth.application.{BankSipDispatchExecution => Dispatch}
 import example.bankwealth.bindings.{BankSipTerminalBridge, StableSipIdentity}
-import example.bankwealth.domain._
+import example.bankwealth.application.aggregates.{CreditBalanceAggregate, FundOrderAggregate, SipPlanAggregate}
+import example.bankwealth.domain.entities.{CreditBalanceEntity, FundOrderEntity, SipPlanEntity}
+import example.bankwealth.domain.events.{CreditBalanceEvents => CreditBalanceProtocol, FundOrderEvents => FundOrderProtocol, SipPlanEvents => SipPlanProtocol}
+import example.bankwealth.domain.services.{CreditBalanceComputations, FundOrderComputations, SipPlanComputations}
 import example.bankwealth.domain.values._
 import example.bankwealth.infrastructure.proto.SipPlanEventPO
-import example.bankwealth.infrastructure.serialization.DomainConverters
+import example.bankwealth.infrastructure.persistence.converters.DomainConverters
 import example.bankwealth.integration._
 import example.bankwealth.security.BankDemoConfiguration
-import example.bankwealth.service.BankServiceService._
+import example.bankwealth.infrastructure.bootstrap.BankServiceContract._
 import net.imadz.monarch.persistence.PersistentMonarch
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
@@ -55,8 +58,8 @@ final class BankSipApplication(directory: BankRuntimeDirectory, journal: BankJou
       case _: SipPlanAggregate.Accepted => ()
       case _: SipPlanAggregate.Refused => reject(RequestConflict)
     }
-  private def state(handle: BankActorHandle[SipPlanAggregate.Request]): Future[SipPlanState] =
-    handle.ref.ask[SipPlanState](SipPlanAggregate.GetState)
+  private def state(handle: BankActorHandle[SipPlanAggregate.Request]): Future[SipPlanEntity.State] =
+    handle.ref.ask[SipPlanEntity.State](SipPlanAggregate.GetState)
 
   private def original(pid: String): Future[Option[BankSipCreateIntent]] = journal.readPb(pid).map { events =>
     val intents = events.collect { case raw: SipPlanEventPO => DomainConverters.decodeSipPlanEventPO(raw) }.collect {
@@ -86,7 +89,7 @@ final class BankSipApplication(directory: BankRuntimeDirectory, journal: BankJou
   /** Membership is insufficient: validate the positional prefix and the inverse persisted
     * index before even Create/Append/Seal. Do not reset revisions or any occurrence progress.
     */
-  private def validatePrefix(s: SipPlanState, intent: BankSipCreateIntent): Unit = {
+  private def validatePrefix(s: SipPlanEntity.State, intent: BankSipCreateIntent): Unit = {
     validateIntent(intent)
     val due = intent.request.dueSlots
     check(s.id == intent.planId && s.createIntent.contains(intent) && s.sipCreateIntents.get("original").contains(intent))
@@ -105,7 +108,7 @@ final class BankSipApplication(directory: BankRuntimeDirectory, journal: BankJou
     } else check(s.scheduleCount == 0L && !s.scheduleSealed && s.revisions.isEmpty && s.occurrences.isEmpty)
   }
 
-  private def restoreSchedule(h: BankActorHandle[SipPlanAggregate.Request], intent: BankSipCreateIntent): Future[SipPlanState] = for {
+  private def restoreSchedule(h: BankActorHandle[SipPlanAggregate.Request], intent: BankSipCreateIntent): Future[SipPlanEntity.State] = for {
     before <- state(h)
     _ = validatePrefix(before, intent)
     _ <- execute(h, SipPlanProtocol.CreateSipPlan(intent.planId, intent.config))
@@ -312,7 +315,7 @@ final class BankSipApplication(directory: BankRuntimeDirectory, journal: BankJou
   private def terminal(h: BankActorHandle[SipPlanAggregate.Request], o: SipOccurrence): Future[Unit] = for {
     order <- directory.order(o.fundOrderId)
     _ = check(order.persistenceId == ids.order(o.fundOrderId))
-    s <- order.ref.ask[FundOrderState](FundOrderAggregate.GetState)
+    s <- order.ref.ask[FundOrderEntity.State](FundOrderAggregate.GetState)
     // A persisted occurrence may precede its original order. It is not a business failure.
     _ <- if (s.status == "new") state(h).map { p =>
       check(!p.firstTerminals.contains(o.occurrenceId))

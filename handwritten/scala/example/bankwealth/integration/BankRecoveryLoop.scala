@@ -5,8 +5,8 @@ import akka.actor.typed.ActorSystem
 import akka.stream.SystemMaterializer
 import akka.stream.scaladsl.Sink
 import example.bankwealth.infrastructure.proto._
-import example.bankwealth.infrastructure.serialization.DomainConverters
-import example.bankwealth.service.BankServiceService.Outcome
+import example.bankwealth.infrastructure.persistence.converters.DomainConverters
+import example.bankwealth.infrastructure.bootstrap.BankServiceContract.Outcome
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.concurrent.duration._
 import java.util.concurrent.atomic.AtomicBoolean

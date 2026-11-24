@@ -3,11 +3,14 @@ package example.bankwealth.integration
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.util.Timeout
-import example.bankwealth.domain._
+import example.bankwealth.application.aggregates.{CreditBalanceAggregate, FundOrderAggregate, SipPlanAggregate}
+import example.bankwealth.domain.entities.{CreditBalanceEntity, FundOrderEntity, SipPlanEntity}
+import example.bankwealth.domain.events.{CreditBalanceEvents => CreditBalanceProtocol, FundOrderEvents => FundOrderProtocol, SipPlanEvents => SipPlanProtocol}
+import example.bankwealth.domain.services.{CreditBalanceComputations, FundOrderComputations, SipPlanComputations}
 import example.bankwealth.domain.values._
-import example.bankwealth.infrastructure.serialization.DomainConverters
+import example.bankwealth.infrastructure.persistence.converters.DomainConverters
 import example.bankwealth.security.BankDemoConfiguration
-import example.bankwealth.service.BankServiceService._
+import example.bankwealth.infrastructure.bootstrap.BankServiceContract._
 import net.imadz.monarch.persistence.PersistentMonarch
 import example.bankwealth.application.{BankCashPaymentExecution => Cash}
 import scala.concurrent.{ExecutionContext, Future}
@@ -26,7 +29,7 @@ final class BankCashRequests(directory: BankRuntimeDirectory, config: BankDemoCo
         handle.ref.ask[FundOrderAggregate.Reply](r => FundOrderAggregate.Execute(FundOrderProtocol.RecordCashRequestSource(original, Some(original)), r)).flatMap {
           case _: FundOrderAggregate.Refused => Future.successful(Left(RequestConflict))
           case _: FundOrderAggregate.Accepted =>
-            handle.ref.ask[FundOrderState](FundOrderAggregate.GetState).flatMap { state =>
+            handle.ref.ask[FundOrderEntity.State](FundOrderAggregate.GetState).flatMap { state =>
               require(state.cashRequestSource.contains(original), "accepted original source was not retained")
               admission.validateCash(state.cashRequestSource.get)
               start(original.payment).map(_.map(_ => BankCashAcknowledgement(original, "accepted")))
@@ -42,7 +45,7 @@ final class BankCashRequests(directory: BankRuntimeDirectory, config: BankDemoCo
         val id = try Right(BankRequestIdentity.order(customer.id, clientRequestId)) catch { case NonFatal(_) => Left(InvalidRequest) }
         id match {
           case Left(error) => Future.successful(Left(error))
-          case Right(orderId) => directory.order(orderId).flatMap(_.ref.ask[FundOrderState](FundOrderAggregate.GetState)).map { state =>
+          case Right(orderId) => directory.order(orderId).flatMap(_.ref.ask[FundOrderEntity.State](FundOrderAggregate.GetState)).map { state =>
             state.cashRequestSource match {
               case None => Left(MissingResource)
               case Some(original) if original.principalId != customer.id || original.clientRequestId != clientRequestId => Left(NotAuthorized)
@@ -55,14 +58,14 @@ final class BankCashRequests(directory: BankRuntimeDirectory, config: BankDemoCo
 
   def resumePersisted(original: BankCashOriginal): Future[Outcome[BankPaymentOriginal]] = {
     admission.validateCash(original)
-    directory.order(original.payment.fundOrderId).flatMap(_.ref.ask[FundOrderState](FundOrderAggregate.GetState)).flatMap { state =>
+    directory.order(original.payment.fundOrderId).flatMap(_.ref.ask[FundOrderEntity.State](FundOrderAggregate.GetState)).flatMap { state =>
       require(state.cashRequestSource.contains(original), "recovery requires retained full original source")
       start(original.payment)
     }.recover { case NonFatal(_) => Left(Unavailable) }
   }
 
   def submitOccurrence(occurrence: SipOccurrence): Future[Outcome[BankPaymentOriginal]] = {
-    directory.plan(occurrence.planId).flatMap(_.ref.ask[SipPlanState](SipPlanAggregate.GetState)).flatMap { state =>
+    directory.plan(occurrence.planId).flatMap(_.ref.ask[SipPlanEntity.State](SipPlanAggregate.GetState)).flatMap { state =>
       require(state.occurrences.get(occurrence.dueSlot).contains(occurrence), "machine cash requires original persisted occurrence")
       start(BankPaymentOriginal(occurrence.operationId, occurrence.fundOrderId, occurrence.config.investorAccountId,
         occurrence.config.fundCollectionAccountId, occurrence.config.fundCode, occurrence.config.amount))

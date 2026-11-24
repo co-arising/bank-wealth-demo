@@ -1,7 +1,7 @@
 package example.bankwealth.integration
 
 import example.bankwealth.domain.values._
-import example.bankwealth.service.BankServiceService.{Outcome, Principal}
+import example.bankwealth.infrastructure.bootstrap.BankServiceContract.{Outcome, Principal}
 import scala.concurrent.Future
 
 trait BankCashRequestService {

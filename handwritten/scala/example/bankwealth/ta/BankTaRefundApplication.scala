@@ -8,13 +8,16 @@ import akka.util.Timeout
 import example.bankwealth.application.{BankIndependentRefundExecution => Refund, BankTaSubmissionExecution => Ta,
   BankRefundHost => RefundHost, BankTaEffectHost => TaHost}
 import example.bankwealth.bindings.{BankTaBridge, BankTaEffectBindings, MockTAClient, StableOrderIdentity}
-import example.bankwealth.domain._
+import example.bankwealth.application.aggregates.{CreditBalanceAggregate, FundOrderAggregate, SipPlanAggregate}
+import example.bankwealth.domain.entities.{CreditBalanceEntity, FundOrderEntity, SipPlanEntity}
+import example.bankwealth.domain.events.{CreditBalanceEvents => CreditBalanceProtocol, FundOrderEvents => FundOrderProtocol, SipPlanEvents => SipPlanProtocol}
+import example.bankwealth.domain.services.{CreditBalanceComputations, FundOrderComputations, SipPlanComputations}
 import example.bankwealth.domain.values._
 import example.bankwealth.infrastructure.proto._
-import example.bankwealth.infrastructure.serialization.DomainConverters
+import example.bankwealth.infrastructure.persistence.converters.DomainConverters
 import example.bankwealth.integration._
 import example.bankwealth.security.BankDemoConfiguration
-import example.bankwealth.service.BankServiceService._
+import example.bankwealth.infrastructure.bootstrap.BankServiceContract._
 import net.imadz.monarch.persistence.{PersistentMonarch, StateCodec}
 import java.nio.charset.StandardCharsets
 import java.util.Base64
@@ -108,10 +111,10 @@ final class BankTaRefundApplication(directory: BankRuntimeDirectory, journal: Ba
       }
     }
   }
-  private def state(handle: BankActorHandle[FundOrderAggregate.Request]): Future[FundOrderState] = {
-    active(); handle.ref.ask[FundOrderState](FundOrderAggregate.GetState)
+  private def state(handle: BankActorHandle[FundOrderAggregate.Request]): Future[FundOrderEntity.State] = {
+    active(); handle.ref.ask[FundOrderEntity.State](FundOrderAggregate.GetState)
   }
-  private def paid(s: FundOrderState, events: Vector[Any]): Unit = {
+  private def paid(s: FundOrderEntity.State, events: Vector[Any]): Unit = {
     s.cashRequestSource.foreach { original =>
       admission.validateCash(original)
       require(original.payment.fundOrderId == s.id && original.payment.operationId == s.operationId &&
@@ -134,7 +137,7 @@ final class BankTaRefundApplication(directory: BankRuntimeDirectory, journal: Ba
       case _ => false
     }, "exact original payment journal evidence required")
   }
-  private def registered(s: FundOrderState, events: Vector[Any]): Unit = {
+  private def registered(s: FundOrderEntity.State, events: Vector[Any]): Unit = {
     require(s.taRequestId == StableOrderIdentity.StableTaRequestId(s, FundOrderProtocol.RegisterFundTASubmission(s.id, s.selectedPaymentTxId)) &&
       events.exists {
         case e: FundOrderProtocol.FundTASubmissionRegistered => e.fundOrderId == s.id && e.paymentTxId == s.selectedPaymentTxId && e.taRequestId == s.taRequestId
@@ -142,7 +145,7 @@ final class BankTaRefundApplication(directory: BankRuntimeDirectory, journal: Ba
       }, "exact durable TA registration required")
   }
   /** First related generated terminal event, not effect completion or accepted status. */
-  private def terminal(s: FundOrderState, events: Vector[Any]): Option[String] = events.collectFirst {
+  private def terminal(s: FundOrderEntity.State, events: Vector[Any]): Option[String] = events.collectFirst {
     case e: FundOrderProtocol.FundTASharesConfirmed if e.fundOrderId == s.id && e.paymentTxId == s.selectedPaymentTxId && e.taRequestId == s.taRequestId =>
       require(s.taStatus == "confirmed" && s.taReceipts.get(e.receiptId).contains(e.receiptBody) &&
         s.taReceiptOutcomes.get(e.receiptId).contains("confirmed") && e.taReference == s.taReference && e.fundCode == s.fundCode &&
@@ -217,7 +220,7 @@ final class BankTaRefundApplication(directory: BankRuntimeDirectory, journal: Ba
     }
   }
 
-  private def finish(handle: BankActorHandle[FundOrderAggregate.Request], s: FundOrderState, events: Vector[Any],
+  private def finish(handle: BankActorHandle[FundOrderAggregate.Request], s: FundOrderEntity.State, events: Vector[Any],
       bridge: BankTaBridge): Future[Outcome[Unit]] = {
     paid(s, events); registered(s, events)
     terminal(s, events) match {

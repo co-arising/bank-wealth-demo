@@ -5,10 +5,13 @@ import akka.actor.typed.scaladsl.AskPattern._
 import akka.util.Timeout
 import example.bankwealth.application.{BankCashPaymentExecution => Cash, BankPaymentHost => PaymentHost,
   BankIndependentRefundExecution => Refund, BankRefundHost => RefundHost}
-import example.bankwealth.domain._
+import example.bankwealth.application.aggregates.{CreditBalanceAggregate, FundOrderAggregate, SipPlanAggregate}
+import example.bankwealth.domain.entities.{CreditBalanceEntity, FundOrderEntity, SipPlanEntity}
+import example.bankwealth.domain.events.{CreditBalanceEvents => CreditBalanceProtocol, FundOrderEvents => FundOrderProtocol, SipPlanEvents => SipPlanProtocol}
+import example.bankwealth.domain.services.{CreditBalanceComputations, FundOrderComputations, SipPlanComputations}
 import example.bankwealth.domain.values._
 import example.bankwealth.infrastructure.proto._
-import example.bankwealth.infrastructure.serialization.DomainConverters
+import example.bankwealth.infrastructure.persistence.converters.DomainConverters
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
 
@@ -20,8 +23,8 @@ final class BankSipTerminalBridge(plan: ActorRef[SipPlanAggregate.Request], orde
   implicit private val ec: ExecutionContext = system.executionContext
   implicit private val timeout: Timeout = Timeout(3.seconds)
   def record(o: SipOccurrence): Future[Unit] = for {
-    p <- plan.ask[SipPlanState](SipPlanAggregate.GetState)
-    s <- order.ask[FundOrderState](FundOrderAggregate.GetState)
+    p <- plan.ask[SipPlanEntity.State](SipPlanAggregate.GetState)
+    s <- order.ask[FundOrderEntity.State](FundOrderAggregate.GetState)
     events <- readJournal(orderPersistenceId)
     decodedEvents = events.collect { case raw: FundOrderEventPO => DomainConverters.decodeFundOrderEventPO(raw) }
     _ = require(p.id == o.planId && p.occurrences.get(o.dueSlot).contains(o) && s.id == o.fundOrderId && s.operationId == o.operationId &&
