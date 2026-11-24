@@ -6,6 +6,9 @@ import java.util.Base64
 import example.bankwealth.domain.entities.SipPlanEntity
 import example.bankwealth.domain.events.{SipPlanEvents => SipPlanProtocol}
 import example.bankwealth.domain.services.SipPlanComputations
+import example.bankwealth.application.api._
+import example.bankwealth.application.projection._
+import example.bankwealth.application.saga._
 import example.bankwealth.domain.values._
 
 object StableSipIdentity extends SipPlanComputations {

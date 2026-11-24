@@ -14,6 +14,9 @@ import example.bankwealth.application.aggregates.{CreditBalanceAggregate, FundOr
 import example.bankwealth.domain.entities.{CreditBalanceEntity, FundOrderEntity, SipPlanEntity}
 import example.bankwealth.domain.events.{CreditBalanceEvents => CreditBalanceProtocol, FundOrderEvents => FundOrderProtocol, SipPlanEvents => SipPlanProtocol}
 import example.bankwealth.domain.services.{CreditBalanceComputations, FundOrderComputations, SipPlanComputations}
+import example.bankwealth.application.api._
+import example.bankwealth.application.projection._
+import example.bankwealth.application.saga._
 import example.bankwealth.domain.values._
 import net.imadz.infra.saga.strict._
 import net.imadz.monarch.persistence.RunObserver

@@ -1,5 +1,8 @@
 package example.bankwealth.integration
 
+import example.bankwealth.application.api._
+import example.bankwealth.application.projection._
+import example.bankwealth.application.saga._
 import example.bankwealth.domain.values._
 import example.bankwealth.infrastructure.persistence.converters.DomainConverters
 import play.api.libs.json._

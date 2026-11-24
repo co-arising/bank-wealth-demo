@@ -2,6 +2,9 @@ package example.bankwealth.integration
 
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
+import example.bankwealth.application.api._
+import example.bankwealth.application.projection._
+import example.bankwealth.application.saga._
 import example.bankwealth.domain.values._
 
 object BankRequestIdentity {

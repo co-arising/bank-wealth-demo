@@ -7,6 +7,9 @@ import com.fasterxml.jackson.databind.{JsonNode, ObjectMapper}
 import example.bankwealth.application.aggregates.FundOrderAggregate
 import example.bankwealth.domain.entities.FundOrderEntity
 import example.bankwealth.domain.events.{FundOrderEvents => FundOrderProtocol}
+import example.bankwealth.application.api._
+import example.bankwealth.application.projection._
+import example.bankwealth.application.saga._
 import example.bankwealth.domain.values._
 import example.bankwealth.infrastructure.persistence.converters.DomainConverters
 import scala.concurrent.{ExecutionContext, Future}

@@ -5,6 +5,9 @@ import akka.actor.typed.scaladsl.AskPattern._
 import akka.stream.SystemMaterializer
 import akka.stream.scaladsl.Sink
 import akka.util.Timeout
+import example.bankwealth.application.api._
+import example.bankwealth.application.projection._
+import example.bankwealth.application.saga._
 import example.bankwealth.domain.values._
 import example.bankwealth.infrastructure.proto._
 import example.bankwealth.infrastructure.persistence.converters.DomainConverters
