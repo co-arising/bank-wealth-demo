@@ -652,7 +652,7 @@ payload:
               "originalInputs": {
                 "$rows": {
                   "template": "bank-refund-host-payload-association-original-inputs",
-                  "rows": [["fundOrderId"],["paymentTxId"],["investorAccountId"],["fundCollectionAccountId"],["amount"],["refundOperationId"]]
+                  "rows": [["fundOrderId"],["paymentTxId"],["investorAccountId"],["fundCollectionAccountId"],["amount"],["refundOperationId"],["tenantId"]]
                 }
               },
               "encoding": "length-prefixed-utf8",

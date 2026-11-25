@@ -121,7 +121,7 @@ final class BankSipApplicationHarness(available: String = "1000.00") extends Aut
       else for {
         planHandle <- plan(o.planId)
         orderHandle <- order(o.fundOrderId)
-        cashRuntime <- ensureCash(BankPaymentOriginal(o.operationId, o.fundOrderId, o.config.investorAccountId,
+        cashRuntime <- ensureCash(BankPaymentOriginal(o.operationId, o.fundOrderId, TenantId("bankwealth"), o.config.investorAccountId,
           o.config.fundCollectionAccountId, o.config.fundCode, o.config.amount))
       } yield BankSipApplicationHarness.this.synchronized {
         dispatches.getOrElse(o.occurrenceId, {
@@ -166,7 +166,7 @@ final class BankSipApplicationHarness(available: String = "1000.00") extends Aut
     orders.values.foreach(h => kit.stop(h.ref)); orders = Map.empty
   }
   def paymentTx(o: SipOccurrence): TxId = TxId(PaymentHost.operationIdentity(Cash.State(Cash.Inputs(o.operationId, o.operationId,
-    o.config.investorAccountId, o.fundOrderId, o.config.fundCollectionAccountId, o.config.amount, o.config.fundCode))))
+    o.config.investorAccountId, o.fundOrderId, o.config.fundCollectionAccountId, o.config.amount, o.config.fundCode, TenantId("bankwealth")))))
   def finishCash(count: Int, expected: String = "completed"): Unit = (0 until count).foreach(_ => assert(cashFinished.receiveMessage(15.seconds)._2 == expected))
   def finishDispatch(count: Int): Unit = (0 until count).foreach(_ => dispatchFinished.receiveMessage(15.seconds))
   def close(): Unit = { app.close(); journal.close(); kit.shutdownTestKit() }

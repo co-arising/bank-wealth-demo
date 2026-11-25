@@ -151,7 +151,7 @@ private[bankwealth] object BankOwnerATestSupport {
     def cashOriginal(key: String, owner: String = "alice"): BankCashOriginal = {
       val account = if (owner == "alice") investor else otherInvestor
       BankCashOriginal(owner, key, config.version, BankCashSubmit(key, "fund", MoneyWire("10000", "CNY")),
-        BankPaymentOriginal(BankRequestIdentity.operation(owner, key), BankRequestIdentity.order(owner, key),
+        BankPaymentOriginal(BankRequestIdentity.operation(owner, key), BankRequestIdentity.order(owner, key), TenantId("bankwealth"),
           account, collection, "fund", Money.create(BigDecimal("100.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)))
     }
     def orderEvents(payment: BankPaymentOriginal, source: Option[BankCashOriginal] = None,
@@ -167,7 +167,7 @@ private[bankwealth] object BankOwnerATestSupport {
         require(replies.receiveMessage().isInstanceOf[FundOrderAggregate.Accepted])
       }
       source.foreach(value => send(FundOrderProtocol.RecordCashRequestSource(value, Some(value))))
-      if (requestPayment) send(FundOrderProtocol.RequestFundPurchaseSettlement(payment.operationId, payment.fundOrderId,
+      if (requestPayment) send(FundOrderProtocol.RequestFundPurchaseSettlement(payment.operationId, payment.fundOrderId, TenantId("bankwealth"),
         payment.investorAccountId, payment.fundCollectionAccountId, payment.fundCode, payment.amount))
       capture(pid)
     }
@@ -421,7 +421,7 @@ final class BankReadsideProjectionSpec extends AnyFunSuite {
       assert(disposition(early) == "unknown" && before.size == 1)
       val BankSipOccurrenceView(beforeOccurrence, _, _, paymentBefore, taBefore, refundBefore, _) = before.head
       assert(beforeOccurrence == occurrence && paymentBefore == "unknown" && taBefore == "unknown" && refundBefore == "unknown")
-      val payment = BankPaymentOriginal(occurrence.operationId, occurrence.fundOrderId, occurrence.config.investorAccountId,
+      val payment = BankPaymentOriginal(occurrence.operationId, occurrence.fundOrderId, TenantId("bankwealth"), occurrence.config.investorAccountId,
         occurrence.config.fundCollectionAccountId, occurrence.config.fundCode, occurrence.config.amount)
       f.catchUp(f.orderEvents(payment))
       val BankSipOccurrencePage(joined, after, _) = success(await(f.readside.occurrences(f.alice, key)))

@@ -30,7 +30,7 @@ final class BankOrderCancelSpec extends AnyFunSuite {
         replies.receiveMessage()
       }
       def state(): FundOrderState = { actor ! FundOrderAggregate.GetState(states.ref); states.receiveMessage() }
-      assert(send(FundOrderProtocol.RequestFundPurchaseSettlement(operation, id, AccountId("investor"), AccountId("collection"), "fund", amount)).isInstanceOf[FundOrderAggregate.Accepted])
+      assert(send(FundOrderProtocol.RequestFundPurchaseSettlement(operation, id, TenantId("bankwealth"), AccountId("investor"), AccountId("collection"), "fund", amount)).isInstanceOf[FundOrderAggregate.Accepted])
       assert(send(FundOrderProtocol.CancelCashFundSubscription(tx, id, amount)).isInstanceOf[FundOrderAggregate.Accepted])
       val retained = state()
       val before = journal.persistedInStorage("order-cancel-pid")

@@ -257,7 +257,7 @@ object BankHttpAcceptanceMain {
       def expectedOriginal(key: String, minor: String): BankCashOriginal = {
         require(Set("10000", "20000")(minor))
         BankCashOriginal("alice", key, "socket-v1", BankCashSubmit(key, "fund", MoneyWire(minor, "CNY")),
-          BankPaymentOriginal(BankRequestIdentity.operation("alice", key), BankRequestIdentity.order("alice", key),
+          BankPaymentOriginal(BankRequestIdentity.operation("alice", key), BankRequestIdentity.order("alice", key), TenantId("bankwealth"),
             investor, collection, "fund", Money.create(BigDecimal(if (minor == "10000") "100.00" else "200.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)))
       }
       def expectedAck(key: String, minor: String): JsObject = BankServiceJson.bankCashAcknowledgementWrites
@@ -361,7 +361,7 @@ object BankHttpAcceptanceMain {
             Vector(FundOrderProtocol.FundPurchaseSettlementRequested(o.payment.operationId, o.payment.fundOrderId, investor, collection, "fund", o.payment.amount)))
           val runs = await(durable.readAll(ids.paymentRun(o.payment.operationId)))
           val starts = runs.collect { case p: PersistentMonarch.RunStarted => p }
-          val expectedState = Cash.State(Cash.Inputs(o.payment.operationId, o.payment.operationId, investor, o.payment.fundOrderId, collection, o.payment.amount, "fund"))
+          val expectedState = Cash.State(Cash.Inputs(o.payment.operationId, o.payment.operationId, investor, o.payment.fundOrderId, collection, o.payment.amount, "fund", o.payment.tenantId))
           require(starts.size == 1 && starts.head.runId == o.payment.operationId.value && Cash.codec.decode(starts.head.initialSnapshot) == expectedState)
           require(runs.count(_.isInstanceOf[PersistentMonarch.StageDone]) == 1 && runs.count(_.isInstanceOf[PersistentMonarch.RunCompleted]) == 1 && runs.size == 3)
         }

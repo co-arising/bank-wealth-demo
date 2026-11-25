@@ -684,7 +684,7 @@ payload:
               "originalInputs": {
                 "$rows": {
                   "template": "bank-payment-host-payload-association-original-inputs",
-                  "rows": [["operationId"],["fundOrderId"],["investorAccountId"],["fundCollectionAccountId"],["fundCode"],["amount"]]
+                  "rows": [["operationId"],["fundOrderId"],["tenantId"],["investorAccountId"],["fundCollectionAccountId"],["fundCode"],["amount"]]
                 }
               },
               "encoding": "length-prefixed-utf8",

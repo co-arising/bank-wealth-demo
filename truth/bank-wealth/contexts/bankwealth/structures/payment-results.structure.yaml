@@ -29,8 +29,8 @@ payload:
                   {"$arg":"payload-produces"},
                   {
                     "name": {"$arg":"payload-produces"},
-                    "payloads": ["txid: TxId @PROPAGATED","kind: String @PROPAGATED"],
-                    "bindings": ["txid <- param.txid",{"slot":"kind","expr":{"$arg":"bindings-expr"}}],
+                    "payloads": ["txid: TxId @PROPAGATED","kind: String @PROPAGATED","tenantId: TenantId @PROPAGATED"],
+                    "bindings": ["txid <- param.txid",{"slot":"kind","expr":{"$arg":"bindings-expr"}},"tenantId <- state.tenantId"],
                     "foldAssignments": {"$arg":"definition-fold-assignments"}
                   }
                 ]

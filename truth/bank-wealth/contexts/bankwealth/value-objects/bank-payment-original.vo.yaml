@@ -11,6 +11,7 @@ payload:
     "fields": [
       "operationId: OperationId",
       "fundOrderId: FundOrderId",
+      "tenantId: TenantId",
       "investorAccountId: AccountId",
       "fundCollectionAccountId: AccountId",
       "fundCode: String",

@@ -20,7 +20,7 @@ test('one root entry names current bank source; four execution flows compile, va
   assert.equal(current.authoring.context.id, 'bankwealth');
   assert.deepEqual(current.pipelines.map(p => p.id), ['bank-cash-payment-v1', 'bank-independent-refund-v1', 'bank-sip-dispatch-v1', 'bank-ta-submission-v1']);
   assert.equal(validateTree(tree).hard.length, 0);
-  assert.deepEqual(roundtrip(tree), { ok: true, atoms: 159 });
+  assert.deepEqual(roundtrip(tree), { ok: true, atoms: 160 });
 });
 
 test('narrative stories, read models, and use cases remain intact', () => {

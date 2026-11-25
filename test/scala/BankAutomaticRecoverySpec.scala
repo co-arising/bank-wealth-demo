@@ -16,13 +16,13 @@ import scala.concurrent.duration._
 
 final class BankAutomaticRecoverySpec extends AnyFunSuite {
   UnitConfigurationCheck.main(Array.empty)
-  private val original = BankPaymentOriginal(OperationId("original-operation"), FundOrderId("original-order"),
+  private val original = BankPaymentOriginal(OperationId("original-operation"), FundOrderId("original-order"), TenantId("bankwealth"),
     AccountId("customer"), AccountId("collection"), "fund", Money.create(BigDecimal("10.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity))
   private val identity = TransactionIdentity("original-transaction", "definition", 1, "args-digest",
     "definition-digest", CodecPin("args", 1), "plan-digest")
 
   private val refund = BankRefundOriginal(original.fundOrderId, TxId("original-payment-transaction"),
-    original.investorAccountId, original.fundCollectionAccountId, original.amount, OperationId("original-refund"))
+    original.investorAccountId, original.fundCollectionAccountId, original.amount, OperationId("original-refund"), original.tenantId)
   for (flow <- Vector("payment", "refund"); (name, state, expectedCalls, expectedRight) <- Vector(
     ("uncertain", StrictState(identity = Some(identity), status = StrictStatus.RecoveryRequired), 1, true),
     ("completed", StrictState(identity = Some(identity), status = StrictStatus.Succeeded), 0, true),

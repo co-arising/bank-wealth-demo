@@ -172,6 +172,11 @@ execution:
         "id": "refundOperationId",
         "type": "OperationId",
         "durability": "start-record"
+      },
+      {
+        "id": "tenantId",
+        "type": "TenantId",
+        "durability": "start-record"
       }
     ],
     "outputs": [
@@ -189,7 +194,8 @@ execution:
         "input:investorAccountId",
         "input:fundCollectionAccountId",
         "input:amount",
-        "input:refundOperationId"
+        "input:refundOperationId",
+        "input:tenantId"
       ],
       "planVersion": "bank-v1-1",
       "planCompatibility": "exact",

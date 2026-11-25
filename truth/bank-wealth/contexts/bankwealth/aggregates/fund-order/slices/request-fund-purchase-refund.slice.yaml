@@ -36,7 +36,8 @@ events:
         "investorAccountId: AccountId @PROPAGATED",
         "fundCollectionAccountId: AccountId @PROPAGATED",
         "amount: Money @PROPAGATED",
-        "refundOperationId: OperationId @PROPAGATED"
+        "refundOperationId: OperationId @PROPAGATED",
+        "tenantId: TenantId @PROPAGATED"
       ],
       "bindings": [
         "fundOrderId <- param.fundOrderId",
@@ -44,7 +45,8 @@ events:
         "investorAccountId <- state.investorAccountId",
         "fundCollectionAccountId <- state.fundCollectionAccountId",
         "amount <- state.amount",
-        "refundOperationId <- @host(bankwealth:port#StableRefundOperationId@bank-v1-1)"
+        "refundOperationId <- @host(bankwealth:port#StableRefundOperationId@bank-v1-1)",
+        "tenantId <- state.tenantId"
       ],
       "foldAssignments": [
         "refundOperationId := event.refundOperationId",

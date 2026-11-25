@@ -46,7 +46,7 @@ final class BankPaymentBindings(
   implicit private val timeout: Timeout = Timeout(3.seconds)
   private val version = "bank-v1-1"
   val parentInput: Execution.State = Execution.State(Execution.Inputs(original.operationId, original.operationId,
-    original.investorAccountId, original.fundOrderId, original.fundCollectionAccountId, original.amount, original.fundCode))
+    original.investorAccountId, original.fundOrderId, original.fundCollectionAccountId, original.amount, original.fundCode, original.tenantId))
   val operationId: String = Host.operationIdentity(parentInput)
   private val args = BankPaymentArgs(original.investorAccountId, original.fundOrderId, original.fundCollectionAccountId, original.amount)
   private val argsBytes = BankPaymentProcessCodecs.argsCodec.encode(args)

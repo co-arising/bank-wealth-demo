@@ -34,7 +34,7 @@ final class BankSipDispatchBindings(plan: ActorRef[SipPlanProtocol.Command], pla
   implicit private val ec: ExecutionContext = system.executionContext
   implicit private val timeout: Timeout = Timeout(3.seconds)
   private def cashState(o: SipOccurrence): Cash.State = Cash.State(Cash.Inputs(o.operationId, o.operationId,
-    o.config.investorAccountId, o.fundOrderId, o.config.fundCollectionAccountId, o.config.amount, o.config.fundCode))
+    o.config.investorAccountId, o.fundOrderId, o.config.fundCollectionAccountId, o.config.amount, o.config.fundCode, TenantId("bankwealth")))
   private def verify(operation: BankSipDispatchOperation): Future[SipOccurrence] = {
     val o = operation.request.occurrence
     require(operation.request.occurrenceId == o.occurrenceId && operation.operation == Host.operationIdentity(Dispatch.State(Dispatch.Inputs(o.occurrenceId, o))), "SIP dispatch operation mismatch")
@@ -72,7 +72,7 @@ final class BankSipDispatchBindings(plan: ActorRef[SipPlanProtocol.Command], pla
   private def execute(op: BankSipDispatchOperation): Future[BankSipDispatchObservation] = for {
     o <- verify(op)
     reply <- order.ask[FundOrderProtocol.Reply](FundOrderProtocol.RequestFundPurchaseSettlement(
-      o.operationId, o.fundOrderId, o.config.investorAccountId, o.config.fundCollectionAccountId, o.config.fundCode, o.config.amount, _))
+      o.operationId, o.fundOrderId, TenantId("bankwealth"), o.config.investorAccountId, o.config.fundCollectionAccountId, o.config.fundCode, o.config.amount, _))
     _ = require(reply.isInstanceOf[FundOrderProtocol.Accepted], "SIP cash request rejected")
     _ <- cash.ask[PersistentMonarch.RunReply](r => PersistentMonarch.StartRun(o.operationId.value, cashState(o), r))
     proof <- observed(op)

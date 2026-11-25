@@ -79,7 +79,7 @@ final class BankRecovery(directory: BankRuntimeDirectory, journal: BankJournal, 
         val occurrences = rows.collect { case pb: SipPlanEventPO if pb.event.isSipInstallmentTriggered => DomainConverters.decodeSipInstallmentTriggeredPO(pb.event.sipInstallmentTriggered.get).occurrence }
         refunds.find(_.refundOperationId == key.operationId) match {
           case Some(r) =>
-            val original = BankRefundOriginal(r.fundOrderId, r.paymentTxId, r.investorAccountId, r.fundCollectionAccountId, r.amount, r.refundOperationId)
+            val original = BankRefundOriginal(r.fundOrderId, r.paymentTxId, r.investorAccountId, r.fundCollectionAccountId, r.amount, r.refundOperationId, r.tenantId)
             directory.ensureRefund(original).flatMap(runtime => reconcile(runtime.coordinator, runtime.transactionId, key.operationId))
           case None => originals.find(_.payment.operationId == key.operationId) match {
             case Some(original) => cash.resumePersisted(original).flatMap {

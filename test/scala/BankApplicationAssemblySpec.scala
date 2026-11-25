@@ -22,7 +22,7 @@ final class BankApplicationAssemblySpec extends AnyFunSuite {
   private val admission = new BankTrustedAdmission(config)
   private def original(key: String): BankCashOriginal = BankCashOriginal("alice", key, config.version,
     BankCashSubmit(key, "fund", MoneyWire("10000", "CNY")),
-    BankPaymentOriginal(BankRequestIdentity.operation("alice", key), BankRequestIdentity.order("alice", key), investor, collection, "fund", Money.create(BigDecimal("100.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)))
+    BankPaymentOriginal(BankRequestIdentity.operation("alice", key), BankRequestIdentity.order("alice", key), TenantId("bankwealth"), investor, collection, "fund", Money.create(BigDecimal("100.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)))
   private def intent(key: String): BankSipCreateIntent = BankSipCreateIntent("alice", key, config.version,
     BankSipCreate(key, "fund", MoneyWire("10000", "CNY"), 0L, Vector(10L, 20L)), BankRequestIdentity.plan("alice", key),
     SipRevisionConfig(RevisionId("initial"), 0L, investor, collection, "fund", Money.create(BigDecimal("100.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)))
@@ -60,8 +60,8 @@ final class BankApplicationAssemblySpec extends AnyFunSuite {
       val changed = o.copy(request = o.request.copy(amount = MoneyWire("20000", "CNY")))
       assert(send(FundOrderProtocol.RecordCashRequestSource(changed, Some(changed))).isInstanceOf[FundOrderAggregate.Refused])
       val p = o.payment
-      assert(send(FundOrderProtocol.RequestFundPurchaseSettlement(p.operationId, p.fundOrderId, p.investorAccountId, p.fundCollectionAccountId, p.fundCode, Money.create(BigDecimal("99.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity))).isInstanceOf[FundOrderAggregate.Refused])
-      assert(send(FundOrderProtocol.RequestFundPurchaseSettlement(p.operationId, p.fundOrderId, p.investorAccountId, p.fundCollectionAccountId, p.fundCode, p.amount)).isInstanceOf[FundOrderAggregate.Accepted])
+      assert(send(FundOrderProtocol.RequestFundPurchaseSettlement(p.operationId, p.fundOrderId, TenantId("bankwealth"), p.investorAccountId, p.fundCollectionAccountId, p.fundCode, Money.create(BigDecimal("99.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity))).isInstanceOf[FundOrderAggregate.Refused])
+      assert(send(FundOrderProtocol.RequestFundPurchaseSettlement(p.operationId, p.fundOrderId, TenantId("bankwealth"), p.investorAccountId, p.fundCollectionAccountId, p.fundCode, p.amount)).isInstanceOf[FundOrderAggregate.Accepted])
     } finally kit.shutdownTestKit()
   }
 

@@ -247,6 +247,7 @@ object BankServiceJson {
   // Nominal identifiers and exact TA decimals are JSON strings, never untyped products.
   implicit val accountIdWrites: Writes[AccountId] = Writes(value => JsString(value.value))
   implicit val fundOrderIdWrites: Writes[FundOrderId] = Writes(value => JsString(value.value))
+  implicit val tenantIdWrites: Writes[TenantId] = Writes(value => JsString(value.value))
   implicit val operationIdWrites: Writes[OperationId] = Writes(value => JsString(value.value))
   implicit val txIdWrites: Writes[TxId] = Writes(value => JsString(value.value))
   implicit val planIdWrites: Writes[PlanId] = Writes(value => JsString(value.value))

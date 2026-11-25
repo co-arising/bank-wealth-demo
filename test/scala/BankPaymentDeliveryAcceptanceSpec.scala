@@ -63,7 +63,7 @@ final class BankPaymentDeliveryAcceptanceSpec extends AnyFunSuite {
     val investorId = AccountId("investor")
     val collectionId = AccountId("collection")
     val amount = Money.create(BigDecimal("100.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)
-    val original = BankPaymentOriginal(OperationId("cash-operation"), FundOrderId("original-order"),
+    val original = BankPaymentOriginal(OperationId("cash-operation"), FundOrderId("original-order"), TenantId("bankwealth"),
       investorId, collectionId, "FUND-中文-001", amount)
     val decoyOriginal = original.copy(operationId = OperationId("decoy-operation"), fundOrderId = FundOrderId("decoy-order"))
     val hideReceipts = new AtomicBoolean(hidePrepareReceipt)
@@ -108,7 +108,7 @@ final class BankPaymentDeliveryAcceptanceSpec extends AnyFunSuite {
       assert(ledgerReplies.receiveMessage().isInstanceOf[CreditBalanceAggregate.Accepted])
     }
     private def request(actor: ActorRef[FundOrderAggregate.Request], input: BankPaymentOriginal): Unit = {
-      actor ! FundOrderAggregate.Execute(FundOrderProtocol.RequestFundPurchaseSettlement(input.operationId, input.fundOrderId,
+      actor ! FundOrderAggregate.Execute(FundOrderProtocol.RequestFundPurchaseSettlement(input.operationId, input.fundOrderId, TenantId("bankwealth"),
         input.investorAccountId, input.fundCollectionAccountId, input.fundCode, input.amount), orderReplies.ref)
       assert(orderReplies.receiveMessage().isInstanceOf[FundOrderAggregate.Accepted])
     }

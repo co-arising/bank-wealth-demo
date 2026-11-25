@@ -170,10 +170,10 @@ final class BankRuntime(
       state <- source.ref.ask[SipPlanEntity.State](SipPlanProtocol.GetState)
       _ = require(state.occurrences.get(occurrence.dueSlot).contains(occurrence), "dispatch graph requires retained occurrence")
       destination <- order(occurrence.fundOrderId)
-      original = BankPaymentOriginal(occurrence.operationId, occurrence.fundOrderId, occurrence.config.investorAccountId,
+      original = BankPaymentOriginal(occurrence.operationId, occurrence.fundOrderId, TenantId("bankwealth"), occurrence.config.investorAccountId,
         occurrence.config.fundCollectionAccountId, occurrence.config.fundCode, occurrence.config.amount)
       reply <- destination.ref.ask[FundOrderProtocol.Reply](FundOrderProtocol.RequestFundPurchaseSettlement(original.operationId,
-        original.fundOrderId, original.investorAccountId, original.fundCollectionAccountId, original.fundCode, original.amount, _))
+        original.fundOrderId, original.tenantId, original.investorAccountId, original.fundCollectionAccountId, original.fundCode, original.amount, _))
       _ = require(reply.isInstanceOf[FundOrderProtocol.Accepted], "persisted occurrence settlement rejected")
       cash <- ensureCash(original)
     } yield synchronized {
