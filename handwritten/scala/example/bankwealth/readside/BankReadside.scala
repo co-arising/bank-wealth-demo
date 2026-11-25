@@ -4,16 +4,25 @@ import akka.NotUsed
 import akka.actor.typed.ActorSystem
 import akka.stream.scaladsl.Source
 import example.bankwealth.domain.entities.{CreditBalanceEntity, FundOrderEntity, SipPlanEntity}
-import example.bankwealth.application.api._
+import example.bankwealth.interfaces.api.ApiAcknowledgements._
+import example.bankwealth.interfaces.api.ApiCommands._
+import example.bankwealth.interfaces.api.ApiKeys._
+import example.bankwealth.interfaces.api.ApiResponses._
+import example.bankwealth.interfaces.api.ApiWire._
 import example.bankwealth.application.projection._
 import example.bankwealth.application.process._
-import example.bankwealth.application.integration._
+import example.bankwealth.application.process.BankPaymentMessages._
+import example.bankwealth.application.process.BankRefundMessages._
+import example.bankwealth.application.connectors._
+import example.bankwealth.application.connectors.BankSipDispatchProtocol._
+import example.bankwealth.application.connectors.BankTaEffectProtocol._
 import example.bankwealth.domain.values._
 import example.bankwealth.infrastructure.proto.SipOccurrencePO
 import example.bankwealth.infrastructure.persistence.converters.DomainConverters
-import example.bankwealth.application.projection.{BankJournalReadsideDomain, BankJournalReadsideProjection}
-import example.bankwealth.infrastructure.repositories.projection.BankJournalReadsideRepository
-import example.bankwealth.infrastructure.repositories.projection.BankJournalReadsideRepository.{Row, State, Pending, Occurrence, hash}
+import example.bankwealth.application.projection.BankJournalReadsideProjectionHandler
+import example.bankwealth.application.projection.repository.BankJournalReadsideRepository
+import example.bankwealth.application.projection.repository.BankJournalReadsideRepository.{Row, State, Pending, Occurrence, hash}
+import example.bankwealth.infrastructure.repositories.projection.{BankJournalReadsideDomain, BankJournalReadsideRepositoryImpl, BankJournalReadsideRunner}
 import example.bankwealth.integration._
 import example.bankwealth.security.{BankDemoConfiguration, BankDemoPrincipal}
 import example.bankwealth.infrastructure.bootstrap.BankServiceContract._
@@ -82,23 +91,26 @@ final class BankReadside(journal: BankJournal, config: BankDemoConfiguration, da
       (owner.orElse(r.account), principal.orElse(r.principal))
     }
   }
-  private val source = new BankJournalReadsideProjection.Journal {
-    val namespace: String = journal.namespace
-    def persistenceIds(): Source[String, NotUsed] = journal.persistenceIds()
-    def currentEvents(pid: String, after: Long): Future[Vector[BankJournalReadsideProjection.Envelope]] =
-      journal.currentEvents(pid, after).map(_.map(e => BankJournalReadsideProjection.Envelope(e.persistenceId, e.sequenceNr, e.event)))
-    def events(pid: String, after: Long): Source[BankJournalReadsideProjection.Envelope, NotUsed] =
-      journal.events(pid, after).map(e => BankJournalReadsideProjection.Envelope(e.persistenceId, e.sequenceNr, e.event))
-  }
-  private val projection = new BankJournalReadsideProjection(source, new BankJournalReadsideProjection.Bindings {
+  private val repository = new BankJournalReadsideRepositoryImpl(journal.namespace, dataSource)
+  private val bindings = new BankJournalReadsideProjectionHandler.Bindings {
     def identity(pid: String): (String, String) = BankReadside.this.identity(pid)
     def fold(row: Row, event: Any): State = BankJournalReadsideDomain.fold(row, event, ownership)
     def indexes(session: Session, row: Row): Unit = BankReadside.this.indexes(session, row)
-  }, dataSource)
+  }
+  private val handler = new BankJournalReadsideProjectionHandler(system, repository, bindings)
+  private val source = new BankJournalReadsideRunner.Journal {
+    val namespace: String = journal.namespace
+    def persistenceIds(): Source[String, NotUsed] = journal.persistenceIds()
+    def currentEvents(pid: String, after: Long): Future[Vector[BankJournalReadsideRunner.Envelope]] =
+      journal.currentEvents(pid, after).map(_.map(e => BankJournalReadsideRunner.Envelope(e.persistenceId, e.sequenceNr, e.event)))
+    def events(pid: String, after: Long): Source[BankJournalReadsideRunner.Envelope, NotUsed] =
+      journal.events(pid, after).map(e => BankJournalReadsideRunner.Envelope(e.persistenceId, e.sequenceNr, e.event))
+  }
+  private val projection = new BankJournalReadsideRunner(source, repository, handler)
 
   def initialize(): Future[Unit] = projection.initialize()
   def project(envelope: BankJournalEnvelope): Future[Unit] =
-    projection.project(BankJournalReadsideProjection.Envelope(envelope.persistenceId, envelope.sequenceNr, envelope.event))
+    projection.project(BankJournalReadsideRunner.Envelope(envelope.persistenceId, envelope.sequenceNr, envelope.event))
   def catchUp(pid: String): Future[Unit] = projection.catchUp(pid)
   def start(): Future[Unit] = projection.start()
   def shutdown(): Future[Unit] = projection.shutdown()

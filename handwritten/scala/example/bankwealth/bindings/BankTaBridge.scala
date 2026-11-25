@@ -7,10 +7,18 @@ import com.fasterxml.jackson.databind.{JsonNode, ObjectMapper}
 import example.bankwealth.application.aggregates.FundOrderProtocol
 import example.bankwealth.domain.entities.FundOrderEntity
 import example.bankwealth.domain.invariants.params.FundOrderRuleParams
-import example.bankwealth.application.api._
+import example.bankwealth.interfaces.api.ApiAcknowledgements._
+import example.bankwealth.interfaces.api.ApiCommands._
+import example.bankwealth.interfaces.api.ApiKeys._
+import example.bankwealth.interfaces.api.ApiResponses._
+import example.bankwealth.interfaces.api.ApiWire._
 import example.bankwealth.application.projection._
 import example.bankwealth.application.process._
-import example.bankwealth.application.integration._
+import example.bankwealth.application.process.BankPaymentMessages._
+import example.bankwealth.application.process.BankRefundMessages._
+import example.bankwealth.application.connectors._
+import example.bankwealth.application.connectors.BankSipDispatchProtocol._
+import example.bankwealth.application.connectors.BankTaEffectProtocol._
 import example.bankwealth.domain.values._
 import example.bankwealth.infrastructure.persistence.converters.DomainConverters
 import scala.concurrent.{ExecutionContext, Future}
@@ -25,7 +33,7 @@ final class BankTaBridge(order: ActorRef[FundOrderProtocol.Command], ta: MockTAC
   private def execute(build: ActorRef[FundOrderProtocol.Reply] => FundOrderProtocol.Command): Future[Unit] =
     order.ask[FundOrderProtocol.Reply](build).map {
       case FundOrderProtocol.Accepted(_) => ()
-      case FundOrderProtocol.Refused(code) => throw new IllegalArgumentException(code)
+      case FundOrderProtocol.Refused(err) => throw new IllegalArgumentException(err.code)
     }
   private def fields(node: JsonNode, expected: Set[String]): Unit =
     require(node != null && node.isObject && node.fieldNames().asScala.toSet == expected, "TA receipt fields differ from exact contract")

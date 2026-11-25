@@ -9,10 +9,21 @@ import example.bankwealth.infrastructure.bootstrap.{BankPaymentPortBindings => T
 import example.bankwealth.infrastructure.persistence.BankPaymentProcessCodecs
 import example.bankwealth.application.aggregates.{CreditBalanceProtocol, FundOrderProtocol}
 import example.bankwealth.domain.entities.{CreditBalanceEntity, FundOrderEntity}
-import example.bankwealth.application.api._
+import example.bankwealth.interfaces.api.ApiAcknowledgements._
+import example.bankwealth.interfaces.api.ApiCommands._
+import example.bankwealth.interfaces.api.ApiKeys._
+import example.bankwealth.interfaces.api.ApiResponses._
+import example.bankwealth.interfaces.api.ApiWire._
 import example.bankwealth.application.projection._
 import example.bankwealth.application.process._
-import example.bankwealth.application.integration._
+import example.bankwealth.application.process.BankPaymentMessages._
+import example.bankwealth.application.process.BankRefundMessages._
+import example.bankwealth.application.process.CreditFundCollectionStep._
+import example.bankwealth.application.process.ReserveCashFundOrderStep._
+import example.bankwealth.application.process.ReserveInvestorFundsStep._
+import example.bankwealth.application.connectors._
+import example.bankwealth.application.connectors.BankSipDispatchProtocol._
+import example.bankwealth.application.connectors.BankTaEffectProtocol._
 import example.bankwealth.domain.values._
 import example.bankwealth.infrastructure.proto._
 import example.bankwealth.infrastructure.persistence.converters.DomainConverters
@@ -104,11 +115,11 @@ final class BankPaymentBindings(
   private def send(index: Int, phase: Phase): Future[Either[String, Unit]] = if (index == 2) {
     order.ask[FundOrderProtocol.Reply](orderCommand(phase)).map {
       case FundOrderProtocol.Accepted(_) => Right(())
-      case FundOrderProtocol.Refused(code) => Left(code)
+      case FundOrderProtocol.Refused(err) => Left(err.code)
     }
   } else ledger(index).ask[CreditBalanceProtocol.Reply](ledgerCommand(index, phase)).map {
     case CreditBalanceProtocol.Accepted(_) => Right(())
-    case CreditBalanceProtocol.Refused(code) => Left(code)
+    case CreditBalanceProtocol.Refused(err) => Left(err.code)
   }
   private def execute(index: Int, phase: Phase, id: OperationIdentity): Future[Product] = {
     validate(id, index, phase)

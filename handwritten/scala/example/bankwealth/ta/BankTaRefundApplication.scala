@@ -6,16 +6,25 @@ import akka.stream.{KillSwitches, Materializer, SystemMaterializer}
 import akka.stream.scaladsl.{RestartSource, Sink, Source}
 import akka.util.Timeout
 import example.bankwealth.application.process.{BankIndependentRefundExecution => Refund, BankRefundHost => RefundHost}
-import example.bankwealth.application.integration.{BankTaSubmissionExecution => Ta, BankTaEffectHost => TaHost}
+import example.bankwealth.application.process.{BankTaSubmissionExecution => Ta}
+import example.bankwealth.application.connectors.{BankTaEffectHost => TaHost}
 import example.bankwealth.infrastructure.persistence.{BankIndependentRefundStateCodec, BankTaSubmissionStateCodec}
 import example.bankwealth.bindings.{BankTaBridge, BankTaEffectBindings, MockTAClient, StableOrderIdentity}
 import example.bankwealth.application.aggregates.FundOrderProtocol
 import example.bankwealth.domain.entities.FundOrderEntity
 import example.bankwealth.domain.invariants.params.FundOrderRuleParams
-import example.bankwealth.application.api._
+import example.bankwealth.interfaces.api.ApiAcknowledgements._
+import example.bankwealth.interfaces.api.ApiCommands._
+import example.bankwealth.interfaces.api.ApiKeys._
+import example.bankwealth.interfaces.api.ApiResponses._
+import example.bankwealth.interfaces.api.ApiWire._
 import example.bankwealth.application.projection._
 import example.bankwealth.application.process._
-import example.bankwealth.application.integration._
+import example.bankwealth.application.process.BankPaymentMessages._
+import example.bankwealth.application.process.BankRefundMessages._
+import example.bankwealth.application.connectors._
+import example.bankwealth.application.connectors.BankSipDispatchProtocol._
+import example.bankwealth.application.connectors.BankTaEffectProtocol._
 import example.bankwealth.domain.values._
 import example.bankwealth.infrastructure.proto._
 import example.bankwealth.infrastructure.persistence.converters.DomainConverters

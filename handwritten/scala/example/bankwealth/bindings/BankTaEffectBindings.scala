@@ -3,13 +3,22 @@ package example.bankwealth.bindings
 import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.util.Timeout
-import example.bankwealth.application.integration.{BankTaEffectHost => Host, BankTaSubmissionExecution => Execution}
+import example.bankwealth.application.connectors.{BankTaEffectHost => Host}
+import example.bankwealth.application.process.{BankTaSubmissionExecution => Execution}
 import example.bankwealth.application.aggregates.FundOrderProtocol
 import example.bankwealth.domain.entities.FundOrderEntity
-import example.bankwealth.application.api._
+import example.bankwealth.interfaces.api.ApiAcknowledgements._
+import example.bankwealth.interfaces.api.ApiCommands._
+import example.bankwealth.interfaces.api.ApiKeys._
+import example.bankwealth.interfaces.api.ApiResponses._
+import example.bankwealth.interfaces.api.ApiWire._
 import example.bankwealth.application.projection._
 import example.bankwealth.application.process._
-import example.bankwealth.application.integration._
+import example.bankwealth.application.process.BankPaymentMessages._
+import example.bankwealth.application.process.BankRefundMessages._
+import example.bankwealth.application.connectors._
+import example.bankwealth.application.connectors.BankSipDispatchProtocol._
+import example.bankwealth.application.connectors.BankTaEffectProtocol._
 import example.bankwealth.domain.values._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._

@@ -6,18 +6,26 @@ import akka.actor.typed.scaladsl.adapter._
 import akka.util.Timeout
 import example.bankwealth.application.process.{BankCashPaymentExecution => Cash, BankIndependentRefundExecution => Refund,
   BankPaymentHost => PaymentHost, BankRefundHost => RefundHost}
-import example.bankwealth.application.integration.{BankTaSubmissionExecution => Ta, BankSipDispatchExecution => Dispatch,
-  BankTaEffectHost => TaHost, BankSipDispatchEffectHost => SipHost}
+import example.bankwealth.application.process.{BankTaSubmissionExecution => Ta, BankSipDispatchExecution => Dispatch}
+import example.bankwealth.application.connectors.{BankTaEffectHost => TaHost, BankSipDispatchEffectHost => SipHost}
 import example.bankwealth.infrastructure.bootstrap.{BankPaymentProcessBootstrap => PaymentBootstrap,
   BankRefundProcessBootstrap => RefundBootstrap, BankTaEffectBootstrap => TaBootstrap,
   BankSipDispatchEffectBootstrap => SipBootstrap}
 import example.bankwealth.bindings._
 import example.bankwealth.application.aggregates.{CreditBalanceProtocol, FundOrderProtocol, SipPlanProtocol}
 import example.bankwealth.domain.entities.{CreditBalanceEntity, FundOrderEntity, SipPlanEntity}
-import example.bankwealth.application.api._
+import example.bankwealth.interfaces.api.ApiAcknowledgements._
+import example.bankwealth.interfaces.api.ApiCommands._
+import example.bankwealth.interfaces.api.ApiKeys._
+import example.bankwealth.interfaces.api.ApiResponses._
+import example.bankwealth.interfaces.api.ApiWire._
 import example.bankwealth.application.projection._
 import example.bankwealth.application.process._
-import example.bankwealth.application.integration._
+import example.bankwealth.application.process.BankPaymentMessages._
+import example.bankwealth.application.process.BankRefundMessages._
+import example.bankwealth.application.connectors._
+import example.bankwealth.application.connectors.BankSipDispatchProtocol._
+import example.bankwealth.application.connectors.BankTaEffectProtocol._
 import example.bankwealth.domain.values._
 import net.imadz.infra.saga.strict._
 import net.imadz.monarch.persistence.RunObserver
@@ -37,16 +45,9 @@ final class BankRuntime(
   require(journal.namespace == namespace && reconcileAuthorizer != null && taBindings != null)
   private val actors = mutable.ArrayBuffer.empty[ActorRef[_]]
   private val activePersistenceIds = mutable.Set.empty[String]
-  private val accounts = new example.bankwealth.infrastructure.repositories.aggregate.CreditBalanceRepositoryImpl[AccountId](ids.account,
-    (id, pid) => example.bankwealth.infrastructure.bootstrap.CreditBalanceBootstrap.create(pid, CreditBalanceEntity.empty.copy(id = id), BankBalanceComputations),
-    (pid, behavior) => spawn(pid, behavior).ref)
-  private val orders = new example.bankwealth.infrastructure.repositories.aggregate.FundOrderRepositoryImpl[FundOrderId](ids.order,
-    (id, pid) => example.bankwealth.infrastructure.bootstrap.FundOrderBootstrap.create(pid, FundOrderEntity.empty.copy(id = id), StableOrderIdentity,
-      new FundOrderProtocol.ExternalAuthority { def authorize(producer: String, authorization: String, identity: Vector[String]): Boolean = false }),
-    (pid, behavior) => spawn(pid, behavior).ref)
-  private val plans = new example.bankwealth.infrastructure.repositories.aggregate.SipPlanRepositoryImpl[PlanId](ids.plan,
-    (id, pid) => example.bankwealth.infrastructure.bootstrap.SipPlanBootstrap.create(pid, SipPlanEntity.empty.copy(id = id), StableSipIdentity),
-    (pid, behavior) => spawn(pid, behavior).ref)
+  private val accounts = mutable.Map.empty[AccountId, BankActorHandle[CreditBalanceProtocol.Command]]
+  private val orders = mutable.Map.empty[FundOrderId, BankActorHandle[FundOrderProtocol.Command]]
+  private val plans = mutable.Map.empty[PlanId, BankActorHandle[SipPlanProtocol.Command]]
   private val cashRuns = mutable.Map.empty[OperationId, Future[BankCashRuntime]]
   private val refundRuns = mutable.Map.empty[OperationId, Future[BankRefundRuntime]]
   private val taRuns = mutable.Map.empty[TaRequestId, Future[BankTaRuntime]]
@@ -63,18 +64,28 @@ final class BankRuntime(
   }
   def account(id: AccountId): Future[BankActorHandle[CreditBalanceProtocol.Command]] = synchronized {
     require(!closed)
-    val handle = accounts.get(id)
-    Future.successful(BankActorHandle(handle.persistenceId, handle.ref))
+    val handle = accounts.getOrElseUpdate(id, {
+      val pid = ids.account(id)
+      spawn(pid, example.bankwealth.infrastructure.bootstrap.CreditBalanceBootstrap.create(pid, CreditBalanceEntity.empty(id), BankBalanceComputations))
+    })
+    Future.successful(handle)
   }
   def order(id: FundOrderId): Future[BankActorHandle[FundOrderProtocol.Command]] = synchronized {
     require(!closed)
-    val handle = orders.get(id)
-    Future.successful(BankActorHandle(handle.persistenceId, handle.ref))
+    val handle = orders.getOrElseUpdate(id, {
+      val pid = ids.order(id)
+      spawn(pid, example.bankwealth.infrastructure.bootstrap.FundOrderBootstrap.create(pid, FundOrderEntity.empty(id), StableOrderIdentity,
+        new FundOrderProtocol.ExternalAuthority { def authorize(producer: String, authorization: String, identity: Vector[String]): Boolean = false }))
+    })
+    Future.successful(handle)
   }
   def plan(id: PlanId): Future[BankActorHandle[SipPlanProtocol.Command]] = synchronized {
     require(!closed)
-    val handle = plans.get(id)
-    Future.successful(BankActorHandle(handle.persistenceId, handle.ref))
+    val handle = plans.getOrElseUpdate(id, {
+      val pid = ids.plan(id)
+      spawn(pid, example.bankwealth.infrastructure.bootstrap.SipPlanBootstrap.create(pid, SipPlanEntity.empty(id), StableSipIdentity))
+    })
+    Future.successful(handle)
   }
   private def cached[K, V](map: mutable.Map[K, Future[V]], key: K, graphPid: String)(create: => Future[V]): Future[V] = synchronized {
     require(!closed)
@@ -170,9 +181,9 @@ final class BankRuntime(
   def close(): Unit = synchronized {
     if (!closed) {
       closed = true
-      accounts.close()
-      orders.close()
-      plans.close()
+      accounts.clear()
+      orders.clear()
+      plans.clear()
       val termination = actors.reverseIterator.map(ref => akka.pattern.gracefulStop(ref.toClassic, 10.seconds, akka.actor.PoisonPill)).toVector
       scala.concurrent.Await.result(Future.sequence(termination), 15.seconds)
       actors.clear()
