@@ -1,5 +1,12 @@
 package example.bankwealth.service
 
+import example.bankwealth.application.process.sip.BankSipApplication
+import example.bankwealth.application.services.{BankCashRequests, BankPersistenceIds, BankRequestIdentity, BankTrustedAdmission}
+import example.bankwealth.infrastructure.bootstrap.BankRuntime
+import example.bankwealth.infrastructure.persistence.{BankPersistenceJournal, BankReadside}
+import example.bankwealth.infrastructure.recovery.BankRecovery
+import example.bankwealth.infrastructure.security.{BankDemoAuthority, BankDemoConfiguration, BankDemoPrincipal, BankFund, BankSeed, BankSeedAuthority}
+import example.bankwealth.interfaces.web.{BankBrowserPages, BankServiceEndpoints, BankServiceJson}
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.scaladsl.adapter._
@@ -15,11 +22,8 @@ import example.bankwealth.domain.values._
 import example.bankwealth.infrastructure.proto._
 import example.bankwealth.infrastructure.serialization.DomainConverters
 import example.bankwealth.application.{bank_cash_payment_v1Execution => Cash}
-import example.bankwealth.integration._
-import example.bankwealth.readside.BankReadside
-import example.bankwealth.security._
-import example.bankwealth.service.BankServiceService._
-import example.bankwealth.sip.BankSipApplication
+import example.bankwealth.infrastructure.persistence.BankReadside
+import example.bankwealth.application.process.sip.BankSipApplication
 import net.imadz.infra.saga.strict.{ReconcileAuthorizer, TransactionIdentity}
 import net.imadz.monarch.persistence.PersistentMonarch
 import org.h2.jdbcx.JdbcDataSource
@@ -161,10 +165,10 @@ object BankHttpAcceptanceMain {
         BankDemoPrincipal("bob", AccountId("bob"), Set("customer"), "socket-bob", "csrf-bob"),
         BankDemoPrincipal("operator", AccountId("operator"), Set("operator"), "socket-operator", "csrf-operator")),
         Vector(BankFund("fund", collection)), Vector(
-          BankSeed(investor, "CNY", Money(BigDecimal("1000.00"), "CNY")),
-          BankSeed(AccountId("bob"), "CNY", Money(BigDecimal("0.00"), "CNY")),
-          BankSeed(AccountId("operator"), "CNY", Money(BigDecimal("0.00"), "CNY")),
-          BankSeed(collection, "CNY", Money(BigDecimal("0.00"), "CNY"))))
+          BankSeed(investor, "CNY", Money.create(BigDecimal("1000.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)),
+          BankSeed(AccountId("bob"), "CNY", Money.create(BigDecimal("0.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)),
+          BankSeed(AccountId("operator"), "CNY", Money.create(BigDecimal("0.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)),
+          BankSeed(collection, "CNY", Money.create(BigDecimal("0.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity))))
       val config = configuration
       val seeds = new BankSeedAuthority(durable)
       config.seeds.foreach(s => await(directory.account(s.accountId).flatMap(h => seeds.ensure(s, h))))
@@ -183,7 +187,7 @@ object BankHttpAcceptanceMain {
           def csrf(request: play.api.mvc.RequestHeader) = new BankDemoAuthority(configuration).csrf(request)
         }
         val bindings = BankServiceEndpoints.build(cash, views, plans, recovery)
-        override val pages = Some(example.bankwealth.web.BankBrowserPages)
+        override val pages = Some(example.bankwealth.interfaces.web.BankBrowserPages)
         val ready = Future.successful(())
         def close(): Unit = ()
       }
@@ -254,7 +258,7 @@ object BankHttpAcceptanceMain {
         require(Set("10000", "20000")(minor))
         BankCashOriginal("alice", key, "socket-v1", BankCashSubmit(key, "fund", MoneyWire(minor, "CNY")),
           BankPaymentOriginal(BankRequestIdentity.operation("alice", key), BankRequestIdentity.order("alice", key),
-            investor, collection, "fund", Money(BigDecimal(if (minor == "10000") "100.00" else "200.00"), "CNY")))
+            investor, collection, "fund", Money.create(BigDecimal(if (minor == "10000") "100.00" else "200.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)))
       }
       def expectedAck(key: String, minor: String): JsObject = BankServiceJson.bankCashAcknowledgementWrites
         .writes(BankCashAcknowledgement(expectedOriginal(key, minor), "accepted"))
@@ -392,8 +396,8 @@ object BankHttpAcceptanceMain {
       }
       val investorState = await(directory.account(investor).flatMap(_.ref.ask[CreditBalanceState](CreditBalanceAggregate.GetState)))
       val collectionState = await(directory.account(collection).flatMap(_.ref.ask[CreditBalanceState](CreditBalanceAggregate.GetState)))
-      require(investorState.accountBalance("CNY") == Money(BigDecimal(1000) - expected, "CNY"))
-      require(collectionState.accountBalance("CNY") == Money(expected, "CNY"))
+      require(investorState.accountBalance("CNY") == Money.create(BigDecimal(1000) - expected, "CNY").fold(e => throw new IllegalArgumentException(e.message), identity))
+      require(collectionState.accountBalance("CNY") == Money.create(expected, "CNY").fold(e => throw new IllegalArgumentException(e.message), identity))
       val moneyEvents = await(durable.readPb(ids.account(investor)))
       require(moneyEvents.count(_.isInstanceOf[CreditBalanceReserveFundsConfirmedPB]) == 3 && moneyEvents.count(_.isInstanceOf[CreditBalanceDeductFundsConfirmedPB]) == 3)
       assertAdmissions()

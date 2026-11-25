@@ -1,5 +1,7 @@
-package example.bankwealth.integration
+package example.bankwealth
 
+import example.bankwealth.application.services.BankPersistenceIds
+import example.bankwealth.infrastructure.persistence.BankPersistenceJournal
 import akka.NotUsed
 import akka.actor.testkit.typed.scaladsl.ActorTestKit
 import akka.actor.typed.ActorSystem
@@ -9,7 +11,6 @@ import akka.stream.SystemMaterializer
 import akka.stream.scaladsl.{Sink, Source}
 import com.typesafe.config.ConfigFactory
 import example.bankwealth.domain.values.AccountId
-import example.bankwealth.service.UnitConfigurationCheck
 import org.scalatest.funsuite.AnyFunSuite
 import java.util.concurrent.atomic.AtomicInteger
 import scala.concurrent.Await

@@ -1,11 +1,11 @@
 package example.bankwealth.service
 
+import example.bankwealth.infrastructure.security.{BankDemoAuthority, BankDemoConfiguration, BankDemoPrincipal, BankFund, BankSeed}
+import example.bankwealth.interfaces.web.{BankBrowserPages, BankServiceEndpoints}
 import com.typesafe.config.ConfigFactory
 import example.bankwealth.domain.values._
-import example.bankwealth.integration.BankServiceEndpoints
-import example.bankwealth.security._
-import example.bankwealth.service.BankServiceService._
-import example.bankwealth.web.BankBrowserPages
+import example.bankwealth.interfaces.web.BankServiceEndpoints
+import example.bankwealth.interfaces.web.BankBrowserPages
 import play.api.{ApplicationLoader, Configuration, Environment, Mode}
 import play.api.inject.DefaultApplicationLifecycle
 import play.api.libs.json.Json
@@ -55,7 +55,7 @@ object BankBrowserHttpFixture {
         BankDemoPrincipal("customer", AccountId("customer"), Set("customer"), "browser-customer", "browser-customer-csrf"),
         BankDemoPrincipal("operator", AccountId("operator"), Set("operator"), "browser-operator", "browser-operator-csrf")),
         Vector(BankFund("fund", AccountId("collection"))),
-        Vector("customer", "operator", "collection").map(id => BankSeed(AccountId(id), "CNY", Money(BigDecimal("1000.00"), "CNY"))))
+        Vector("customer", "operator", "collection").map(id => BankSeed(AccountId(id), "CNY", Money.create(BigDecimal("1000.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity))))
       configured = Some(new BankDemoAuthority(config))
       Files.write(owned.resolve("server.json"), Json.stringify(Json.obj("origin" -> origin, "pid" -> ProcessHandle.current().pid(), "scope" -> "HTTP boundary with refusing business stubs, not financial integration")).getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE_NEW)
       val deadline = System.nanoTime() + 180.seconds.toNanos

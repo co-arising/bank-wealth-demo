@@ -1,5 +1,5 @@
 import akka.actor.typed.scaladsl.AskPattern._
-import example.bankwealth.bindings.BankRefundBindings
+import example.bankwealth.infrastructure.process.BankRefundBindings
 import example.bankwealth.domain._
 import example.bankwealth.domain.values._
 import example.bankwealth.infrastructure.proto._
@@ -12,7 +12,7 @@ import scala.jdk.CollectionConverters._
 final class BankRefundApplicationSpec extends AnyFunSuite {
   import BankTaApplicationFixture._
 
-  private def reject(h: Harness): example.bankwealth.ta.BankTaRefundApplication = {
+  private def reject(h: Harness): example.bankwealth.application.process.ta.BankTaRefundApplication = {
     h.pay()
     val app = h.application()
     h.accepted(app)
@@ -47,7 +47,7 @@ final class BankRefundApplicationSpec extends AnyFunSuite {
       val collection = h.await(h.runtime.account(h.collection))
       val binding = new BankRefundBindings(original, investor.ref, investor.persistenceId, collection.ref,
         collection.persistenceId, h.order.ref, h.order.persistenceId, pid => h.journal.readPb(pid), () => graph.coordinator.ref)(h.system)
-      assert(!h.await(binding.installed.BankRefundEntry(original.copy(amount = Money(BigDecimal("101.00"), "CNY")))))
+      assert(!h.await(binding.installed.BankRefundEntry(original.copy(amount = Money.create(BigDecimal("101.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)))))
       intercept[IllegalArgumentException](h.await(h.runtime.ensureRefund(original.copy(paymentTxId = TxId("substitute-payment")))))
       val observed = Vector(h.order.persistenceId, investor.persistenceId, collection.persistenceId,
         graph.coordinator.persistenceId, graph.host.persistenceId, graph.parent.persistenceId, ta.host.persistenceId, ta.parent.persistenceId)
@@ -148,10 +148,10 @@ final class BankRefundApplicationSpec extends AnyFunSuite {
         h.discoverOrders.set(true)
         h.refundRuntime
         val recovered = h.application()
-        val cash = new example.bankwealth.integration.BankCashRequests(h.runtime, h.config, h.admission, h.journal)
-        val recovery = new example.bankwealth.integration.BankRecovery(h.runtime, h.journal, h.config, cash, "owned-b-refund-recovery")
-        val sip = new example.bankwealth.sip.BankSipApplication(h.runtime, h.journal, h.config, h.admission)
-        val loop = new example.bankwealth.integration.BankRecoveryLoop(h.journal, cash, recovered, sip, recovery)
+        val cash = new example.bankwealth.application.services.BankCashRequests(h.runtime, h.config, h.admission, h.journal)
+        val recovery = new example.bankwealth.infrastructure.recovery.BankRecovery(h.runtime, h.journal, h.config, cash, "owned-b-refund-recovery")
+        val sip = new example.bankwealth.application.process.sip.BankSipApplication(h.runtime, h.journal, h.config, h.admission)
+        val loop = new example.bankwealth.infrastructure.recovery.BankRecoveryLoop(h.journal, cash, recovered, sip, recovery)
         try {
           h.await(loop.start())
           h.eventually {

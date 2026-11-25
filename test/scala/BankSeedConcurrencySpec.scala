@@ -1,3 +1,8 @@
+import example.bankwealth.application.services.BankPersistenceIds
+import example.bankwealth.domain.services.impl.BankBalanceComputations
+import example.bankwealth.infrastructure.bootstrap.BankActorHandle
+import example.bankwealth.infrastructure.persistence.{BankJournalEnvelope, BankPersistenceJournal}
+import example.bankwealth.infrastructure.security.{BankSeed, BankSeedAuthority}
 import akka.actor.testkit.typed.scaladsl.ActorTestKit
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.{AskPattern, Behaviors}
@@ -6,16 +11,14 @@ import akka.persistence.query.PersistenceQuery
 import akka.persistence.testkit.query.scaladsl.PersistenceTestKitReadJournal
 import akka.util.Timeout
 import com.typesafe.config.ConfigFactory
-import example.bankwealth.bindings.BankBalanceComputations
+import example.bankwealth.domain.services.impl.BankBalanceComputations
 import example.bankwealth.domain._
 import example.bankwealth.domain.CreditBalanceAggregate.{Accepted, Execute, Reply, Request}
 import example.bankwealth.domain.CreditBalanceProtocol.{AccountInitialized, Command, InitializeAccount, ReserveFunds}
 import example.bankwealth.domain.values._
 import example.bankwealth.infrastructure.proto.CreditBalanceAccountInitializedPB
 import example.bankwealth.infrastructure.serialization.DomainConverters
-import example.bankwealth.integration._
-import example.bankwealth.security.BankSeed
-import example.bankwealth.service.UnitConfigurationCheck
+import example.bankwealth.infrastructure.security.BankSeed
 import org.scalatest.funsuite.AnyFunSuite
 import java.util.concurrent.atomic.AtomicInteger
 import scala.concurrent.{Await, ExecutionContext, Future, Promise}
@@ -42,7 +45,7 @@ final class BankSeedConcurrencySpec extends AnyFunSuite {
     implicit val ec: ExecutionContext = system.executionContext
     implicit val timeout: Timeout = Timeout(5.seconds)
     val id = AccountId("investor")
-    val seed = BankSeed(id, "CNY", Money(BigDecimal("1000.00"), "CNY"))
+    val seed = BankSeed(id, "CNY", Money.create(BigDecimal("1000.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity))
     private val ids = new BankPersistenceIds(namespace)
     private val query = PersistenceQuery(system)
       .readJournalFor[PersistenceTestKitReadJournal]("akka.persistence.testkit.query")
@@ -98,10 +101,10 @@ final class BankSeedConcurrencySpec extends AnyFunSuite {
       assert(f.state.accountBalance("CNY") == f.seed.amount)
 
       val tx = TxId("reserve-after-seed-race")
-      val reserved = Money(BigDecimal("100.00"), "CNY")
+      val reserved = Money.create(BigDecimal("100.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)
       assert(f.execute(ReserveFunds(tx, f.id, reserved)).isInstanceOf[Accepted])
       val changed = f.state
-      assert(changed.accountBalance("CNY") == Money(BigDecimal("900.00"), "CNY"))
+      assert(changed.accountBalance("CNY") == Money.create(BigDecimal("900.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity))
       assert(changed.reservedAmount.get(tx).contains(reserved))
       val afterReserve = f.persisted
       assert(afterReserve.size == 2)
@@ -119,7 +122,7 @@ final class BankSeedConcurrencySpec extends AnyFunSuite {
     withAccount("seedconflictrace") { f =>
       implicit val ec: ExecutionContext = f.ec
       assert(f.persisted.isEmpty)
-      val candidates = Vector(f.seed, f.seed.copy(amount = Money(BigDecimal("750.00"), "CNY")))
+      val candidates = Vector(f.seed, f.seed.copy(amount = Money.create(BigDecimal("750.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)))
       val racing = f.racingHandle(candidates.size)
       // Observe both outcomes without Future.sequence failing early on the loser.
       val attempts = candidates.map(seed => f.authority.ensure(seed, racing).transform(result => Success(result)))

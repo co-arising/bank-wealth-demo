@@ -1,8 +1,8 @@
 package example.bankwealth.service
 
-import example.bankwealth.integration._
+import example.bankwealth.application.services.BankReadQueries
+import example.bankwealth.interfaces.web.{BankServiceEndpoints, BankServiceJson}
 import example.bankwealth.domain.values._
-import example.bankwealth.security._
 import org.scalatest.funsuite.AnyFunSuite
 import play.api.libs.json._
 import play.api.mvc.{Headers, RequestHeader}

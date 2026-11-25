@@ -2,7 +2,7 @@ import akka.actor.testkit.typed.scaladsl.ActorTestKit
 import akka.persistence.testkit.PersistenceTestKitPlugin
 import akka.persistence.testkit.scaladsl.PersistenceTestKit
 import com.typesafe.config.ConfigFactory
-import example.bankwealth.bindings.BankBalanceComputations
+import example.bankwealth.domain.services.impl.BankBalanceComputations
 import example.bankwealth.domain._
 import example.bankwealth.domain.CreditBalanceProtocol._
 import example.bankwealth.domain.values._
@@ -12,7 +12,7 @@ import org.scalatest.funsuite.AnyFunSuite
 
 // Real aggregate phase tests, not a substitute for the still-pending Saga/Monarch joint.
 final class BankBalanceStateSpec extends AnyFunSuite {
-  private val money = Money(BigDecimal("100.00"), "CNY")
+  private val money = Money.create(BigDecimal("100.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)
   test("actual debit and credit actors conserve principal through payment and independent refund phases") {
     val kit = ActorTestKit(ConfigFactory.parseString("akka.actor.provider = local")
       .withFallback(PersistenceTestKitPlugin.config).withFallback(ConfigFactory.load()))
@@ -34,8 +34,8 @@ final class BankBalanceStateSpec extends AnyFunSuite {
       def state(actor: akka.actor.typed.ActorRef[CreditBalanceAggregate.Request]): CreditBalanceState = {
         actor ! CreditBalanceAggregate.GetState(states.ref); states.receiveMessage()
       }
-      accepted(investor, InitializeAccount(investorId, "CNY", Money(BigDecimal("1000.00"), "CNY")))
-      accepted(collection, InitializeAccount(collectionId, "CNY", Money(BigDecimal("0.00"), "CNY")))
+      accepted(investor, InitializeAccount(investorId, "CNY", Money.create(BigDecimal("1000.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)))
+      accepted(collection, InitializeAccount(collectionId, "CNY", Money.create(BigDecimal("0.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)))
       val canceled = TxId("cancel-before-prepare")
       accepted(investor, ReleaseReservedFunds(canceled, investorId, money))
       assert(state(investor).accountBalance("CNY").amount == BigDecimal("1000.00"))
@@ -43,7 +43,7 @@ final class BankBalanceStateSpec extends AnyFunSuite {
       val payment = TxId("payment")
       accepted(investor, ReserveFunds(payment, investorId, money))
       assert(accepted(investor, ReserveFunds(payment, investorId, money)).isEmpty)
-      assert(send(investor, ReserveFunds(payment, investorId, Money(BigDecimal("101.00"), "CNY"))) == CreditBalanceAggregate.Refused("LEDGER_RESERVEDAMOUNT_MATCH"))
+      assert(send(investor, ReserveFunds(payment, investorId, Money.create(BigDecimal("101.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity))) == CreditBalanceAggregate.Refused("LEDGER_RESERVEDAMOUNT_MATCH"))
       assert(send(investor, ReserveFunds(TxId("wrong"), collectionId, money)) == CreditBalanceAggregate.Refused("LEDGER_RESOURCE"))
       accepted(collection, RecordIncomingCredits(payment, collectionId, money))
       accepted(investor, DeductFunds(payment, investorId, money))
@@ -71,19 +71,19 @@ final class BankBalanceStateSpec extends AnyFunSuite {
     val major = "999999999999999999999999999999999999.99"
     val minor = "99999999999999999999999999999999999999"
     val amount = new scala.math.BigDecimal(new java.math.BigDecimal(major), java.math.MathContext.UNLIMITED)
-    val value = Money(amount, "CNY")
+    val value = Money.create(amount, "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)
     assert(DomainConverters.MoneyToWire(value).minorUnits == minor)
     assert(DomainConverters.MoneyToPO(value).minorUnits == minor)
     assert(DomainConverters.MoneyFromWire(MoneyWire(minor, "CNY")).amount.bigDecimal.toPlainString == major)
     assert(DomainConverters.MoneyFromPO(MoneyPO(minor, "CNY")).amount.bigDecimal.toPlainString == major)
     assert(DomainConverters.decodeMoneyPB(MoneyPB.parseFrom(DomainConverters.encodeMoneyPB(value).toByteArray)) == value)
-    val decimal = AmountDecimal(amount)
+    val decimal = AmountDecimal.create(amount).fold(e => throw new IllegalArgumentException(e.message), identity)
     assert(DomainConverters.AmountDecimalToWire(decimal).value == minor)
     assert(DomainConverters.AmountDecimalFromPO(AmountDecimalPO(minor)).value.bigDecimal.toPlainString == major)
     assert(DomainConverters.decodeAmountDecimalPB(AmountDecimalPB.parseFrom(DomainConverters.encodeAmountDecimalPB(decimal).toByteArray)) == decimal)
-    intercept[IllegalArgumentException](value.plus(Money(BigDecimal("0.01"), "CNY")))
-    intercept[ArithmeticException](Money(BigDecimal("0.001"), "CNY"))
-    intercept[IllegalArgumentException](Money(BigDecimal("1.00"), "USD"))
+    assert(value.plus(Money.create(BigDecimal("0.01"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)).isLeft)
+    assert(Money.create(BigDecimal("0.001"), "CNY").isLeft)
+    assert(Money.create(BigDecimal("1.00"), "USD").isLeft)
     for (bad <- Vector("01", "-0", "1.0", "1e2", "100000000000000000000000000000000000000")) {
       intercept[IllegalArgumentException](DomainConverters.MoneyFromWire(MoneyWire(bad, "CNY")))
     }

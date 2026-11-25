@@ -1,14 +1,13 @@
+import example.bankwealth.application.services.{BankRequestIdentity, BankTrustedAdmission}
+import example.bankwealth.domain.services.impl.{StableOrderIdentity, StableSipIdentity}
+import example.bankwealth.infrastructure.security.{BankDemoConfiguration, BankDemoPrincipal, BankFund, BankSeed}
 import akka.actor.typed.ActorSystem
 import akka.actor.testkit.typed.scaladsl.ActorTestKit
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.util.Timeout
 import com.typesafe.config.ConfigFactory
-import example.bankwealth.bindings.{StableOrderIdentity, StableSipIdentity}
 import example.bankwealth.domain._
 import example.bankwealth.domain.values._
-import example.bankwealth.integration._
-import example.bankwealth.security._
-import example.bankwealth.service.UnitConfigurationCheck
 import org.scalatest.funsuite.AnyFunSuite
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
@@ -19,14 +18,14 @@ final class BankApplicationAssemblySpec extends AnyFunSuite {
   private val collection = AccountId("collection")
   private val config = BankDemoConfiguration("demo-v1", "http://127.0.0.1:18081", Vector(
     BankDemoPrincipal("alice", investor, Set("customer"), "test-token", "test-csrf")), Vector(BankFund("fund", collection)),
-    Vector(BankSeed(investor, "CNY", Money(BigDecimal("1000.00"), "CNY")), BankSeed(collection, "CNY", Money(BigDecimal("0.00"), "CNY"))))
+    Vector(BankSeed(investor, "CNY", Money.create(BigDecimal("1000.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)), BankSeed(collection, "CNY", Money.create(BigDecimal("0.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity))))
   private val admission = new BankTrustedAdmission(config)
   private def original(key: String): BankCashOriginal = BankCashOriginal("alice", key, config.version,
     BankCashSubmit(key, "fund", MoneyWire("10000", "CNY")),
-    BankPaymentOriginal(BankRequestIdentity.operation("alice", key), BankRequestIdentity.order("alice", key), investor, collection, "fund", Money(BigDecimal("100.00"), "CNY")))
+    BankPaymentOriginal(BankRequestIdentity.operation("alice", key), BankRequestIdentity.order("alice", key), investor, collection, "fund", Money.create(BigDecimal("100.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)))
   private def intent(key: String): BankSipCreateIntent = BankSipCreateIntent("alice", key, config.version,
     BankSipCreate(key, "fund", MoneyWire("10000", "CNY"), 0L, Vector(10L, 20L)), BankRequestIdentity.plan("alice", key),
-    SipRevisionConfig(RevisionId("initial"), 0L, investor, collection, "fund", Money(BigDecimal("100.00"), "CNY")))
+    SipRevisionConfig(RevisionId("initial"), 0L, investor, collection, "fund", Money.create(BigDecimal("100.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)))
 
   test("trusted admission rejects wire mismatch and non-increasing full schedules") {
     val cash = original("cash")
@@ -61,7 +60,7 @@ final class BankApplicationAssemblySpec extends AnyFunSuite {
       val changed = o.copy(request = o.request.copy(amount = MoneyWire("20000", "CNY")))
       assert(send(FundOrderProtocol.RecordCashRequestSource(changed, Some(changed))).isInstanceOf[FundOrderAggregate.Refused])
       val p = o.payment
-      assert(send(FundOrderProtocol.RequestFundPurchaseSettlement(p.operationId, p.fundOrderId, p.investorAccountId, p.fundCollectionAccountId, p.fundCode, Money(BigDecimal("99.00"), "CNY"))).isInstanceOf[FundOrderAggregate.Refused])
+      assert(send(FundOrderProtocol.RequestFundPurchaseSettlement(p.operationId, p.fundOrderId, p.investorAccountId, p.fundCollectionAccountId, p.fundCode, Money.create(BigDecimal("99.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity))).isInstanceOf[FundOrderAggregate.Refused])
       assert(send(FundOrderProtocol.RequestFundPurchaseSettlement(p.operationId, p.fundOrderId, p.investorAccountId, p.fundCollectionAccountId, p.fundCode, p.amount)).isInstanceOf[FundOrderAggregate.Accepted])
     } finally kit.shutdownTestKit()
   }

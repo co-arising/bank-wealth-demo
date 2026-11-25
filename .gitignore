@@ -1,3 +1,4 @@
+.DS_Store
 .scratch/
 .local/mock-ta/
 .local/truthsrc-runtime/

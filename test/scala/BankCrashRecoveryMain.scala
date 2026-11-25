@@ -1,5 +1,14 @@
 package example.bankwealth.service
 
+import example.bankwealth.application.process.sip.BankSipApplication
+import example.bankwealth.application.process.ta.BankTaRefundApplication
+import example.bankwealth.application.services.{BankCashRequests, BankPersistenceIds, BankTrustedAdmission}
+import example.bankwealth.infrastructure.bootstrap.{BankActorHandle, BankCashRuntime, BankRefundRuntime, BankRuntime, BankRuntimeDirectory, BankSipDispatchRuntime, BankTaRuntime}
+import example.bankwealth.infrastructure.connectors.{BankTaEffectBindings, MockTAClient}
+import example.bankwealth.infrastructure.persistence.{BankJournal, BankJournalEnvelope, BankPersistenceJournal}
+import example.bankwealth.infrastructure.process.{BankPaymentBindings, BankRefundBindings}
+import example.bankwealth.infrastructure.recovery.{BankRecovery, BankRecoveryLoop}
+import example.bankwealth.infrastructure.security.{BankDemoConfiguration, BankDemoPrincipal, BankFund, BankSeed, BankSeedAuthority}
 import akka.NotUsed
 import akka.actor.typed.{ActorSystem, ActorRef, Behavior}
 import akka.actor.typed.scaladsl.{Behaviors, AskPattern}
@@ -20,16 +29,12 @@ import example.bankwealth.application.{bank_cash_payment_v1Execution => Cash,
   bank_payment_hostHost => PaymentHost, bank_refund_hostHost => RefundHost,
   bank_payment_hostDefinition => PaymentDefinition, bank_refund_hostDefinition => RefundDefinition,
   bank_ta_effectEffectHost => TaHost}
-import example.bankwealth.bindings.{BankTaEffectBindings, BankPaymentBindings, BankRefundBindings, MockTAClient}
 import example.bankwealth.domain._
 import example.bankwealth.domain.values._
 import example.bankwealth.infrastructure.proto._
 import example.bankwealth.infrastructure.serialization.DomainConverters
-import example.bankwealth.integration._
-import example.bankwealth.security._
-import example.bankwealth.service.BankServiceService._
-import example.bankwealth.sip.BankSipApplication
-import example.bankwealth.ta.BankTaRefundApplication
+import example.bankwealth.application.process.sip.BankSipApplication
+import example.bankwealth.application.process.ta.BankTaRefundApplication
 import net.imadz.infra.saga.strict._
 import net.imadz.monarch.persistence.{PersistentMonarch, RunObserver}
 import scalapb.GeneratedMessage
@@ -366,8 +371,8 @@ object BankCrashRecoveryMain {
     private val config = BankDemoConfiguration("bank-crash-authority-v1", "http://127.0.0.1:18081", Vector(
       BankDemoPrincipal("alice", investor, Set("customer"), "crash-synthetic-token", "crash-synthetic-csrf")),
       Vector(BankFund("fund", collection)), Vector(
-        BankSeed(investor, "CNY", Money(BigDecimal("1000.00"), "CNY")),
-        BankSeed(collection, "CNY", Money(BigDecimal("0.00"), "CNY"))))
+        BankSeed(investor, "CNY", Money.create(BigDecimal("1000.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)),
+        BankSeed(collection, "CNY", Money.create(BigDecimal("0.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity))))
     private val admission = new BankTrustedAdmission(config)
     private val transactions = ConcurrentHashMap.newKeySet[String]()
     private val cashGraph = new AtomicReference[Option[BankCashRuntime]](None)
@@ -441,7 +446,7 @@ object BankCrashRecoveryMain {
           val credit = if (settings.refundCase) investor else collection
           val fault = settings.crashing && settings.phaseCase && tx.exists { transaction => rows.exists { row =>
             ledgerFact(pid, row.event).exists { fact =>
-              fact.tx == transaction && fact.amount == Money(BigDecimal("100.00"), "CNY") &&
+              fact.tx == transaction && fact.amount == Money.create(BigDecimal("100.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity) &&
                 (settings.phase match {
                   case "prepare" => fact.kind == "reserve" && fact.resource == debit && pid == ids.account(debit)
                   case "collection-commit" if settings.refundCase => fact.kind == "deduct" && fact.resource == debit && pid == ids.account(debit)
@@ -1003,7 +1008,7 @@ object BankCrashRecoveryMain {
         "generated paid order differs from the original durable request")
     private def checkAccounts(f: Facts, s: ObservedState, refunded: Boolean): Unit = {
       def account(a: CreditBalanceState, id: AccountId, balance: String, outgoing: Map[TxId, Money], incoming: Map[TxId, Money]): Unit =
-        require(a.id == id && a.initialized && a.accountBalance == Map("CNY" -> Money(BigDecimal(balance), "CNY")) &&
+        require(a.id == id && a.initialized && a.accountBalance == Map("CNY" -> Money.create(BigDecimal(balance), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)) &&
           a.reservedAmount.isEmpty && a.incomingCredits.isEmpty && a.compensatedOutgoing.isEmpty && a.compensatedIncoming.isEmpty &&
           a.committedOutgoing == outgoing && a.committedIncoming == incoming, "generated account effects/balance do not reconcile")
       val paid = Map(TxId(f.paymentTx) -> f.payment.amount)

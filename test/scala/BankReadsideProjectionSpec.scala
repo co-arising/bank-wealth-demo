@@ -1,5 +1,9 @@
 package example.bankwealth.service
 
+import example.bankwealth.application.services.{BankCashRequestService, BankPersistenceIds, BankReadQueries, BankRecoveryService, BankRequestIdentity, BankSipApplicationService}
+import example.bankwealth.domain.services.impl.{BankBalanceComputations, StableOrderIdentity, StableSipIdentity}
+import example.bankwealth.infrastructure.persistence.{BankJournal, BankJournalEnvelope, BankReadside, BankReadsideSchema}
+import example.bankwealth.infrastructure.security.{BankDemoAuthority, BankDemoConfiguration, BankDemoPrincipal, BankFund, BankSeed}
 import akka.NotUsed
 import akka.actor.typed.ActorSystem
 import akka.actor.testkit.typed.scaladsl.ActorTestKit
@@ -9,13 +13,8 @@ import akka.stream.{Materializer, SystemMaterializer}
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
 import com.typesafe.config.ConfigFactory
-import example.bankwealth.bindings.{BankBalanceComputations, StableOrderIdentity, StableSipIdentity}
 import example.bankwealth.domain._
 import example.bankwealth.domain.values._
-import example.bankwealth.integration._
-import example.bankwealth.readside.{BankReadside, BankReadsideSchema}
-import example.bankwealth.security._
-import example.bankwealth.service.BankServiceService._
 import java.io.PrintWriter
 import java.lang.reflect.{InvocationHandler, InvocationTargetException, Method, Proxy}
 import java.sql.{Connection, SQLException}
@@ -114,7 +113,7 @@ private[bankwealth] object BankOwnerATestSupport {
       BankDemoPrincipal("bob", otherInvestor, Set("customer"), "bob-token", "bob-csrf"),
       BankDemoPrincipal("operator", operatorAccount, Set("operator"), "operator-token", "operator-csrf")),
       Vector(BankFund("fund", collection)), Vector(investor, otherInvestor, collection, operatorAccount)
-        .map(id => BankSeed(id, "CNY", Money(BigDecimal("1000.00"), "CNY"))))
+        .map(id => BankSeed(id, "CNY", Money.create(BigDecimal("1000.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity))))
     val alice = Principal("alice", Set("customer"))
     val bob = Principal("bob", Set("customer"))
     val operator = Principal("operator", Set("operator"))
@@ -145,15 +144,15 @@ private[bankwealth] object BankOwnerATestSupport {
         actor ! CreditBalanceAggregate.Execute(command, replies.ref)
         require(replies.receiveMessage().isInstanceOf[CreditBalanceAggregate.Accepted])
       }
-      send(CreditBalanceProtocol.InitializeAccount(account, "CNY", Money(BigDecimal(balance), "CNY")))
-      if (reserve) send(CreditBalanceProtocol.ReserveFunds(TxId("reserved"), account, Money(BigDecimal("100.00"), "CNY")))
+      send(CreditBalanceProtocol.InitializeAccount(account, "CNY", Money.create(BigDecimal(balance), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)))
+      if (reserve) send(CreditBalanceProtocol.ReserveFunds(TxId("reserved"), account, Money.create(BigDecimal("100.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)))
       capture(pid)
     }
     def cashOriginal(key: String, owner: String = "alice"): BankCashOriginal = {
       val account = if (owner == "alice") investor else otherInvestor
       BankCashOriginal(owner, key, config.version, BankCashSubmit(key, "fund", MoneyWire("10000", "CNY")),
         BankPaymentOriginal(BankRequestIdentity.operation(owner, key), BankRequestIdentity.order(owner, key),
-          account, collection, "fund", Money(BigDecimal("100.00"), "CNY")))
+          account, collection, "fund", Money.create(BigDecimal("100.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)))
     }
     def orderEvents(payment: BankPaymentOriginal, source: Option[BankCashOriginal] = None,
         requestPayment: Boolean = true): Vector[BankJournalEnvelope] = {
@@ -176,7 +175,7 @@ private[bankwealth] object BankOwnerATestSupport {
       val account = if (owner == "alice") investor else otherInvestor
       val intent = BankSipCreateIntent(owner, key, config.version,
         BankSipCreate(key, "fund", MoneyWire("10000", "CNY"), 0L, Vector(10L, 20L)), BankRequestIdentity.plan(owner, key),
-        SipRevisionConfig(RevisionId("initial"), 0L, account, collection, "fund", Money(BigDecimal("100.00"), "CNY")))
+        SipRevisionConfig(RevisionId("initial"), 0L, account, collection, "fund", Money.create(BigDecimal("100.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)))
       val pid = ids.plan(intent.planId)
       val actor = kit.spawn(SipPlanAggregate(pid, SipPlanState.empty.copy(id = intent.planId), StableSipIdentity))
       val replies = kit.createTestProbe[SipPlanAggregate.Reply]()

@@ -309,7 +309,7 @@ payload:
           }
         }
       },
-      "formal-technical-port-bank-payment0-commit-execute": {
+      "formal-technical-port-reserve-investor-funds-commit-execute": {
         "parameters": ["file","doc-id","ref-id","ref-id-2"],
         "body": {
           "file": {"$arg":"file"},
@@ -329,7 +329,7 @@ payload:
           }
         }
       },
-      "formal-technical-port-bank-payment0-commit-query-port": {
+      "formal-technical-port-reserve-investor-funds-commit-query-port": {
         "parameters": ["file","doc-id","ref-id","ref-id-2"],
         "body": {
           "file": {"$arg":"file"},
@@ -349,7 +349,7 @@ payload:
           }
         }
       },
-      "value-object-bank-payment0-commit-input": {
+      "value-object-reserve-investor-funds-commit-input": {
         "parameters": ["file","doc-name","doc-seq","fields-data-type"],
         "body": {
           "file": {"$arg":"file"},
@@ -366,7 +366,7 @@ payload:
           }
         }
       },
-      "value-object-bank-payment0-commit-query": {
+      "value-object-reserve-investor-funds-commit-query": {
         "parameters": ["file","doc-name","doc-seq","fields-data-type"],
         "body": {
           "file": {"$arg":"file"},
@@ -391,7 +391,7 @@ payload:
           }
         }
       },
-      "value-object-bank-payment0-commit-receipt": {
+      "value-object-reserve-investor-funds-commit-receipt": {
         "parameters": ["file","doc-name","doc-seq","fields-data-type"],
         "body": {
           "file": {"$arg":"file"},
@@ -419,7 +419,7 @@ payload:
           }
         }
       },
-      "value-object-bank-payment0-compensate-receipt": {
+      "value-object-reserve-investor-funds-compensate-receipt": {
         "parameters": ["file","doc-name","doc-seq"],
         "body": {
           "file": {"$arg":"file"},
@@ -474,94 +474,94 @@ payload:
                   ["BankPaymentEntry","BankPaymentOriginal","@type(primitive:boolean)"],
                   ["BankPaymentAssociation","BankPaymentOriginal","@type(primitive:boolean)"],
                   [
-                    "BankPayment0PrepareExecute",
-                    "BankPayment0PrepareInput",
-                    "@type(nominal:bankwealth:type#BankPayment0PrepareReceipt)"
+                    "ReserveInvestorFundsPrepareExecute",
+                    "ReserveInvestorFundsPrepareInput",
+                    "@type(nominal:bankwealth:type#ReserveInvestorFundsPrepareReceipt)"
                   ],
                   [
-                    "BankPayment0PrepareQueryPort",
-                    "BankPayment0PrepareQuery",
-                    "@type(optional:nominal:bankwealth:type#BankPayment0PrepareReceipt)"
+                    "ReserveInvestorFundsPrepareQueryPort",
+                    "ReserveInvestorFundsPrepareQuery",
+                    "@type(optional:nominal:bankwealth:type#ReserveInvestorFundsPrepareReceipt)"
                   ],
                   [
-                    "BankPayment0CommitExecute",
-                    "BankPayment0CommitInput",
-                    "@type(nominal:bankwealth:type#BankPayment0CommitReceipt)"
+                    "ReserveInvestorFundsCommitExecute",
+                    "ReserveInvestorFundsCommitInput",
+                    "@type(nominal:bankwealth:type#ReserveInvestorFundsCommitReceipt)"
                   ],
                   [
-                    "BankPayment0CommitQueryPort",
-                    "BankPayment0CommitQuery",
-                    "@type(optional:nominal:bankwealth:type#BankPayment0CommitReceipt)"
+                    "ReserveInvestorFundsCommitQueryPort",
+                    "ReserveInvestorFundsCommitQuery",
+                    "@type(optional:nominal:bankwealth:type#ReserveInvestorFundsCommitReceipt)"
                   ],
                   [
-                    "BankPayment0CompensateExecute",
-                    "BankPayment0CompensateInput",
-                    "@type(nominal:bankwealth:type#BankPayment0CompensateReceipt)"
+                    "ReserveInvestorFundsCompensateExecute",
+                    "ReserveInvestorFundsCompensateInput",
+                    "@type(nominal:bankwealth:type#ReserveInvestorFundsCompensateReceipt)"
                   ],
                   [
-                    "BankPayment0CompensateQueryPort",
-                    "BankPayment0CompensateQuery",
-                    "@type(optional:nominal:bankwealth:type#BankPayment0CompensateReceipt)"
+                    "ReserveInvestorFundsCompensateQueryPort",
+                    "ReserveInvestorFundsCompensateQuery",
+                    "@type(optional:nominal:bankwealth:type#ReserveInvestorFundsCompensateReceipt)"
                   ],
                   [
-                    "BankPayment1PrepareExecute",
-                    "BankPayment1PrepareInput",
-                    "@type(nominal:bankwealth:type#BankPayment1PrepareReceipt)"
+                    "CreditFundCollectionPrepareExecute",
+                    "CreditFundCollectionPrepareInput",
+                    "@type(nominal:bankwealth:type#CreditFundCollectionPrepareReceipt)"
                   ],
                   [
-                    "BankPayment1PrepareQueryPort",
-                    "BankPayment1PrepareQuery",
-                    "@type(optional:nominal:bankwealth:type#BankPayment1PrepareReceipt)"
+                    "CreditFundCollectionPrepareQueryPort",
+                    "CreditFundCollectionPrepareQuery",
+                    "@type(optional:nominal:bankwealth:type#CreditFundCollectionPrepareReceipt)"
                   ],
                   [
-                    "BankPayment1CommitExecute",
-                    "BankPayment1CommitInput",
-                    "@type(nominal:bankwealth:type#BankPayment1CommitReceipt)"
+                    "CreditFundCollectionCommitExecute",
+                    "CreditFundCollectionCommitInput",
+                    "@type(nominal:bankwealth:type#CreditFundCollectionCommitReceipt)"
                   ],
                   [
-                    "BankPayment1CommitQueryPort",
-                    "BankPayment1CommitQuery",
-                    "@type(optional:nominal:bankwealth:type#BankPayment1CommitReceipt)"
+                    "CreditFundCollectionCommitQueryPort",
+                    "CreditFundCollectionCommitQuery",
+                    "@type(optional:nominal:bankwealth:type#CreditFundCollectionCommitReceipt)"
                   ],
                   [
-                    "BankPayment1CompensateExecute",
-                    "BankPayment1CompensateInput",
-                    "@type(nominal:bankwealth:type#BankPayment1CompensateReceipt)"
+                    "CreditFundCollectionCompensateExecute",
+                    "CreditFundCollectionCompensateInput",
+                    "@type(nominal:bankwealth:type#CreditFundCollectionCompensateReceipt)"
                   ],
                   [
-                    "BankPayment1CompensateQueryPort",
-                    "BankPayment1CompensateQuery",
-                    "@type(optional:nominal:bankwealth:type#BankPayment1CompensateReceipt)"
+                    "CreditFundCollectionCompensateQueryPort",
+                    "CreditFundCollectionCompensateQuery",
+                    "@type(optional:nominal:bankwealth:type#CreditFundCollectionCompensateReceipt)"
                   ],
                   [
-                    "BankPayment2PrepareExecute",
-                    "BankPayment2PrepareInput",
-                    "@type(nominal:bankwealth:type#BankPayment2PrepareReceipt)"
+                    "ReserveCashFundOrderPrepareExecute",
+                    "ReserveCashFundOrderPrepareInput",
+                    "@type(nominal:bankwealth:type#ReserveCashFundOrderPrepareReceipt)"
                   ],
                   [
-                    "BankPayment2PrepareQueryPort",
-                    "BankPayment2PrepareQuery",
-                    "@type(optional:nominal:bankwealth:type#BankPayment2PrepareReceipt)"
+                    "ReserveCashFundOrderPrepareQueryPort",
+                    "ReserveCashFundOrderPrepareQuery",
+                    "@type(optional:nominal:bankwealth:type#ReserveCashFundOrderPrepareReceipt)"
                   ],
                   [
-                    "BankPayment2CommitExecute",
-                    "BankPayment2CommitInput",
-                    "@type(nominal:bankwealth:type#BankPayment2CommitReceipt)"
+                    "ReserveCashFundOrderCommitExecute",
+                    "ReserveCashFundOrderCommitInput",
+                    "@type(nominal:bankwealth:type#ReserveCashFundOrderCommitReceipt)"
                   ],
                   [
-                    "BankPayment2CommitQueryPort",
-                    "BankPayment2CommitQuery",
-                    "@type(optional:nominal:bankwealth:type#BankPayment2CommitReceipt)"
+                    "ReserveCashFundOrderCommitQueryPort",
+                    "ReserveCashFundOrderCommitQuery",
+                    "@type(optional:nominal:bankwealth:type#ReserveCashFundOrderCommitReceipt)"
                   ],
                   [
-                    "BankPayment2CompensateExecute",
-                    "BankPayment2CompensateInput",
-                    "@type(nominal:bankwealth:type#BankPayment2CompensateReceipt)"
+                    "ReserveCashFundOrderCompensateExecute",
+                    "ReserveCashFundOrderCompensateInput",
+                    "@type(nominal:bankwealth:type#ReserveCashFundOrderCompensateReceipt)"
                   ],
                   [
-                    "BankPayment2CompensateQueryPort",
-                    "BankPayment2CompensateQuery",
-                    "@type(optional:nominal:bankwealth:type#BankPayment2CompensateReceipt)"
+                    "ReserveCashFundOrderCompensateQueryPort",
+                    "ReserveCashFundOrderCompensateQuery",
+                    "@type(optional:nominal:bankwealth:type#ReserveCashFundOrderCompensateReceipt)"
                   ],
                   [
                     "BankPaymentSucceededAuthority",
@@ -603,24 +603,24 @@ payload:
                 "rows": [
                   ["BankPaymentEntry","bankwealth.BankPaymentEntry"],
                   ["BankPaymentAssociation","bankwealth.BankPaymentAssociation"],
-                  ["BankPayment0PrepareExecute","bankwealth.BankPayment0PrepareExecute"],
-                  ["BankPayment0PrepareQueryPort","bankwealth.BankPayment0PrepareQueryPort"],
-                  ["BankPayment0CommitExecute","bankwealth.BankPayment0CommitExecute"],
-                  ["BankPayment0CommitQueryPort","bankwealth.BankPayment0CommitQueryPort"],
-                  ["BankPayment0CompensateExecute","bankwealth.BankPayment0CompensateExecute"],
-                  ["BankPayment0CompensateQueryPort","bankwealth.BankPayment0CompensateQueryPort"],
-                  ["BankPayment1PrepareExecute","bankwealth.BankPayment1PrepareExecute"],
-                  ["BankPayment1PrepareQueryPort","bankwealth.BankPayment1PrepareQueryPort"],
-                  ["BankPayment1CommitExecute","bankwealth.BankPayment1CommitExecute"],
-                  ["BankPayment1CommitQueryPort","bankwealth.BankPayment1CommitQueryPort"],
-                  ["BankPayment1CompensateExecute","bankwealth.BankPayment1CompensateExecute"],
-                  ["BankPayment1CompensateQueryPort","bankwealth.BankPayment1CompensateQueryPort"],
-                  ["BankPayment2PrepareExecute","bankwealth.BankPayment2PrepareExecute"],
-                  ["BankPayment2PrepareQueryPort","bankwealth.BankPayment2PrepareQueryPort"],
-                  ["BankPayment2CommitExecute","bankwealth.BankPayment2CommitExecute"],
-                  ["BankPayment2CommitQueryPort","bankwealth.BankPayment2CommitQueryPort"],
-                  ["BankPayment2CompensateExecute","bankwealth.BankPayment2CompensateExecute"],
-                  ["BankPayment2CompensateQueryPort","bankwealth.BankPayment2CompensateQueryPort"],
+                  ["ReserveInvestorFundsPrepareExecute","bankwealth.ReserveInvestorFundsPrepareExecute"],
+                  ["ReserveInvestorFundsPrepareQueryPort","bankwealth.ReserveInvestorFundsPrepareQueryPort"],
+                  ["ReserveInvestorFundsCommitExecute","bankwealth.ReserveInvestorFundsCommitExecute"],
+                  ["ReserveInvestorFundsCommitQueryPort","bankwealth.ReserveInvestorFundsCommitQueryPort"],
+                  ["ReserveInvestorFundsCompensateExecute","bankwealth.ReserveInvestorFundsCompensateExecute"],
+                  ["ReserveInvestorFundsCompensateQueryPort","bankwealth.ReserveInvestorFundsCompensateQueryPort"],
+                  ["CreditFundCollectionPrepareExecute","bankwealth.CreditFundCollectionPrepareExecute"],
+                  ["CreditFundCollectionPrepareQueryPort","bankwealth.CreditFundCollectionPrepareQueryPort"],
+                  ["CreditFundCollectionCommitExecute","bankwealth.CreditFundCollectionCommitExecute"],
+                  ["CreditFundCollectionCommitQueryPort","bankwealth.CreditFundCollectionCommitQueryPort"],
+                  ["CreditFundCollectionCompensateExecute","bankwealth.CreditFundCollectionCompensateExecute"],
+                  ["CreditFundCollectionCompensateQueryPort","bankwealth.CreditFundCollectionCompensateQueryPort"],
+                  ["ReserveCashFundOrderPrepareExecute","bankwealth.ReserveCashFundOrderPrepareExecute"],
+                  ["ReserveCashFundOrderPrepareQueryPort","bankwealth.ReserveCashFundOrderPrepareQueryPort"],
+                  ["ReserveCashFundOrderCommitExecute","bankwealth.ReserveCashFundOrderCommitExecute"],
+                  ["ReserveCashFundOrderCommitQueryPort","bankwealth.ReserveCashFundOrderCommitQueryPort"],
+                  ["ReserveCashFundOrderCompensateExecute","bankwealth.ReserveCashFundOrderCompensateExecute"],
+                  ["ReserveCashFundOrderCompensateQueryPort","bankwealth.ReserveCashFundOrderCompensateQueryPort"],
                   ["BankPaymentSucceededAuthority","bankwealth.BankPaymentSucceededAuthority"],
                   ["BankPaymentSucceededDelivery","bankwealth.BankPaymentSucceededDelivery"],
                   ["BankPaymentRejectedBeforeEffectsAuthority","bankwealth.BankPaymentRejectedBeforeEffectsAuthority"],
@@ -701,8 +701,8 @@ payload:
                     "CreditBalance",
                     "investorAccountId",
                     "ReserveFunds",
-                    "BankPayment0PrepareInput",
-                    "BankPayment0PrepareExecute",
+                    "ReserveInvestorFundsPrepareInput",
+                    "ReserveInvestorFundsPrepareExecute",
                     "ReserveFundsConfirmed",
                     [
                       {"slot":"@ref(bankwealth:event-slot/CreditBalance/ReserveFundsConfirmed#txid)","output":"txid"},
@@ -714,38 +714,38 @@ payload:
                         "output": "available"
                       }
                     ],
-                    "BankPayment0PrepareQueryPort",
-                    "BankPayment0PrepareQuery",
-                    "BankPayment0PrepareReceipt",
+                    "ReserveInvestorFundsPrepareQueryPort",
+                    "ReserveInvestorFundsPrepareQuery",
+                    "ReserveInvestorFundsPrepareReceipt",
                     [
-                      {"output":"txid","member":"@ref(bankwealth:member/BankPayment0PrepareReceipt#payloadTxid)"},
-                      {"output":"resource","member":"@ref(bankwealth:member/BankPayment0PrepareReceipt#payloadResource)"},
-                      {"output":"amount","member":"@ref(bankwealth:member/BankPayment0PrepareReceipt#payloadAmount)"},
-                      {"output":"currency","member":"@ref(bankwealth:member/BankPayment0PrepareReceipt#payloadCurrency)"},
-                      {"output":"available","member":"@ref(bankwealth:member/BankPayment0PrepareReceipt#payloadAvailable)"}
+                      {"output":"txid","member":"@ref(bankwealth:member/ReserveInvestorFundsPrepareReceipt#payloadTxid)"},
+                      {"output":"resource","member":"@ref(bankwealth:member/ReserveInvestorFundsPrepareReceipt#payloadResource)"},
+                      {"output":"amount","member":"@ref(bankwealth:member/ReserveInvestorFundsPrepareReceipt#payloadAmount)"},
+                      {"output":"currency","member":"@ref(bankwealth:member/ReserveInvestorFundsPrepareReceipt#payloadCurrency)"},
+                      {"output":"available","member":"@ref(bankwealth:member/ReserveInvestorFundsPrepareReceipt#payloadAvailable)"}
                     ],
                     "bank-payment-reserve-investor-funds-prepare",
                     "DeductFunds",
-                    "BankPayment0CommitInput",
-                    "BankPayment0CommitExecute",
+                    "ReserveInvestorFundsCommitInput",
+                    "ReserveInvestorFundsCommitExecute",
                     "DeductFundsConfirmed",
                     [
                       {"slot":"@ref(bankwealth:event-slot/CreditBalance/DeductFundsConfirmed#txid)","output":"txid"},
                       {"slot":"@ref(bankwealth:event-slot/CreditBalance/DeductFundsConfirmed#resource)","output":"resource"},
                       {"slot":"@ref(bankwealth:event-slot/CreditBalance/DeductFundsConfirmed#amount)","output":"amount"}
                     ],
-                    "BankPayment0CommitQueryPort",
-                    "BankPayment0CommitQuery",
-                    "BankPayment0CommitReceipt",
+                    "ReserveInvestorFundsCommitQueryPort",
+                    "ReserveInvestorFundsCommitQuery",
+                    "ReserveInvestorFundsCommitReceipt",
                     [
-                      {"output":"txid","member":"@ref(bankwealth:member/BankPayment0CommitReceipt#payloadTxid)"},
-                      {"output":"resource","member":"@ref(bankwealth:member/BankPayment0CommitReceipt#payloadResource)"},
-                      {"output":"amount","member":"@ref(bankwealth:member/BankPayment0CommitReceipt#payloadAmount)"}
+                      {"output":"txid","member":"@ref(bankwealth:member/ReserveInvestorFundsCommitReceipt#payloadTxid)"},
+                      {"output":"resource","member":"@ref(bankwealth:member/ReserveInvestorFundsCommitReceipt#payloadResource)"},
+                      {"output":"amount","member":"@ref(bankwealth:member/ReserveInvestorFundsCommitReceipt#payloadAmount)"}
                     ],
                     "bank-payment-reserve-investor-funds-commit",
                     "ReleaseReservedFunds",
-                    "BankPayment0CompensateInput",
-                    "BankPayment0CompensateExecute",
+                    "ReserveInvestorFundsCompensateInput",
+                    "ReserveInvestorFundsCompensateExecute",
                     "ReleaseReservedFundsConfirmed",
                     [
                       {"slot":"@ref(bankwealth:event-slot/CreditBalance/ReleaseReservedFundsConfirmed#txid)","output":"txid"},
@@ -766,15 +766,15 @@ payload:
                         "output": "available"
                       }
                     ],
-                    "BankPayment0CompensateQueryPort",
-                    "BankPayment0CompensateQuery",
-                    "BankPayment0CompensateReceipt",
+                    "ReserveInvestorFundsCompensateQueryPort",
+                    "ReserveInvestorFundsCompensateQuery",
+                    "ReserveInvestorFundsCompensateReceipt",
                     [
-                      {"output":"txid","member":"@ref(bankwealth:member/BankPayment0CompensateReceipt#payloadTxid)"},
-                      {"output":"resource","member":"@ref(bankwealth:member/BankPayment0CompensateReceipt#payloadResource)"},
-                      {"output":"amount","member":"@ref(bankwealth:member/BankPayment0CompensateReceipt#payloadAmount)"},
-                      {"output":"currency","member":"@ref(bankwealth:member/BankPayment0CompensateReceipt#payloadCurrency)"},
-                      {"output":"available","member":"@ref(bankwealth:member/BankPayment0CompensateReceipt#payloadAvailable)"}
+                      {"output":"txid","member":"@ref(bankwealth:member/ReserveInvestorFundsCompensateReceipt#payloadTxid)"},
+                      {"output":"resource","member":"@ref(bankwealth:member/ReserveInvestorFundsCompensateReceipt#payloadResource)"},
+                      {"output":"amount","member":"@ref(bankwealth:member/ReserveInvestorFundsCompensateReceipt#payloadAmount)"},
+                      {"output":"currency","member":"@ref(bankwealth:member/ReserveInvestorFundsCompensateReceipt#payloadCurrency)"},
+                      {"output":"available","member":"@ref(bankwealth:member/ReserveInvestorFundsCompensateReceipt#payloadAvailable)"}
                     ],
                     "bank-payment-reserve-investor-funds-compensate"
                   ],
@@ -784,8 +784,8 @@ payload:
                     "CreditBalance",
                     "fundCollectionAccountId",
                     "RecordIncomingCredits",
-                    "BankPayment1PrepareInput",
-                    "BankPayment1PrepareExecute",
+                    "CreditFundCollectionPrepareInput",
+                    "CreditFundCollectionPrepareExecute",
                     "RecordIncomingCreditsConfirmed",
                     [
                       {"slot":"@ref(bankwealth:event-slot/CreditBalance/RecordIncomingCreditsConfirmed#txid)","output":"txid"},
@@ -798,18 +798,18 @@ payload:
                         "output": "amount"
                       }
                     ],
-                    "BankPayment1PrepareQueryPort",
-                    "BankPayment1PrepareQuery",
-                    "BankPayment1PrepareReceipt",
+                    "CreditFundCollectionPrepareQueryPort",
+                    "CreditFundCollectionPrepareQuery",
+                    "CreditFundCollectionPrepareReceipt",
                     [
-                      {"output":"txid","member":"@ref(bankwealth:member/BankPayment1PrepareReceipt#payloadTxid)"},
-                      {"output":"resource","member":"@ref(bankwealth:member/BankPayment1PrepareReceipt#payloadResource)"},
-                      {"output":"amount","member":"@ref(bankwealth:member/BankPayment1PrepareReceipt#payloadAmount)"}
+                      {"output":"txid","member":"@ref(bankwealth:member/CreditFundCollectionPrepareReceipt#payloadTxid)"},
+                      {"output":"resource","member":"@ref(bankwealth:member/CreditFundCollectionPrepareReceipt#payloadResource)"},
+                      {"output":"amount","member":"@ref(bankwealth:member/CreditFundCollectionPrepareReceipt#payloadAmount)"}
                     ],
                     "bank-payment-credit-fund-collection-prepare",
                     "CommitIncomingCredits",
-                    "BankPayment1CommitInput",
-                    "BankPayment1CommitExecute",
+                    "CreditFundCollectionCommitInput",
+                    "CreditFundCollectionCommitExecute",
                     "CommitIncomingCreditsConfirmed",
                     [
                       {"slot":"@ref(bankwealth:event-slot/CreditBalance/CommitIncomingCreditsConfirmed#txid)","output":"txid"},
@@ -830,20 +830,20 @@ payload:
                         "output": "available"
                       }
                     ],
-                    "BankPayment1CommitQueryPort",
-                    "BankPayment1CommitQuery",
-                    "BankPayment1CommitReceipt",
+                    "CreditFundCollectionCommitQueryPort",
+                    "CreditFundCollectionCommitQuery",
+                    "CreditFundCollectionCommitReceipt",
                     [
-                      {"output":"txid","member":"@ref(bankwealth:member/BankPayment1CommitReceipt#payloadTxid)"},
-                      {"output":"resource","member":"@ref(bankwealth:member/BankPayment1CommitReceipt#payloadResource)"},
-                      {"output":"amount","member":"@ref(bankwealth:member/BankPayment1CommitReceipt#payloadAmount)"},
-                      {"output":"currency","member":"@ref(bankwealth:member/BankPayment1CommitReceipt#payloadCurrency)"},
-                      {"output":"available","member":"@ref(bankwealth:member/BankPayment1CommitReceipt#payloadAvailable)"}
+                      {"output":"txid","member":"@ref(bankwealth:member/CreditFundCollectionCommitReceipt#payloadTxid)"},
+                      {"output":"resource","member":"@ref(bankwealth:member/CreditFundCollectionCommitReceipt#payloadResource)"},
+                      {"output":"amount","member":"@ref(bankwealth:member/CreditFundCollectionCommitReceipt#payloadAmount)"},
+                      {"output":"currency","member":"@ref(bankwealth:member/CreditFundCollectionCommitReceipt#payloadCurrency)"},
+                      {"output":"available","member":"@ref(bankwealth:member/CreditFundCollectionCommitReceipt#payloadAvailable)"}
                     ],
                     "bank-payment-credit-fund-collection-commit",
                     "CancelIncomingCredit",
-                    "BankPayment1CompensateInput",
-                    "BankPayment1CompensateExecute",
+                    "CreditFundCollectionCompensateInput",
+                    "CreditFundCollectionCompensateExecute",
                     "CancelIncomingCreditConfirmed",
                     [
                       {"slot":"@ref(bankwealth:event-slot/CreditBalance/CancelIncomingCreditConfirmed#txid)","output":"txid"},
@@ -856,13 +856,13 @@ payload:
                         "output": "amount"
                       }
                     ],
-                    "BankPayment1CompensateQueryPort",
-                    "BankPayment1CompensateQuery",
-                    "BankPayment1CompensateReceipt",
+                    "CreditFundCollectionCompensateQueryPort",
+                    "CreditFundCollectionCompensateQuery",
+                    "CreditFundCollectionCompensateReceipt",
                     [
-                      {"output":"txid","member":"@ref(bankwealth:member/BankPayment1CompensateReceipt#payloadTxid)"},
-                      {"output":"resource","member":"@ref(bankwealth:member/BankPayment1CompensateReceipt#payloadResource)"},
-                      {"output":"amount","member":"@ref(bankwealth:member/BankPayment1CompensateReceipt#payloadAmount)"}
+                      {"output":"txid","member":"@ref(bankwealth:member/CreditFundCollectionCompensateReceipt#payloadTxid)"},
+                      {"output":"resource","member":"@ref(bankwealth:member/CreditFundCollectionCompensateReceipt#payloadResource)"},
+                      {"output":"amount","member":"@ref(bankwealth:member/CreditFundCollectionCompensateReceipt#payloadAmount)"}
                     ],
                     "bank-payment-credit-fund-collection-compensate"
                   ],
@@ -872,8 +872,8 @@ payload:
                     "FundOrder",
                     "fundOrderId",
                     "ReserveFundSubscription",
-                    "BankPayment2PrepareInput",
-                    "BankPayment2PrepareExecute",
+                    "ReserveCashFundOrderPrepareInput",
+                    "ReserveCashFundOrderPrepareExecute",
                     "ReserveFundSubscriptionConfirmed",
                     [
                       {"slot":"@ref(bankwealth:event-slot/FundOrder/ReserveFundSubscriptionConfirmed#txid)","output":"txid"},
@@ -886,18 +886,18 @@ payload:
                         "output": "amount"
                       }
                     ],
-                    "BankPayment2PrepareQueryPort",
-                    "BankPayment2PrepareQuery",
-                    "BankPayment2PrepareReceipt",
+                    "ReserveCashFundOrderPrepareQueryPort",
+                    "ReserveCashFundOrderPrepareQuery",
+                    "ReserveCashFundOrderPrepareReceipt",
                     [
-                      {"output":"txid","member":"@ref(bankwealth:member/BankPayment2PrepareReceipt#payloadTxid)"},
-                      {"output":"resource","member":"@ref(bankwealth:member/BankPayment2PrepareReceipt#payloadResource)"},
-                      {"output":"amount","member":"@ref(bankwealth:member/BankPayment2PrepareReceipt#payloadAmount)"}
+                      {"output":"txid","member":"@ref(bankwealth:member/ReserveCashFundOrderPrepareReceipt#payloadTxid)"},
+                      {"output":"resource","member":"@ref(bankwealth:member/ReserveCashFundOrderPrepareReceipt#payloadResource)"},
+                      {"output":"amount","member":"@ref(bankwealth:member/ReserveCashFundOrderPrepareReceipt#payloadAmount)"}
                     ],
                     "bank-payment-reserve-cash-fund-order-prepare",
                     "ConfirmFundSubscriptionPayment",
-                    "BankPayment2CommitInput",
-                    "BankPayment2CommitExecute",
+                    "ReserveCashFundOrderCommitInput",
+                    "ReserveCashFundOrderCommitExecute",
                     "FundSubscriptionPaymentConfirmed",
                     [
                       {"slot":"@ref(bankwealth:event-slot/FundOrder/FundSubscriptionPaymentConfirmed#txid)","output":"txid"},
@@ -910,18 +910,18 @@ payload:
                         "output": "amount"
                       }
                     ],
-                    "BankPayment2CommitQueryPort",
-                    "BankPayment2CommitQuery",
-                    "BankPayment2CommitReceipt",
+                    "ReserveCashFundOrderCommitQueryPort",
+                    "ReserveCashFundOrderCommitQuery",
+                    "ReserveCashFundOrderCommitReceipt",
                     [
-                      {"output":"txid","member":"@ref(bankwealth:member/BankPayment2CommitReceipt#payloadTxid)"},
-                      {"output":"resource","member":"@ref(bankwealth:member/BankPayment2CommitReceipt#payloadResource)"},
-                      {"output":"amount","member":"@ref(bankwealth:member/BankPayment2CommitReceipt#payloadAmount)"}
+                      {"output":"txid","member":"@ref(bankwealth:member/ReserveCashFundOrderCommitReceipt#payloadTxid)"},
+                      {"output":"resource","member":"@ref(bankwealth:member/ReserveCashFundOrderCommitReceipt#payloadResource)"},
+                      {"output":"amount","member":"@ref(bankwealth:member/ReserveCashFundOrderCommitReceipt#payloadAmount)"}
                     ],
                     "bank-payment-reserve-cash-fund-order-commit",
                     "CancelCashFundSubscription",
-                    "BankPayment2CompensateInput",
-                    "BankPayment2CompensateExecute",
+                    "ReserveCashFundOrderCompensateInput",
+                    "ReserveCashFundOrderCompensateExecute",
                     "CashFundSubscriptionCanceled",
                     [
                       {"slot":"@ref(bankwealth:event-slot/FundOrder/CashFundSubscriptionCanceled#txid)","output":"txid"},
@@ -931,13 +931,13 @@ payload:
                       },
                       {"slot":"@ref(bankwealth:event-slot/FundOrder/CashFundSubscriptionCanceled#amount)","output":"amount"}
                     ],
-                    "BankPayment2CompensateQueryPort",
-                    "BankPayment2CompensateQuery",
-                    "BankPayment2CompensateReceipt",
+                    "ReserveCashFundOrderCompensateQueryPort",
+                    "ReserveCashFundOrderCompensateQuery",
+                    "ReserveCashFundOrderCompensateReceipt",
                     [
-                      {"output":"txid","member":"@ref(bankwealth:member/BankPayment2CompensateReceipt#payloadTxid)"},
-                      {"output":"resource","member":"@ref(bankwealth:member/BankPayment2CompensateReceipt#payloadResource)"},
-                      {"output":"amount","member":"@ref(bankwealth:member/BankPayment2CompensateReceipt#payloadAmount)"}
+                      {"output":"txid","member":"@ref(bankwealth:member/ReserveCashFundOrderCompensateReceipt#payloadTxid)"},
+                      {"output":"resource","member":"@ref(bankwealth:member/ReserveCashFundOrderCompensateReceipt#payloadResource)"},
+                      {"output":"amount","member":"@ref(bankwealth:member/ReserveCashFundOrderCompensateReceipt#payloadAmount)"}
                     ],
                     "bank-payment-reserve-cash-fund-order-compensate"
                   ]
@@ -962,24 +962,24 @@ payload:
                 "rows": [
                   ["entry","BankPaymentEntry","bankwealth.BankPaymentEntry"],
                   ["association","BankPaymentAssociation","bankwealth.BankPaymentAssociation"],
-                  ["phase-execute","BankPayment0PrepareExecute","bankwealth.BankPayment0PrepareExecute"],
-                  ["phase-query","BankPayment0PrepareQueryPort","bankwealth.BankPayment0PrepareQueryPort"],
-                  ["phase-execute","BankPayment0CommitExecute","bankwealth.BankPayment0CommitExecute"],
-                  ["phase-query","BankPayment0CommitQueryPort","bankwealth.BankPayment0CommitQueryPort"],
-                  ["phase-execute","BankPayment0CompensateExecute","bankwealth.BankPayment0CompensateExecute"],
-                  ["phase-query","BankPayment0CompensateQueryPort","bankwealth.BankPayment0CompensateQueryPort"],
-                  ["phase-execute","BankPayment1PrepareExecute","bankwealth.BankPayment1PrepareExecute"],
-                  ["phase-query","BankPayment1PrepareQueryPort","bankwealth.BankPayment1PrepareQueryPort"],
-                  ["phase-execute","BankPayment1CommitExecute","bankwealth.BankPayment1CommitExecute"],
-                  ["phase-query","BankPayment1CommitQueryPort","bankwealth.BankPayment1CommitQueryPort"],
-                  ["phase-execute","BankPayment1CompensateExecute","bankwealth.BankPayment1CompensateExecute"],
-                  ["phase-query","BankPayment1CompensateQueryPort","bankwealth.BankPayment1CompensateQueryPort"],
-                  ["phase-execute","BankPayment2PrepareExecute","bankwealth.BankPayment2PrepareExecute"],
-                  ["phase-query","BankPayment2PrepareQueryPort","bankwealth.BankPayment2PrepareQueryPort"],
-                  ["phase-execute","BankPayment2CommitExecute","bankwealth.BankPayment2CommitExecute"],
-                  ["phase-query","BankPayment2CommitQueryPort","bankwealth.BankPayment2CommitQueryPort"],
-                  ["phase-execute","BankPayment2CompensateExecute","bankwealth.BankPayment2CompensateExecute"],
-                  ["phase-query","BankPayment2CompensateQueryPort","bankwealth.BankPayment2CompensateQueryPort"],
+                  ["phase-execute","ReserveInvestorFundsPrepareExecute","bankwealth.ReserveInvestorFundsPrepareExecute"],
+                  ["phase-query","ReserveInvestorFundsPrepareQueryPort","bankwealth.ReserveInvestorFundsPrepareQueryPort"],
+                  ["phase-execute","ReserveInvestorFundsCommitExecute","bankwealth.ReserveInvestorFundsCommitExecute"],
+                  ["phase-query","ReserveInvestorFundsCommitQueryPort","bankwealth.ReserveInvestorFundsCommitQueryPort"],
+                  ["phase-execute","ReserveInvestorFundsCompensateExecute","bankwealth.ReserveInvestorFundsCompensateExecute"],
+                  ["phase-query","ReserveInvestorFundsCompensateQueryPort","bankwealth.ReserveInvestorFundsCompensateQueryPort"],
+                  ["phase-execute","CreditFundCollectionPrepareExecute","bankwealth.CreditFundCollectionPrepareExecute"],
+                  ["phase-query","CreditFundCollectionPrepareQueryPort","bankwealth.CreditFundCollectionPrepareQueryPort"],
+                  ["phase-execute","CreditFundCollectionCommitExecute","bankwealth.CreditFundCollectionCommitExecute"],
+                  ["phase-query","CreditFundCollectionCommitQueryPort","bankwealth.CreditFundCollectionCommitQueryPort"],
+                  ["phase-execute","CreditFundCollectionCompensateExecute","bankwealth.CreditFundCollectionCompensateExecute"],
+                  ["phase-query","CreditFundCollectionCompensateQueryPort","bankwealth.CreditFundCollectionCompensateQueryPort"],
+                  ["phase-execute","ReserveCashFundOrderPrepareExecute","bankwealth.ReserveCashFundOrderPrepareExecute"],
+                  ["phase-query","ReserveCashFundOrderPrepareQueryPort","bankwealth.ReserveCashFundOrderPrepareQueryPort"],
+                  ["phase-execute","ReserveCashFundOrderCommitExecute","bankwealth.ReserveCashFundOrderCommitExecute"],
+                  ["phase-query","ReserveCashFundOrderCommitQueryPort","bankwealth.ReserveCashFundOrderCommitQueryPort"],
+                  ["phase-execute","ReserveCashFundOrderCompensateExecute","bankwealth.ReserveCashFundOrderCompensateExecute"],
+                  ["phase-query","ReserveCashFundOrderCompensateQueryPort","bankwealth.ReserveCashFundOrderCompensateQueryPort"],
                   ["authority","BankPaymentSucceededAuthority","bankwealth.BankPaymentSucceededAuthority"],
                   ["result-delivery","BankPaymentSucceededDelivery","bankwealth.BankPaymentSucceededDelivery"],
                   ["authority","BankPaymentRejectedBeforeEffectsAuthority","bankwealth.BankPaymentRejectedBeforeEffectsAuthority"],
@@ -1024,33 +1024,33 @@ payload:
       },
       {
         "$rows": {
-          "template": "formal-technical-port-bank-payment0-commit-execute",
+          "template": "formal-technical-port-reserve-investor-funds-commit-execute",
           "rows": [
-            ["contexts/bankwealth/formal-products/technical-port/bank-payment0-commit-execute.formal.yaml","BankPayment0CommitExecute","BankPayment0CommitInput","BankPayment0CommitReceipt"],
-            ["contexts/bankwealth/formal-products/technical-port/bank-payment0-compensate-execute.formal.yaml","BankPayment0CompensateExecute","BankPayment0CompensateInput","BankPayment0CompensateReceipt"],
-            ["contexts/bankwealth/formal-products/technical-port/bank-payment0-prepare-execute.formal.yaml","BankPayment0PrepareExecute","BankPayment0PrepareInput","BankPayment0PrepareReceipt"],
-            ["contexts/bankwealth/formal-products/technical-port/bank-payment1-commit-execute.formal.yaml","BankPayment1CommitExecute","BankPayment1CommitInput","BankPayment1CommitReceipt"],
-            ["contexts/bankwealth/formal-products/technical-port/bank-payment1-compensate-execute.formal.yaml","BankPayment1CompensateExecute","BankPayment1CompensateInput","BankPayment1CompensateReceipt"],
-            ["contexts/bankwealth/formal-products/technical-port/bank-payment1-prepare-execute.formal.yaml","BankPayment1PrepareExecute","BankPayment1PrepareInput","BankPayment1PrepareReceipt"],
-            ["contexts/bankwealth/formal-products/technical-port/bank-payment2-commit-execute.formal.yaml","BankPayment2CommitExecute","BankPayment2CommitInput","BankPayment2CommitReceipt"],
-            ["contexts/bankwealth/formal-products/technical-port/bank-payment2-compensate-execute.formal.yaml","BankPayment2CompensateExecute","BankPayment2CompensateInput","BankPayment2CompensateReceipt"],
-            ["contexts/bankwealth/formal-products/technical-port/bank-payment2-prepare-execute.formal.yaml","BankPayment2PrepareExecute","BankPayment2PrepareInput","BankPayment2PrepareReceipt"]
+            ["contexts/bankwealth/formal-products/technical-port/reserve-investor-funds-commit-execute.formal.yaml","ReserveInvestorFundsCommitExecute","ReserveInvestorFundsCommitInput","ReserveInvestorFundsCommitReceipt"],
+            ["contexts/bankwealth/formal-products/technical-port/reserve-investor-funds-compensate-execute.formal.yaml","ReserveInvestorFundsCompensateExecute","ReserveInvestorFundsCompensateInput","ReserveInvestorFundsCompensateReceipt"],
+            ["contexts/bankwealth/formal-products/technical-port/reserve-investor-funds-prepare-execute.formal.yaml","ReserveInvestorFundsPrepareExecute","ReserveInvestorFundsPrepareInput","ReserveInvestorFundsPrepareReceipt"],
+            ["contexts/bankwealth/formal-products/technical-port/credit-fund-collection-commit-execute.formal.yaml","CreditFundCollectionCommitExecute","CreditFundCollectionCommitInput","CreditFundCollectionCommitReceipt"],
+            ["contexts/bankwealth/formal-products/technical-port/credit-fund-collection-compensate-execute.formal.yaml","CreditFundCollectionCompensateExecute","CreditFundCollectionCompensateInput","CreditFundCollectionCompensateReceipt"],
+            ["contexts/bankwealth/formal-products/technical-port/credit-fund-collection-prepare-execute.formal.yaml","CreditFundCollectionPrepareExecute","CreditFundCollectionPrepareInput","CreditFundCollectionPrepareReceipt"],
+            ["contexts/bankwealth/formal-products/technical-port/reserve-cash-fund-order-commit-execute.formal.yaml","ReserveCashFundOrderCommitExecute","ReserveCashFundOrderCommitInput","ReserveCashFundOrderCommitReceipt"],
+            ["contexts/bankwealth/formal-products/technical-port/reserve-cash-fund-order-compensate-execute.formal.yaml","ReserveCashFundOrderCompensateExecute","ReserveCashFundOrderCompensateInput","ReserveCashFundOrderCompensateReceipt"],
+            ["contexts/bankwealth/formal-products/technical-port/reserve-cash-fund-order-prepare-execute.formal.yaml","ReserveCashFundOrderPrepareExecute","ReserveCashFundOrderPrepareInput","ReserveCashFundOrderPrepareReceipt"]
           ]
         }
       },
       {
         "$rows": {
-          "template": "formal-technical-port-bank-payment0-commit-query-port",
+          "template": "formal-technical-port-reserve-investor-funds-commit-query-port",
           "rows": [
-            ["contexts/bankwealth/formal-products/technical-port/bank-payment0-commit-query-port.formal.yaml","BankPayment0CommitQueryPort","BankPayment0CommitQuery","BankPayment0CommitReceipt"],
-            ["contexts/bankwealth/formal-products/technical-port/bank-payment0-compensate-query-port.formal.yaml","BankPayment0CompensateQueryPort","BankPayment0CompensateQuery","BankPayment0CompensateReceipt"],
-            ["contexts/bankwealth/formal-products/technical-port/bank-payment0-prepare-query-port.formal.yaml","BankPayment0PrepareQueryPort","BankPayment0PrepareQuery","BankPayment0PrepareReceipt"],
-            ["contexts/bankwealth/formal-products/technical-port/bank-payment1-commit-query-port.formal.yaml","BankPayment1CommitQueryPort","BankPayment1CommitQuery","BankPayment1CommitReceipt"],
-            ["contexts/bankwealth/formal-products/technical-port/bank-payment1-compensate-query-port.formal.yaml","BankPayment1CompensateQueryPort","BankPayment1CompensateQuery","BankPayment1CompensateReceipt"],
-            ["contexts/bankwealth/formal-products/technical-port/bank-payment1-prepare-query-port.formal.yaml","BankPayment1PrepareQueryPort","BankPayment1PrepareQuery","BankPayment1PrepareReceipt"],
-            ["contexts/bankwealth/formal-products/technical-port/bank-payment2-commit-query-port.formal.yaml","BankPayment2CommitQueryPort","BankPayment2CommitQuery","BankPayment2CommitReceipt"],
-            ["contexts/bankwealth/formal-products/technical-port/bank-payment2-compensate-query-port.formal.yaml","BankPayment2CompensateQueryPort","BankPayment2CompensateQuery","BankPayment2CompensateReceipt"],
-            ["contexts/bankwealth/formal-products/technical-port/bank-payment2-prepare-query-port.formal.yaml","BankPayment2PrepareQueryPort","BankPayment2PrepareQuery","BankPayment2PrepareReceipt"]
+            ["contexts/bankwealth/formal-products/technical-port/reserve-investor-funds-commit-query-port.formal.yaml","ReserveInvestorFundsCommitQueryPort","ReserveInvestorFundsCommitQuery","ReserveInvestorFundsCommitReceipt"],
+            ["contexts/bankwealth/formal-products/technical-port/reserve-investor-funds-compensate-query-port.formal.yaml","ReserveInvestorFundsCompensateQueryPort","ReserveInvestorFundsCompensateQuery","ReserveInvestorFundsCompensateReceipt"],
+            ["contexts/bankwealth/formal-products/technical-port/reserve-investor-funds-prepare-query-port.formal.yaml","ReserveInvestorFundsPrepareQueryPort","ReserveInvestorFundsPrepareQuery","ReserveInvestorFundsPrepareReceipt"],
+            ["contexts/bankwealth/formal-products/technical-port/credit-fund-collection-commit-query-port.formal.yaml","CreditFundCollectionCommitQueryPort","CreditFundCollectionCommitQuery","CreditFundCollectionCommitReceipt"],
+            ["contexts/bankwealth/formal-products/technical-port/credit-fund-collection-compensate-query-port.formal.yaml","CreditFundCollectionCompensateQueryPort","CreditFundCollectionCompensateQuery","CreditFundCollectionCompensateReceipt"],
+            ["contexts/bankwealth/formal-products/technical-port/credit-fund-collection-prepare-query-port.formal.yaml","CreditFundCollectionPrepareQueryPort","CreditFundCollectionPrepareQuery","CreditFundCollectionPrepareReceipt"],
+            ["contexts/bankwealth/formal-products/technical-port/reserve-cash-fund-order-commit-query-port.formal.yaml","ReserveCashFundOrderCommitQueryPort","ReserveCashFundOrderCommitQuery","ReserveCashFundOrderCommitReceipt"],
+            ["contexts/bankwealth/formal-products/technical-port/reserve-cash-fund-order-compensate-query-port.formal.yaml","ReserveCashFundOrderCompensateQueryPort","ReserveCashFundOrderCompensateQuery","ReserveCashFundOrderCompensateReceipt"],
+            ["contexts/bankwealth/formal-products/technical-port/reserve-cash-fund-order-prepare-query-port.formal.yaml","ReserveCashFundOrderPrepareQueryPort","ReserveCashFundOrderPrepareQuery","ReserveCashFundOrderPrepareReceipt"]
           ]
         }
       },
@@ -1084,56 +1084,56 @@ payload:
       },
       {
         "$rows": {
-          "template": "value-object-bank-payment0-commit-input",
+          "template": "value-object-reserve-investor-funds-commit-input",
           "rows": [
-            ["contexts/bankwealth/value-objects/bank-payment0-commit-input.vo.yaml","BankPayment0CommitInput",24,"AccountId"],
-            ["contexts/bankwealth/value-objects/bank-payment0-compensate-input.vo.yaml","BankPayment0CompensateInput",27,"AccountId"],
-            ["contexts/bankwealth/value-objects/bank-payment0-prepare-input.vo.yaml","BankPayment0PrepareInput",21,"AccountId"],
-            ["contexts/bankwealth/value-objects/bank-payment1-commit-input.vo.yaml","BankPayment1CommitInput",33,"AccountId"],
-            ["contexts/bankwealth/value-objects/bank-payment1-compensate-input.vo.yaml","BankPayment1CompensateInput",36,"AccountId"],
-            ["contexts/bankwealth/value-objects/bank-payment1-prepare-input.vo.yaml","BankPayment1PrepareInput",30,"AccountId"],
-            ["contexts/bankwealth/value-objects/bank-payment2-commit-input.vo.yaml","BankPayment2CommitInput",42,"FundOrderId"],
-            ["contexts/bankwealth/value-objects/bank-payment2-compensate-input.vo.yaml","BankPayment2CompensateInput",45,"FundOrderId"],
-            ["contexts/bankwealth/value-objects/bank-payment2-prepare-input.vo.yaml","BankPayment2PrepareInput",39,"FundOrderId"]
+            ["contexts/bankwealth/value-objects/reserve-investor-funds-commit-input.vo.yaml","ReserveInvestorFundsCommitInput",24,"AccountId"],
+            ["contexts/bankwealth/value-objects/reserve-investor-funds-compensate-input.vo.yaml","ReserveInvestorFundsCompensateInput",27,"AccountId"],
+            ["contexts/bankwealth/value-objects/reserve-investor-funds-prepare-input.vo.yaml","ReserveInvestorFundsPrepareInput",21,"AccountId"],
+            ["contexts/bankwealth/value-objects/credit-fund-collection-commit-input.vo.yaml","CreditFundCollectionCommitInput",33,"AccountId"],
+            ["contexts/bankwealth/value-objects/credit-fund-collection-compensate-input.vo.yaml","CreditFundCollectionCompensateInput",36,"AccountId"],
+            ["contexts/bankwealth/value-objects/credit-fund-collection-prepare-input.vo.yaml","CreditFundCollectionPrepareInput",30,"AccountId"],
+            ["contexts/bankwealth/value-objects/reserve-cash-fund-order-commit-input.vo.yaml","ReserveCashFundOrderCommitInput",42,"FundOrderId"],
+            ["contexts/bankwealth/value-objects/reserve-cash-fund-order-compensate-input.vo.yaml","ReserveCashFundOrderCompensateInput",45,"FundOrderId"],
+            ["contexts/bankwealth/value-objects/reserve-cash-fund-order-prepare-input.vo.yaml","ReserveCashFundOrderPrepareInput",39,"FundOrderId"]
           ]
         }
       },
       {
         "$rows": {
-          "template": "value-object-bank-payment0-commit-query",
+          "template": "value-object-reserve-investor-funds-commit-query",
           "rows": [
-            ["contexts/bankwealth/value-objects/bank-payment0-commit-query.vo.yaml","BankPayment0CommitQuery",26,"AccountId"],
-            ["contexts/bankwealth/value-objects/bank-payment0-compensate-query.vo.yaml","BankPayment0CompensateQuery",29,"AccountId"],
-            ["contexts/bankwealth/value-objects/bank-payment0-prepare-query.vo.yaml","BankPayment0PrepareQuery",23,"AccountId"],
-            ["contexts/bankwealth/value-objects/bank-payment1-commit-query.vo.yaml","BankPayment1CommitQuery",35,"AccountId"],
-            ["contexts/bankwealth/value-objects/bank-payment1-compensate-query.vo.yaml","BankPayment1CompensateQuery",38,"AccountId"],
-            ["contexts/bankwealth/value-objects/bank-payment1-prepare-query.vo.yaml","BankPayment1PrepareQuery",32,"AccountId"],
-            ["contexts/bankwealth/value-objects/bank-payment2-commit-query.vo.yaml","BankPayment2CommitQuery",44,"FundOrderId"],
-            ["contexts/bankwealth/value-objects/bank-payment2-compensate-query.vo.yaml","BankPayment2CompensateQuery",47,"FundOrderId"],
-            ["contexts/bankwealth/value-objects/bank-payment2-prepare-query.vo.yaml","BankPayment2PrepareQuery",41,"FundOrderId"]
+            ["contexts/bankwealth/value-objects/reserve-investor-funds-commit-query.vo.yaml","ReserveInvestorFundsCommitQuery",26,"AccountId"],
+            ["contexts/bankwealth/value-objects/reserve-investor-funds-compensate-query.vo.yaml","ReserveInvestorFundsCompensateQuery",29,"AccountId"],
+            ["contexts/bankwealth/value-objects/reserve-investor-funds-prepare-query.vo.yaml","ReserveInvestorFundsPrepareQuery",23,"AccountId"],
+            ["contexts/bankwealth/value-objects/credit-fund-collection-commit-query.vo.yaml","CreditFundCollectionCommitQuery",35,"AccountId"],
+            ["contexts/bankwealth/value-objects/credit-fund-collection-compensate-query.vo.yaml","CreditFundCollectionCompensateQuery",38,"AccountId"],
+            ["contexts/bankwealth/value-objects/credit-fund-collection-prepare-query.vo.yaml","CreditFundCollectionPrepareQuery",32,"AccountId"],
+            ["contexts/bankwealth/value-objects/reserve-cash-fund-order-commit-query.vo.yaml","ReserveCashFundOrderCommitQuery",44,"FundOrderId"],
+            ["contexts/bankwealth/value-objects/reserve-cash-fund-order-compensate-query.vo.yaml","ReserveCashFundOrderCompensateQuery",47,"FundOrderId"],
+            ["contexts/bankwealth/value-objects/reserve-cash-fund-order-prepare-query.vo.yaml","ReserveCashFundOrderPrepareQuery",41,"FundOrderId"]
           ]
         }
       },
       {
         "$rows": {
-          "template": "value-object-bank-payment0-commit-receipt",
+          "template": "value-object-reserve-investor-funds-commit-receipt",
           "rows": [
-            ["contexts/bankwealth/value-objects/bank-payment0-commit-receipt.vo.yaml","BankPayment0CommitReceipt",25,"AccountId"],
-            ["contexts/bankwealth/value-objects/bank-payment1-compensate-receipt.vo.yaml","BankPayment1CompensateReceipt",37,"AccountId"],
-            ["contexts/bankwealth/value-objects/bank-payment1-prepare-receipt.vo.yaml","BankPayment1PrepareReceipt",31,"AccountId"],
-            ["contexts/bankwealth/value-objects/bank-payment2-commit-receipt.vo.yaml","BankPayment2CommitReceipt",43,"FundOrderId"],
-            ["contexts/bankwealth/value-objects/bank-payment2-compensate-receipt.vo.yaml","BankPayment2CompensateReceipt",46,"FundOrderId"],
-            ["contexts/bankwealth/value-objects/bank-payment2-prepare-receipt.vo.yaml","BankPayment2PrepareReceipt",40,"FundOrderId"]
+            ["contexts/bankwealth/value-objects/reserve-investor-funds-commit-receipt.vo.yaml","ReserveInvestorFundsCommitReceipt",25,"AccountId"],
+            ["contexts/bankwealth/value-objects/credit-fund-collection-compensate-receipt.vo.yaml","CreditFundCollectionCompensateReceipt",37,"AccountId"],
+            ["contexts/bankwealth/value-objects/credit-fund-collection-prepare-receipt.vo.yaml","CreditFundCollectionPrepareReceipt",31,"AccountId"],
+            ["contexts/bankwealth/value-objects/reserve-cash-fund-order-commit-receipt.vo.yaml","ReserveCashFundOrderCommitReceipt",43,"FundOrderId"],
+            ["contexts/bankwealth/value-objects/reserve-cash-fund-order-compensate-receipt.vo.yaml","ReserveCashFundOrderCompensateReceipt",46,"FundOrderId"],
+            ["contexts/bankwealth/value-objects/reserve-cash-fund-order-prepare-receipt.vo.yaml","ReserveCashFundOrderPrepareReceipt",40,"FundOrderId"]
           ]
         }
       },
       {
         "$rows": {
-          "template": "value-object-bank-payment0-compensate-receipt",
+          "template": "value-object-reserve-investor-funds-compensate-receipt",
           "rows": [
-            ["contexts/bankwealth/value-objects/bank-payment0-compensate-receipt.vo.yaml","BankPayment0CompensateReceipt",28],
-            ["contexts/bankwealth/value-objects/bank-payment0-prepare-receipt.vo.yaml","BankPayment0PrepareReceipt",22],
-            ["contexts/bankwealth/value-objects/bank-payment1-commit-receipt.vo.yaml","BankPayment1CommitReceipt",34]
+            ["contexts/bankwealth/value-objects/reserve-investor-funds-compensate-receipt.vo.yaml","ReserveInvestorFundsCompensateReceipt",28],
+            ["contexts/bankwealth/value-objects/reserve-investor-funds-prepare-receipt.vo.yaml","ReserveInvestorFundsPrepareReceipt",22],
+            ["contexts/bankwealth/value-objects/credit-fund-collection-commit-receipt.vo.yaml","CreditFundCollectionCommitReceipt",34]
           ]
         }
       }

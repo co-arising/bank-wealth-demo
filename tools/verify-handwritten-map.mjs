@@ -19,7 +19,7 @@ export async function verifyCurrentHandwrittenMapping(request, snapshot, mapping
   assert.deepEqual(mapping.document, { id: 'bank-v1', sha256: bytesSha(JSON.stringify(canonical[0].value)) }, 'handwritten map document changed');
   const inventory = sourceInventory(join(ROOT, mapping.root));
   assert.deepEqual(inventory, mapping.files, 'handwritten implementation bytes or file set changed');
-  assert.equal(Object.keys(inventory).length, 35);
+  assert.equal(Object.keys(inventory).length, 36);
   const keys = [...new Set(mapping.entries.flatMap(entry => entry.sources))].sort();
   assert.equal(keys.length, 54, 'current handwritten map must retain 54 source references');
   const result = await verifyHandwrittenSources(join(ROOT, mapping.root), request, mapping.entries,

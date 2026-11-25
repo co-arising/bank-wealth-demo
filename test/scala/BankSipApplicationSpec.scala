@@ -9,15 +9,10 @@ import akka.util.Timeout
 import com.typesafe.config.ConfigFactory
 import example.bankwealth.application.{bank_cash_payment_v1Execution => Cash, bank_payment_hostDefinition => Payment,
   bank_payment_hostHost => PaymentHost, bank_sip_dispatch_v1Execution => Dispatch, bank_sip_dispatchEffectHost => DispatchHost}
-import example.bankwealth.bindings._
 import example.bankwealth.domain._
 import example.bankwealth.domain.values._
 import example.bankwealth.infrastructure.proto._
-import example.bankwealth.integration._
-import example.bankwealth.security._
-import example.bankwealth.service.BankServiceService._
-import example.bankwealth.service.UnitConfigurationCheck
-import example.bankwealth.sip.BankSipApplication
+import example.bankwealth.application.process.sip.BankSipApplication
 import net.imadz.infra.saga.strict._
 import net.imadz.monarch.persistence.{DurableRunObserver, PersistentMonarch}
 import org.scalatest.funsuite.AnyFunSuite
@@ -52,7 +47,7 @@ final class BankSipApplicationHarness(available: String = "1000.00") extends Aut
     BankDemoPrincipal("bob", bobId, Set("customer"), "bob-token", "bob-csrf"),
     BankDemoPrincipal("operator", operatorId, Set("operator"), "operator-token", "operator-csrf")),
     Vector(BankFund("fund", collectionId)), Vector(investorId, collectionId, bobId, operatorId).map { id =>
-      BankSeed(id, "CNY", Money(BigDecimal(if (id == investorId) available else "0.00"), "CNY"))
+      BankSeed(id, "CNY", Money.create(BigDecimal(if (id == investorId) available else "0.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity))
     })
   val admission = new BankTrustedAdmission(config)
   val alice = example.bankwealth.service.BankSipTestPrincipal("alice", Set("customer"))
@@ -291,7 +286,7 @@ final class BankSipApplicationSpec extends AnyFunSuite {
     assert(h.orderReply(o, FundOrderProtocol.RecordFundTARejected(o.fundOrderId, tx, requestId, "ta-reference",
       "opposite-receipt", "opposite-body", "fund", "CNY", "rejected")).isInstanceOf[FundOrderAggregate.Refused])
     assert(h.await(h.app.recordTerminal(o.copy(operationId = OperationId("forged")))) == Left(RequestConflict))
-    assert(h.await(h.app.recordTerminal(o.copy(config = o.config.copy(amount = Money(BigDecimal("200.00"), "CNY"))))) == Left(RequestConflict))
+    assert(h.await(h.app.recordTerminal(o.copy(config = o.config.copy(amount = Money.create(BigDecimal("200.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity))))) == Left(RequestConflict))
     h.restartApplication(); h.restartPlan(h.planId()); h.restartExecutionGraph()
     assert(h.await(h.app.recordTerminal(o)).isRight)
     assert(h.await(h.app.recoverExisting(h.planId())).isRight)

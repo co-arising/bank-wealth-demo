@@ -1,6 +1,6 @@
 package example.bankwealth.service
 
-import example.bankwealth.web.{BankBrowserPages, BankPageRenderer}
+import example.bankwealth.interfaces.web.{BankBrowserPages, BankPageRenderer}
 import org.scalatest.funsuite.AnyFunSuite
 import play.api.libs.json._
 
@@ -26,7 +26,7 @@ final class BankBrowserPagesSpec extends AnyFunSuite {
 
   test("implements the generated optional PageRenderer with exact installed identity") {
     val renderer: BankServiceService.PageRenderer = BankBrowserPages
-    assert(renderer.implementation == "example.bankwealth.web.BankBrowserPages")
+    assert(renderer.implementation == "example.bankwealth.interfaces.web.BankBrowserPages")
     assert(renderer.version == "1")
     assert(renderer.shell == BankBrowserPages.shell && renderer.script == BankBrowserPages.script)
   }

@@ -40,8 +40,8 @@ payload:
       "taObservedReceipts: \"Map[String, String]\" = []",
       "paymentObservedResults: \"Map[TxId, String]\" = []",
       "refundObservedResults: \"Map[TxId, String]\" = []",
-      "cashRequestSource: \"Option[BankCashOriginal]\" = {\"present\":false,\"value\":null}",
-      "cashRequestOriginals: \"Map[String, BankCashOriginal]\" = []"
+      "cashRequestSource: \"Option[CashPurchaseSource]\" = {\"present\":false,\"value\":null}",
+      "cashRequestOriginals: \"Map[String, CashPurchaseSource]\" = []"
     ],
     "aggregateRuleRefs": [
       "@rule(ORDER_RESOURCE/ORDER_RESOURCE | \"Explicit P23-derived V1 rule\")",

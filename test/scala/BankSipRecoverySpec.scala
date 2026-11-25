@@ -8,7 +8,6 @@ import example.bankwealth.domain._
 import example.bankwealth.domain.values._
 import example.bankwealth.infrastructure.proto._
 import example.bankwealth.infrastructure.serialization.DomainConverters
-import example.bankwealth.service.BankServiceService._
 import net.imadz.monarch.persistence.PersistentMonarch
 import org.scalatest.funsuite.AnyFunSuite
 
@@ -191,7 +190,7 @@ final class BankSipRecoverySpec extends AnyFunSuite {
     h.failDispatch = false
     val runtime = h.await(h.directory.ensureSipDispatch(o))
     assert(starts(h, o).isEmpty && h.persisted(h.ids.paymentRun(o.operationId)).isEmpty)
-    val wrong = o.copy(config = o.config.copy(amount = Money(BigDecimal("200.00"), "CNY")))
+    val wrong = o.copy(config = o.config.copy(amount = Money.create(BigDecimal("200.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)))
     val reply = h.await(runtime.parent.ref.ask[PersistentMonarch.RunReply](r => PersistentMonarch.StartRun[Dispatch.State](
       o.occurrenceId.value, Dispatch.State(Dispatch.Inputs(o.occurrenceId, wrong)), r)))
     assert(reply.isInstanceOf[PersistentMonarch.Accepted])

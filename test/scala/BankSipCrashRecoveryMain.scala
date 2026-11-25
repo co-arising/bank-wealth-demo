@@ -1,5 +1,13 @@
 package example.bankwealth.service
 
+import example.bankwealth.application.process.sip.BankSipApplication
+import example.bankwealth.application.process.ta.BankTaRefundApplication
+import example.bankwealth.application.services.{BankCashRequests, BankPersistenceIds, BankTrustedAdmission}
+import example.bankwealth.infrastructure.bootstrap.{BankActorHandle, BankCashRuntime, BankRefundRuntime, BankRuntime, BankRuntimeDirectory, BankSipDispatchRuntime, BankTaRuntime}
+import example.bankwealth.infrastructure.connectors.{BankTaEffectBindings, MockTAClient}
+import example.bankwealth.infrastructure.persistence.{BankJournalEnvelope, BankPersistenceJournal}
+import example.bankwealth.infrastructure.recovery.{BankRecovery, BankRecoveryLoop}
+import example.bankwealth.infrastructure.security.{BankDemoConfiguration, BankDemoPrincipal, BankFund, BankSeed, BankSeedAuthority}
 import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.scaladsl.AskPattern._
@@ -18,16 +26,12 @@ import example.bankwealth.application.{bank_cash_payment_v1Execution => Cash,
   bank_sip_dispatch_v1Execution => Dispatch, bank_ta_submission_v1Execution => Ta,
   bank_payment_hostHost => PaymentHost, bank_payment_hostDefinition => PaymentDefinition,
   bank_sip_dispatchEffectHost => SipHost}
-import example.bankwealth.bindings.{BankTaEffectBindings, MockTAClient}
 import example.bankwealth.domain._
 import example.bankwealth.domain.values._
 import example.bankwealth.infrastructure.proto._
 import example.bankwealth.infrastructure.serialization.DomainConverters
-import example.bankwealth.integration._
-import example.bankwealth.security._
-import example.bankwealth.service.BankServiceService._
-import example.bankwealth.sip.BankSipApplication
-import example.bankwealth.ta.BankTaRefundApplication
+import example.bankwealth.application.process.sip.BankSipApplication
+import example.bankwealth.application.process.ta.BankTaRefundApplication
 import net.imadz.infra.saga.strict._
 import net.imadz.monarch.persistence.PersistentMonarch
 import scalapb.GeneratedMessage
@@ -281,9 +285,9 @@ object BankSipCrashRecoveryMain {
       BankDemoPrincipal("alice", investor, Set("customer"), "crash-sip-customer-token", "crash-sip-customer-csrf"),
       BankDemoPrincipal("operator", operatorAccount, Set("operator"), "crash-sip-operator-token", "crash-sip-operator-csrf")),
       Vector(BankFund("fund", collection)), Vector(
-        BankSeed(investor, "CNY", Money(BigDecimal("1000.00"), "CNY")),
-        BankSeed(collection, "CNY", Money(BigDecimal("0.00"), "CNY")),
-        BankSeed(operatorAccount, "CNY", Money(BigDecimal("0.00"), "CNY"))))
+        BankSeed(investor, "CNY", Money.create(BigDecimal("1000.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)),
+        BankSeed(collection, "CNY", Money.create(BigDecimal("0.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)),
+        BankSeed(operatorAccount, "CNY", Money.create(BigDecimal("0.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity))))
     private val admission = new BankTrustedAdmission(config)
     // These are actor handles / verified authorization evidence, not durable business maps.
     private val cashGraphs = new ConcurrentHashMap[OperationId, BankCashRuntime]()
@@ -395,7 +399,7 @@ object BankSipCrashRecoveryMain {
       val original = originals.head
       require(original.principalId == "alice" && original.clientRequestId == "crash-sip-request" && original.request == request &&
         original.config.investorAccountId == investor && original.config.fundCollectionAccountId == collection &&
-        original.config.amount == Money(BigDecimal("100.00"), "CNY"), "durable original differs from the fixed SIP oracle")
+        original.config.amount == Money.create(BigDecimal("100.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity), "durable original differs from the fixed SIP oracle")
       val occurrences = i.rows.collect { case r if r.row.event.isInstanceOf[SipPlanSipInstallmentTriggeredPB] =>
         val e = DomainConverters.decodeSipPlanSipInstallmentTriggeredPB(r.row.event.asInstanceOf[SipPlanSipInstallmentTriggeredPB])
         require(r.row.persistenceId == ids.plan(original.planId) && e.position >= 0L && e.position < request.dueSlots.size &&
@@ -759,7 +763,7 @@ object BankSipCrashRecoveryMain {
       s.accounts.foreach { a =>
         val balance = if (a.id == investor) BigDecimal("1000.00") - BigDecimal(100 * paid.size)
           else if (a.id == collection) BigDecimal(100 * paid.size) else BigDecimal("0.00")
-        require(config.seeds.exists(_.accountId == a.id) && a.initialized && a.accountBalance == Map("CNY" -> Money(balance, "CNY")) &&
+        require(config.seeds.exists(_.accountId == a.id) && a.initialized && a.accountBalance == Map("CNY" -> Money.create(balance, "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)) &&
           a.reservedAmount.isEmpty && a.incomingCredits.isEmpty && a.compensatedOutgoing.isEmpty && a.compensatedIncoming.isEmpty &&
           a.committedOutgoing == (if (a.id == investor) credits else Map.empty[TxId, Money]) &&
           a.committedIncoming == (if (a.id == collection) credits else Map.empty[TxId, Money]), "generated accounts do not reconcile with original payments")

@@ -1,5 +1,7 @@
 package example.bankwealth.service
 
+import example.bankwealth.domain.services.impl.{BankBalanceComputations, StableOrderIdentity}
+import example.bankwealth.infrastructure.process.BankPaymentBindings
 import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.actor.testkit.typed.scaladsl.ActorTestKit
 import akka.persistence.query.PersistenceQuery
@@ -11,7 +13,6 @@ import akka.stream.SystemMaterializer
 import akka.stream.scaladsl.Sink
 import com.typesafe.config.ConfigFactory
 import example.bankwealth.application.{bank_cash_payment_v1Execution => Execution, bank_payment_hostDefinition => Definition, bank_payment_hostHost => Host}
-import example.bankwealth.bindings.{BankBalanceComputations, BankPaymentBindings, StableOrderIdentity}
 import example.bankwealth.domain._
 import example.bankwealth.domain.values._
 import example.bankwealth.infrastructure.proto._
@@ -46,7 +47,7 @@ final class BankSinglePaymentOracleSpec extends AnyFunSuite {
       def read(pid: String): Future[Vector[GeneratedMessage]] =
         query.currentEventsByPersistenceId(pid, 0L, Long.MaxValue).runWith(Sink.seq).map(_.map(_.event).collect { case p: GeneratedMessage => p }.toVector)
       val investorId = AccountId("investor"); val collectionId = AccountId("collection")
-      val amount = Money(BigDecimal("100.00"), "CNY")
+      val amount = Money.create(BigDecimal("100.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)
       val operationId = OperationId("cash-operation"); val orderId = FundOrderId("order")
       val original = BankPaymentOriginal(operationId, orderId, investorId, collectionId, "FUND-中文-001", amount)
       val investor = kit.spawn(CreditBalanceAggregate("oracle-investor", CreditBalanceState.empty.copy(id = investorId), BankBalanceComputations))
@@ -60,8 +61,8 @@ final class BankSinglePaymentOracleSpec extends AnyFunSuite {
         actor ! CreditBalanceAggregate.Execute(command, ledgerReplies.ref)
         assert(ledgerReplies.receiveMessage().isInstanceOf[CreditBalanceAggregate.Accepted])
       }
-      ledger(investor, CreditBalanceProtocol.InitializeAccount(investorId, "CNY", Money(BigDecimal("1000.00"), "CNY")))
-      ledger(collection, CreditBalanceProtocol.InitializeAccount(collectionId, "CNY", Money(BigDecimal("0.00"), "CNY")))
+      ledger(investor, CreditBalanceProtocol.InitializeAccount(investorId, "CNY", Money.create(BigDecimal("1000.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)))
+      ledger(collection, CreditBalanceProtocol.InitializeAccount(collectionId, "CNY", Money.create(BigDecimal("0.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)))
       val orderReplies = kit.createTestProbe[FundOrderAggregate.Reply]()
       order ! FundOrderAggregate.Execute(FundOrderProtocol.RequestFundPurchaseSettlement(operationId, orderId, investorId, collectionId, original.fundCode, amount), orderReplies.ref)
       assert(orderReplies.receiveMessage().isInstanceOf[FundOrderAggregate.Accepted])
@@ -193,7 +194,7 @@ final class BankSinglePaymentOracleSpec extends AnyFunSuite {
       }
       val before = Vector("oracle-investor", "oracle-collection", "oracle-order", "oracle-saga", "oracle-host", "oracle-monarch").map(p => p -> inventory(p)).toMap
       val retained = orderState()
-      order ! FundOrderAggregate.Execute(FundOrderProtocol.RequestFundPurchaseSettlement(operationId, orderId, investorId, collectionId, original.fundCode, Money(BigDecimal("101.00"), "CNY")), orderReplies.ref)
+      order ! FundOrderAggregate.Execute(FundOrderProtocol.RequestFundPurchaseSettlement(operationId, orderId, investorId, collectionId, original.fundCode, Money.create(BigDecimal("101.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)), orderReplies.ref)
       assert(orderReplies.receiveMessage() == FundOrderAggregate.Refused("ORDER_REPLAY_CONFLICT"))
       order ! FundOrderAggregate.Execute(FundOrderProtocol.RequestFundPurchaseSettlement(operationId, orderId, investorId, collectionId, original.fundCode, amount), orderReplies.ref)
       assert(orderReplies.receiveMessage() == FundOrderAggregate.Accepted(Vector.empty))

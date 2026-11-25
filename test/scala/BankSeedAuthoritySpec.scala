@@ -1,3 +1,8 @@
+import example.bankwealth.application.services.{BankPersistenceIds, BankRequestIdentity}
+import example.bankwealth.domain.services.impl.BankBalanceComputations
+import example.bankwealth.infrastructure.bootstrap.BankActorHandle
+import example.bankwealth.infrastructure.persistence.BankPersistenceJournal
+import example.bankwealth.infrastructure.security.{BankSeed, BankSeedAuthority}
 import akka.actor.typed.ActorSystem
 import akka.actor.testkit.typed.scaladsl.ActorTestKit
 import akka.persistence.query.PersistenceQuery
@@ -5,12 +10,8 @@ import akka.persistence.testkit.query.scaladsl.PersistenceTestKitReadJournal
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.util.Timeout
 import com.typesafe.config.ConfigFactory
-import example.bankwealth.bindings.{BankBalanceComputations, StableOrderIdentity, StableSipIdentity}
 import example.bankwealth.domain._
 import example.bankwealth.domain.values._
-import example.bankwealth.integration._
-import example.bankwealth.security._
-import example.bankwealth.service.UnitConfigurationCheck
 import org.scalatest.funsuite.AnyFunSuite
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
@@ -30,24 +31,24 @@ final class BankSeedAuthoritySpec extends AnyFunSuite {
       val actor = kit.spawn(CreditBalanceAggregate(ids.account(id), CreditBalanceState.empty.copy(id = id), BankBalanceComputations))
       val handle = BankActorHandle(ids.account(id), actor)
       val seeds = new BankSeedAuthority(journal)
-      val seed = BankSeed(id, "CNY", Money(BigDecimal("1000.00"), "CNY"))
+      val seed = BankSeed(id, "CNY", Money.create(BigDecimal("1000.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity))
       await(seeds.ensure(seed, handle))
       val before = await(journal.currentEvents(handle.persistenceId, 0L))
       assert(before.size == 1)
       await(seeds.ensure(seed, handle))
       assert(await(journal.currentEvents(handle.persistenceId, 0L)).size == 1)
-      val accepted = await(actor.ask[CreditBalanceAggregate.Reply](r => CreditBalanceAggregate.Execute(CreditBalanceProtocol.ReserveFunds(TxId("buy"), id, Money(BigDecimal("100.00"), "CNY")), r)))
+      val accepted = await(actor.ask[CreditBalanceAggregate.Reply](r => CreditBalanceAggregate.Execute(CreditBalanceProtocol.ReserveFunds(TxId("buy"), id, Money.create(BigDecimal("100.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)), r)))
       assert(accepted.isInstanceOf[CreditBalanceAggregate.Accepted])
       await(seeds.ensure(seed, handle))
       assert(await(journal.currentEvents(handle.persistenceId, 0L)).size == 2)
       val state = await(actor.ask[CreditBalanceState](CreditBalanceAggregate.GetState))
-      assert(state.accountBalance("CNY") == Money(BigDecimal("900.00"), "CNY"))
-      intercept[IllegalArgumentException](await(seeds.ensure(seed.copy(amount = Money(BigDecimal("900.00"), "CNY")), handle)))
+      assert(state.accountBalance("CNY") == Money.create(BigDecimal("900.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity))
+      intercept[IllegalArgumentException](await(seeds.ensure(seed.copy(amount = Money.create(BigDecimal("900.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)), handle)))
       assert(await(journal.currentEvents(handle.persistenceId, 0L)).size == 2)
       kit.stop(actor)
       val recovered = kit.spawn(CreditBalanceAggregate(ids.account(id), CreditBalanceState.empty.copy(id = id), BankBalanceComputations))
       await(seeds.ensure(seed, BankActorHandle(ids.account(id), recovered)))
-      assert(await(recovered.ask[CreditBalanceState](CreditBalanceAggregate.GetState)).accountBalance("CNY") == Money(BigDecimal("900.00"), "CNY"))
+      assert(await(recovered.ask[CreditBalanceState](CreditBalanceAggregate.GetState)).accountBalance("CNY") == Money.create(BigDecimal("900.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity))
     } finally { journal.close(); kit.shutdownTestKit() }
   }
 

@@ -1,12 +1,14 @@
-package example.bankwealth.integration
+package example.bankwealth
 
+import example.bankwealth.infrastructure.bootstrap.{BankActorHandle, BankCashRuntime, BankRefundRuntime, BankRuntimeDirectory, BankSipDispatchRuntime, BankTaRuntime}
+import example.bankwealth.infrastructure.persistence.{BankJournal, BankJournalEnvelope}
+import example.bankwealth.infrastructure.recovery.BankRecovery
 import akka.actor.testkit.typed.scaladsl.ActorTestKit
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.Behaviors
 import com.typesafe.config.ConfigFactory
 import example.bankwealth.domain._
 import example.bankwealth.domain.values._
-import example.bankwealth.service.UnitConfigurationCheck
 import net.imadz.infra.saga.strict._
 import org.scalatest.funsuite.AnyFunSuite
 import scala.concurrent.{Await, Future}
@@ -15,7 +17,7 @@ import scala.concurrent.duration._
 final class BankAutomaticRecoverySpec extends AnyFunSuite {
   UnitConfigurationCheck.main(Array.empty)
   private val original = BankPaymentOriginal(OperationId("original-operation"), FundOrderId("original-order"),
-    AccountId("customer"), AccountId("collection"), "fund", Money(BigDecimal("10.00"), "CNY"))
+    AccountId("customer"), AccountId("collection"), "fund", Money.create(BigDecimal("10.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity))
   private val identity = TransactionIdentity("original-transaction", "definition", 1, "args-digest",
     "definition-digest", CodecPin("args", 1), "plan-digest")
 
