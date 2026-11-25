@@ -1,3 +1,8 @@
+import example.bankwealth.application.services.BankPersistenceIds
+import example.bankwealth.domain.services.impl.BankBalanceComputations
+import example.bankwealth.infrastructure.bootstrap.BankActorHandle
+import example.bankwealth.infrastructure.persistence.{BankJournalEnvelope, BankPersistenceJournal}
+import example.bankwealth.infrastructure.security.{BankSeed, BankSeedAuthority}
 import akka.actor.testkit.typed.scaladsl.ActorTestKit
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.{AskPattern, Behaviors}
@@ -6,16 +11,14 @@ import akka.persistence.query.PersistenceQuery
 import akka.persistence.testkit.query.scaladsl.PersistenceTestKitReadJournal
 import akka.util.Timeout
 import com.typesafe.config.ConfigFactory
-import example.bankwealth.bindings.BankBalanceComputations
+import example.bankwealth.domain.services.impl.BankBalanceComputations
 import example.bankwealth.domain._
 import example.bankwealth.domain.CreditBalanceAggregate.{Accepted, Execute, Reply, Request}
 import example.bankwealth.domain.CreditBalanceProtocol.{AccountInitialized, Command, InitializeAccount, ReserveFunds}
 import example.bankwealth.domain.values._
 import example.bankwealth.infrastructure.proto.CreditBalanceAccountInitializedPB
 import example.bankwealth.infrastructure.serialization.DomainConverters
-import example.bankwealth.integration._
-import example.bankwealth.security.BankSeed
-import example.bankwealth.service.UnitConfigurationCheck
+import example.bankwealth.infrastructure.security.BankSeed
 import org.scalatest.funsuite.AnyFunSuite
 import java.util.concurrent.atomic.AtomicInteger
 import scala.concurrent.{Await, ExecutionContext, Future, Promise}

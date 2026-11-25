@@ -2,7 +2,7 @@ import akka.actor.testkit.typed.scaladsl.ActorTestKit
 import akka.persistence.testkit.PersistenceTestKitPlugin
 import akka.persistence.testkit.scaladsl.PersistenceTestKit
 import com.typesafe.config.ConfigFactory
-import example.bankwealth.bindings.BankBalanceComputations
+import example.bankwealth.domain.services.impl.BankBalanceComputations
 import example.bankwealth.domain._
 import example.bankwealth.domain.CreditBalanceProtocol._
 import example.bankwealth.domain.values._

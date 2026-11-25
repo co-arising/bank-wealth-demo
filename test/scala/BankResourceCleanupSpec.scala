@@ -1,4 +1,4 @@
-package example.bankwealth.integration
+package example.bankwealth
 
 import org.scalatest.funsuite.AnyFunSuite
 

@@ -1,5 +1,13 @@
 package example.bankwealth.service
 
+import example.bankwealth.application.process.sip.BankSipApplication
+import example.bankwealth.application.process.ta.BankTaRefundApplication
+import example.bankwealth.application.services.{BankCashRequests, BankPersistenceIds, BankTrustedAdmission}
+import example.bankwealth.infrastructure.bootstrap.{BankActorHandle, BankCashRuntime, BankRefundRuntime, BankRuntime, BankRuntimeDirectory, BankSipDispatchRuntime, BankTaRuntime}
+import example.bankwealth.infrastructure.connectors.{BankTaEffectBindings, MockTAClient}
+import example.bankwealth.infrastructure.persistence.{BankJournalEnvelope, BankPersistenceJournal}
+import example.bankwealth.infrastructure.recovery.{BankRecovery, BankRecoveryLoop}
+import example.bankwealth.infrastructure.security.{BankDemoConfiguration, BankDemoPrincipal, BankFund, BankSeed, BankSeedAuthority}
 import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.scaladsl.AskPattern._
@@ -18,16 +26,12 @@ import example.bankwealth.application.{bank_cash_payment_v1Execution => Cash,
   bank_sip_dispatch_v1Execution => Dispatch, bank_ta_submission_v1Execution => Ta,
   bank_payment_hostHost => PaymentHost, bank_payment_hostDefinition => PaymentDefinition,
   bank_sip_dispatchEffectHost => SipHost}
-import example.bankwealth.bindings.{BankTaEffectBindings, MockTAClient}
 import example.bankwealth.domain._
 import example.bankwealth.domain.values._
 import example.bankwealth.infrastructure.proto._
 import example.bankwealth.infrastructure.serialization.DomainConverters
-import example.bankwealth.integration._
-import example.bankwealth.security._
-import example.bankwealth.service.BankServiceService._
-import example.bankwealth.sip.BankSipApplication
-import example.bankwealth.ta.BankTaRefundApplication
+import example.bankwealth.application.process.sip.BankSipApplication
+import example.bankwealth.application.process.ta.BankTaRefundApplication
 import net.imadz.infra.saga.strict._
 import net.imadz.monarch.persistence.PersistentMonarch
 import scalapb.GeneratedMessage

@@ -1,3 +1,6 @@
+import example.bankwealth.domain.services.impl.{BankBalanceComputations, StableOrderIdentity, StableSipIdentity}
+import example.bankwealth.infrastructure.connectors.BankSipDispatchBindings
+import example.bankwealth.infrastructure.process.BankPaymentBindings
 import akka.actor.testkit.typed.scaladsl.ActorTestKit
 import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.persistence.query.PersistenceQuery
@@ -8,7 +11,6 @@ import akka.stream.SystemMaterializer
 import akka.stream.scaladsl.Sink
 import com.typesafe.config.ConfigFactory
 import example.bankwealth.application.{bank_cash_payment_v1Execution => Cash, bank_payment_hostDefinition => Payment, bank_payment_hostHost => PaymentHost, bank_sip_dispatch_v1Execution => Dispatch, bank_sip_dispatchEffectHost => DispatchHost}
-import example.bankwealth.bindings._
 import example.bankwealth.domain._
 import example.bankwealth.domain.values._
 import example.bankwealth.infrastructure.proto._

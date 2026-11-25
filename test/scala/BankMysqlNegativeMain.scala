@@ -1,17 +1,16 @@
 package example.bankwealth.service
 
+import example.bankwealth.application.services.{BankPersistenceIds, BankRequestIdentity}
+import example.bankwealth.domain.services.impl.{BankBalanceComputations, StableOrderIdentity, StableSipIdentity}
+import example.bankwealth.infrastructure.persistence.{BankJournal, BankJournalEnvelope, BankReadside, BankReadsideSchema}
+import example.bankwealth.infrastructure.security.{BankDemoConfiguration, BankDemoPrincipal, BankFund, BankSeed}
 import akka.actor.typed.ActorSystem
 import akka.actor.testkit.typed.scaladsl.ActorTestKit
 import akka.persistence.testkit.PersistenceTestKitPlugin
 import akka.persistence.testkit.scaladsl.PersistenceTestKit
 import com.typesafe.config.ConfigFactory
-import example.bankwealth.bindings.{BankBalanceComputations, StableOrderIdentity, StableSipIdentity}
 import example.bankwealth.domain._
 import example.bankwealth.domain.values._
-import example.bankwealth.integration._
-import example.bankwealth.readside.{BankReadside, BankReadsideSchema}
-import example.bankwealth.security._
-import example.bankwealth.service.BankServiceService.Principal
 import java.io.PrintWriter
 import java.lang.reflect.{InvocationHandler, InvocationTargetException, Method, Proxy}
 import java.sql.{Connection, DriverManager, SQLException}

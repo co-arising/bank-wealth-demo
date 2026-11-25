@@ -1,9 +1,9 @@
 package example.bankwealth.service
 
+import example.bankwealth.infrastructure.persistence.{BankJournal, BankJournalEnvelope, BankReadside}
 import akka.NotUsed
 import akka.stream.scaladsl.Source
-import example.bankwealth.integration._
-import example.bankwealth.readside.BankReadside
+import example.bankwealth.infrastructure.persistence.BankReadside
 import org.scalatest.funsuite.AnyFunSuite
 import scala.concurrent.{Await, Future, Promise}
 import scala.concurrent.duration._

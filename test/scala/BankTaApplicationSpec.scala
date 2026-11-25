@@ -1,3 +1,9 @@
+import example.bankwealth.application.process.ta.BankTaRefundApplication
+import example.bankwealth.application.services.{BankPersistenceIds, BankRequestIdentity, BankTrustedAdmission}
+import example.bankwealth.infrastructure.bootstrap.{BankActorHandle, BankCashRuntime, BankRefundRuntime, BankRuntime, BankTaRuntime}
+import example.bankwealth.infrastructure.connectors.{BankTaBridge, BankTaEffectBindings, MockTAClient}
+import example.bankwealth.infrastructure.persistence.{BankJournal, BankJournalEnvelope}
+import example.bankwealth.infrastructure.security.{BankDemoConfiguration, BankDemoPrincipal, BankFund, BankSeed}
 import akka.NotUsed
 import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.actor.typed.scaladsl.AskPattern._
@@ -13,14 +19,10 @@ import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
 import com.typesafe.config.ConfigFactory
 import example.bankwealth.application.{bank_cash_payment_v1Execution => Cash, bank_ta_effectEffectHost => TaHost}
-import example.bankwealth.bindings.{BankTaBridge, BankTaEffectBindings, MockTAClient}
 import example.bankwealth.domain._
 import example.bankwealth.domain.values._
 import example.bankwealth.infrastructure.proto._
-import example.bankwealth.integration._
-import example.bankwealth.security._
-import example.bankwealth.service.BankServiceService._
-import example.bankwealth.ta.BankTaRefundApplication
+import example.bankwealth.application.process.ta.BankTaRefundApplication
 import net.imadz.infra.saga.strict._
 import net.imadz.monarch.persistence.PersistentMonarch
 import org.scalatest.funsuite.AnyFunSuite

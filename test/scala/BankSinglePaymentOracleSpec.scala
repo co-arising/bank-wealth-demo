@@ -1,5 +1,7 @@
 package example.bankwealth.service
 
+import example.bankwealth.domain.services.impl.{BankBalanceComputations, StableOrderIdentity}
+import example.bankwealth.infrastructure.process.BankPaymentBindings
 import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.actor.testkit.typed.scaladsl.ActorTestKit
 import akka.persistence.query.PersistenceQuery
@@ -11,7 +13,6 @@ import akka.stream.SystemMaterializer
 import akka.stream.scaladsl.Sink
 import com.typesafe.config.ConfigFactory
 import example.bankwealth.application.{bank_cash_payment_v1Execution => Execution, bank_payment_hostDefinition => Definition, bank_payment_hostHost => Host}
-import example.bankwealth.bindings.{BankBalanceComputations, BankPaymentBindings, StableOrderIdentity}
 import example.bankwealth.domain._
 import example.bankwealth.domain.values._
 import example.bankwealth.infrastructure.proto._

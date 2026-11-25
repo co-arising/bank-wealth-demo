@@ -1,11 +1,11 @@
 package example.bankwealth.service
 
+import example.bankwealth.infrastructure.security.{BankDemoAuthority, BankDemoConfiguration, BankDemoPrincipal, BankFund, BankSeed}
+import example.bankwealth.interfaces.web.{BankBrowserPages, BankServiceEndpoints}
 import com.typesafe.config.ConfigFactory
 import example.bankwealth.domain.values._
-import example.bankwealth.integration.BankServiceEndpoints
-import example.bankwealth.security._
-import example.bankwealth.service.BankServiceService._
-import example.bankwealth.web.BankBrowserPages
+import example.bankwealth.interfaces.web.BankServiceEndpoints
+import example.bankwealth.interfaces.web.BankBrowserPages
 import play.api.{ApplicationLoader, Configuration, Environment, Mode}
 import play.api.inject.DefaultApplicationLifecycle
 import play.api.libs.json.Json

@@ -8,7 +8,6 @@ import example.bankwealth.domain._
 import example.bankwealth.domain.values._
 import example.bankwealth.infrastructure.proto._
 import example.bankwealth.infrastructure.serialization.DomainConverters
-import example.bankwealth.service.BankServiceService._
 import net.imadz.monarch.persistence.PersistentMonarch
 import org.scalatest.funsuite.AnyFunSuite
 

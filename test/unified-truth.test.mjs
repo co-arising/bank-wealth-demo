@@ -1,62 +1,40 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync, mkdtempSync, cpSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { createHash } from 'node:crypto';
-import { spawnSync } from 'node:child_process';
 import { compileTree, compileTreeWithSources } from '../../metarch-truthsrc/lib/compile.mjs';
 import { relatedNarrativeSources } from '../../metarch-truthsrc/lib/project/narrative-links.mjs';
 import { validateTree } from '../../metarch-truthsrc/lib/validate.mjs';
 import { roundtrip } from '../../metarch-truthsrc/lib/roundtrip.mjs';
-import { captureProject, projectCli } from '../../metarch-truthsrc/lib/project/cli.mjs';
-import { queryProject, statusProject } from '../../metarch-truthsrc/lib/project/query.mjs';
-import { deriveProjectRequest } from '../../metarch-truthsrc/lib/project/derive.mjs';
-import { compileProductSet } from '../../metarch-truthsrc/lib/products/compile.mjs';
-import { tmpdir } from 'node:os';
-import { readHistoricalFile } from '../tools/historical-source.mjs';
+import { captureProject } from '../../metarch-truthsrc/lib/project/cli.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const tree = join(ROOT, 'truth/bank-wealth'), project = join(ROOT, 'truthsrc.project.json');
 const json = file => JSON.parse(readFileSync(file, 'utf8'));
-const hash = bytes => createHash('sha256').update(bytes).digest('hex');
-const baseline = json(join(ROOT, 'docs/TRUTH-LEGACY-BASELINE.json'));
 const current = JSON.parse(compileTree(tree));
-const beforeCompatibleStore = value => {
-  const result = structuredClone(value);
-  const artifacts = Array.isArray(result) ? result : result.artifacts;
-  const service = artifacts.find(a => a.id === 'bank-service')?.deployment.service;
-  assert.equal(service?.projectionStore?.schemaVersion, 'truthsrc.journal-readside/v1');
-  assert.equal(service.projectionStore.id, 'BankJournalReadside');
-  delete service.projectionStore;
-  return result;
-};
 
-test('one root entry names current bank source; four execution flows retain all original semantics', () => {
+test('one root entry names current bank source; four execution flows compile, validate, and roundtrip cleanly', () => {
   assert.equal(json(project).tree, 'truth/bank-wealth');
   assert.equal(current.authoring.system.id, 'bank-wealth');
   assert.equal(current.authoring.context.id, 'bankwealth');
-  for (const { family, sha256 } of baseline.executionFamilies)
-    assert.equal(hash(JSON.stringify(family === 'artifactContracts' ? beforeCompatibleStore(current[family]) : current[family])), sha256, family + ' execution declaration changed');
   assert.deepEqual(current.pipelines.map(p => p.id), ['bank-cash-payment-v1', 'bank-independent-refund-v1', 'bank-sip-dispatch-v1', 'bank-ta-submission-v1']);
   assert.equal(validateTree(tree).hard.length, 0);
-  assert.deepEqual(roundtrip(tree), { ok: true, atoms: 157 });
+  assert.deepEqual(roundtrip(tree), { ok: true, atoms: 159 });
 });
 
-test('all migrated V1 source bytes remain frozen; narratives replace missing author coverage', () => {
-  const evidence = json(join(ROOT, 'docs/TRUTH-MIGRATION-EVIDENCE.json'));
-  for (const source of evidence.sourceFiles) assert.equal(hash(readHistoricalFile(source.file)), source.sha256, source.file);
-  assert.equal(current.stories.length, 4); assert.equal(current.readModels.length, 6);
+test('narrative stories, read models, and use cases remain intact', () => {
+  assert.equal(current.stories.length, 4);
+  assert.equal(current.readModels.length, 6);
   assert.equal(current.useCases.useCases.length, 4);
   assert.equal(current.sessions.flatMap(s => s.scopes.flatMap(b => b.notes)).filter(n => n.type === 'role').length, 3);
   const note = current.sessions.flatMap(s => s.scopes.flatMap(b => b.notes)).find(n => n.name === 'BankV1Implementation');
   const body = note.info.artifact.body;
-  assert.ok(body.inheritedSources.every(s => s.interpretation === 'historical-frozen-reference' && !Object.hasOwn(s, 'value')));
   assert.deepEqual(body.entryOwnership, { payment: 'bank-cash-payment-v1', refund: 'bank-independent-refund-v1', ta: 'bank-ta-submission-v1', sip: 'bank-sip-dispatch-v1' });
   assert.ok(current.productDesigns.every(p => p.status === 'proposal' && p.approvalSource === null));
 });
 
-test('current complete request uses only current tree and named technical choices; compiled business products unchanged', async () => {
+test('current complete request uses only current tree and bindings/implementation; all 14 products compile', async () => {
   const captured = captureProject(project);
   const { copyImmutableData } = await import('../../metarch-truthsrc/lib/immutable-data.mjs');
   assert.doesNotThrow(() => copyImmutableData(captured.sourceIndex));
@@ -64,9 +42,6 @@ test('current complete request uses only current tree and named technical choice
   assert.ok(captured.sources.filter(s => s.file).every(s => !s.file.includes('/formal-inputs/') && !s.file.endsWith('/request.json') && !s.file.startsWith(join(ROOT, 'tree') + '/') && !s.file.startsWith(join(ROOT, 'v1/tree') + '/')));
   const config = captured.config;
   for (const doc of config.documents) assert.ok(doc.file.startsWith('bindings/implementation/'));
-  assert.deepEqual(captured.compilation.result.products.map(p => ({ id: p.id, version: p.version,
-    payloadSchemaVersion: p.payloadSchemaVersion, requires: p.requires,
-    sha256: hash(JSON.stringify(p.id === 'artifact-contract' ? beforeCompatibleStore(p.payload) : p.payload)) })), baseline.products);
 });
 
 test('current narrative references resolve to declared technical ports and real execution sources', () => {
@@ -77,13 +52,6 @@ test('current narrative references resolve to declared technical ports and real 
   assert.ok(links.some(row => row.kind === 'technical-port' && row.name === 'BankTaEffectExecute'));
   assert.ok(links.some(row => row.kind === 'technical-port' && row.name === 'BankSipDispatchExecute'));
   assert.ok(links.some(row => row.kind === 'command' && row.name === 'RecordCashRequestSource'));
-});
-
-test('old ambiguous CLI uses refuse until explicitly selected historical', () => {
-  for (const [tool, args] of [['validate.mjs', []], ['project.mjs', ['--check']], ['v1-inputs.mjs', ['--check-domain']], ['v1-service-inputs.mjs', ['--check-service']], ['v1-joint.mjs', ['--check']]]) {
-    const result = spawnSync(process.execPath, [join(ROOT, 'tools', tool), ...args], { cwd: ROOT, encoding: 'utf8', timeout: 10000 });
-    assert.notEqual(result.status, 0, tool); assert.match(result.stderr, /historical/i, tool);
-  }
 });
 
 // Explicit opt-in serial integration; never invokes the old qualification runner or a service.

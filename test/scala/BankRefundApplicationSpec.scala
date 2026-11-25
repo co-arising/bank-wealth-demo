@@ -1,5 +1,5 @@
 import akka.actor.typed.scaladsl.AskPattern._
-import example.bankwealth.bindings.BankRefundBindings
+import example.bankwealth.infrastructure.process.BankRefundBindings
 import example.bankwealth.domain._
 import example.bankwealth.domain.values._
 import example.bankwealth.infrastructure.proto._
@@ -12,7 +12,7 @@ import scala.jdk.CollectionConverters._
 final class BankRefundApplicationSpec extends AnyFunSuite {
   import BankTaApplicationFixture._
 
-  private def reject(h: Harness): example.bankwealth.ta.BankTaRefundApplication = {
+  private def reject(h: Harness): example.bankwealth.application.process.ta.BankTaRefundApplication = {
     h.pay()
     val app = h.application()
     h.accepted(app)
@@ -148,10 +148,10 @@ final class BankRefundApplicationSpec extends AnyFunSuite {
         h.discoverOrders.set(true)
         h.refundRuntime
         val recovered = h.application()
-        val cash = new example.bankwealth.integration.BankCashRequests(h.runtime, h.config, h.admission, h.journal)
-        val recovery = new example.bankwealth.integration.BankRecovery(h.runtime, h.journal, h.config, cash, "owned-b-refund-recovery")
-        val sip = new example.bankwealth.sip.BankSipApplication(h.runtime, h.journal, h.config, h.admission)
-        val loop = new example.bankwealth.integration.BankRecoveryLoop(h.journal, cash, recovered, sip, recovery)
+        val cash = new example.bankwealth.application.services.BankCashRequests(h.runtime, h.config, h.admission, h.journal)
+        val recovery = new example.bankwealth.infrastructure.recovery.BankRecovery(h.runtime, h.journal, h.config, cash, "owned-b-refund-recovery")
+        val sip = new example.bankwealth.application.process.sip.BankSipApplication(h.runtime, h.journal, h.config, h.admission)
+        val loop = new example.bankwealth.infrastructure.recovery.BankRecoveryLoop(h.journal, cash, recovered, sip, recovery)
         try {
           h.await(loop.start())
           h.eventually {

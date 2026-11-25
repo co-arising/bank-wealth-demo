@@ -1,3 +1,6 @@
+import example.bankwealth.domain.services.impl.{BankBalanceComputations, StableOrderIdentity, StableSipIdentity}
+import example.bankwealth.infrastructure.connectors.{BankSipDispatchBindings, BankTaBridge, BankTaEffectBindings, MockTAClient}
+import example.bankwealth.infrastructure.process.{BankPaymentBindings, BankRefundBindings, BankSipTerminalBridge}
 import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.actor.testkit.typed.scaladsl.ActorTestKit
 import akka.persistence.query.PersistenceQuery
@@ -11,7 +14,6 @@ import example.bankwealth.application.{bank_cash_payment_v1Execution => Executio
 import example.bankwealth.application.{bank_independent_refund_v1Execution => RefundExecution, bank_refund_hostDefinition => RefundDefinition, bank_refund_hostHost => RefundHost}
 import example.bankwealth.application.{bank_ta_submission_v1Execution => TaExecution, bank_ta_effectEffectHost => TaHost}
 import example.bankwealth.application.{bank_sip_dispatch_v1Execution => SipDispatch, bank_sip_dispatchEffectHost => SipHost}
-import example.bankwealth.bindings.{BankBalanceComputations, BankPaymentBindings, StableOrderIdentity, MockTAClient, BankTaBridge, BankRefundBindings, BankTaEffectBindings, StableSipIdentity, BankSipDispatchBindings, BankSipTerminalBridge}
 import example.bankwealth.domain._
 import example.bankwealth.domain.values._
 import example.bankwealth.infrastructure.proto._

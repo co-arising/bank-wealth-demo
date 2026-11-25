@@ -436,7 +436,7 @@ payload:
           "shellPath": "/bank/v1",
           "scriptPath": "/bank/v1/client-script",
           "renderer": {
-            "id": "example.bankwealth.web.BankBrowserPages",
+            "id": "example.bankwealth.interfaces.web.BankBrowserPages",
             "version": "1"
           },
           "aliases": [
@@ -503,77 +503,77 @@ payload:
     "implementations": [
       {
         "port": "@ref(bankwealth:port#BankServiceBootstrap)",
-        "id": "example.bankwealth.integration.BankServiceFactory",
+        "id": "example.bankwealth.infrastructure.bootstrap.BankServiceFactory",
         "version": "bank-v1-service-1"
       },
       {
         "port": "@ref(bankwealth:port#BankAccountQuery)",
-        "id": "example.bankwealth.integration.BankServiceEndpoints.BankAccountQuery",
+        "id": "example.bankwealth.interfaces.web.BankServiceEndpoints.BankAccountQuery",
         "version": "bank-v1-service-1"
       },
       {
         "port": "@ref(bankwealth:port#BankCashSubmitPort)",
-        "id": "example.bankwealth.integration.BankServiceEndpoints.BankCashSubmitPort",
+        "id": "example.bankwealth.interfaces.web.BankServiceEndpoints.BankCashSubmitPort",
         "version": "bank-v1-service-1"
       },
       {
         "port": "@ref(bankwealth:port#BankCashOriginalQuery)",
-        "id": "example.bankwealth.integration.BankServiceEndpoints.BankCashOriginalQuery",
+        "id": "example.bankwealth.interfaces.web.BankServiceEndpoints.BankCashOriginalQuery",
         "version": "bank-v1-service-1"
       },
       {
         "port": "@ref(bankwealth:port#BankOrderQuery)",
-        "id": "example.bankwealth.integration.BankServiceEndpoints.BankOrderQuery",
+        "id": "example.bankwealth.interfaces.web.BankServiceEndpoints.BankOrderQuery",
         "version": "bank-v1-service-1"
       },
       {
         "port": "@ref(bankwealth:port#BankSipCreatePort)",
-        "id": "example.bankwealth.integration.BankServiceEndpoints.BankSipCreatePort",
+        "id": "example.bankwealth.interfaces.web.BankServiceEndpoints.BankSipCreatePort",
         "version": "bank-v1-service-1"
       },
       {
         "port": "@ref(bankwealth:port#BankSipPlansQuery)",
-        "id": "example.bankwealth.integration.BankServiceEndpoints.BankSipPlansQuery",
+        "id": "example.bankwealth.interfaces.web.BankServiceEndpoints.BankSipPlansQuery",
         "version": "bank-v1-service-1"
       },
       {
         "port": "@ref(bankwealth:port#BankSipPlanQuery)",
-        "id": "example.bankwealth.integration.BankServiceEndpoints.BankSipPlanQuery",
+        "id": "example.bankwealth.interfaces.web.BankServiceEndpoints.BankSipPlanQuery",
         "version": "bank-v1-service-1"
       },
       {
         "port": "@ref(bankwealth:port#BankSipRevisePort)",
-        "id": "example.bankwealth.integration.BankServiceEndpoints.BankSipRevisePort",
+        "id": "example.bankwealth.interfaces.web.BankServiceEndpoints.BankSipRevisePort",
         "version": "bank-v1-service-1"
       },
       {
         "port": "@ref(bankwealth:port#BankSipPausePort)",
-        "id": "example.bankwealth.integration.BankServiceEndpoints.BankSipPausePort",
+        "id": "example.bankwealth.interfaces.web.BankServiceEndpoints.BankSipPausePort",
         "version": "bank-v1-service-1"
       },
       {
         "port": "@ref(bankwealth:port#BankSipResumePort)",
-        "id": "example.bankwealth.integration.BankServiceEndpoints.BankSipResumePort",
+        "id": "example.bankwealth.interfaces.web.BankServiceEndpoints.BankSipResumePort",
         "version": "bank-v1-service-1"
       },
       {
         "port": "@ref(bankwealth:port#BankSipOccurrencesQuery)",
-        "id": "example.bankwealth.integration.BankServiceEndpoints.BankSipOccurrencesQuery",
+        "id": "example.bankwealth.interfaces.web.BankServiceEndpoints.BankSipOccurrencesQuery",
         "version": "bank-v1-service-1"
       },
       {
         "port": "@ref(bankwealth:port#BankPendingOperationsQuery)",
-        "id": "example.bankwealth.integration.BankServiceEndpoints.BankPendingOperationsQuery",
+        "id": "example.bankwealth.interfaces.web.BankServiceEndpoints.BankPendingOperationsQuery",
         "version": "bank-v1-service-1"
       },
       {
         "port": "@ref(bankwealth:port#BankReconcileExistingPort)",
-        "id": "example.bankwealth.integration.BankServiceEndpoints.BankReconcileExistingPort",
+        "id": "example.bankwealth.interfaces.web.BankServiceEndpoints.BankReconcileExistingPort",
         "version": "bank-v1-service-1"
       },
       {
         "port": "@ref(bankwealth:port#BankBusinessTickPort)",
-        "id": "example.bankwealth.integration.BankServiceEndpoints.BankBusinessTickPort",
+        "id": "example.bankwealth.interfaces.web.BankServiceEndpoints.BankBusinessTickPort",
         "version": "bank-v1-service-1"
       }
     ]

@@ -1,11 +1,11 @@
 package example.bankwealth.service
 
+import example.bankwealth.infrastructure.persistence.BankReadsideSchema
+import example.bankwealth.interfaces.web.{BankPageRenderer, BankPagesController, BankServiceJson}
 import akka.stream.Materializer
 import example.bankwealth.domain.values._
-import example.bankwealth.integration.BankServiceJson
-import example.bankwealth.readside.BankReadsideSchema
-import example.bankwealth.service.BankServiceService._
-import example.bankwealth.web.{BankPageRenderer, BankPagesController}
+import example.bankwealth.interfaces.web.BankServiceJson
+import example.bankwealth.infrastructure.persistence.BankReadsideSchema
 import org.scalatest.funsuite.AnyFunSuite
 import play.api.libs.json._
 import play.api.mvc._

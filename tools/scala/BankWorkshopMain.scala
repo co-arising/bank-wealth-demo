@@ -1,7 +1,7 @@
 package example.bankwealth.workshop
 
 import com.typesafe.config.ConfigFactory
-import example.bankwealth.service.{BankServiceConfiguration, BankServiceLoader}
+import example.bankwealth.infrastructure.bootstrap.{BankServiceConfiguration, BankServiceLoader}
 import play.api.{Application, ApplicationLoader, Configuration, Environment, Mode}
 import play.api.inject.DefaultApplicationLifecycle
 import play.api.libs.json.{JsObject, Json}

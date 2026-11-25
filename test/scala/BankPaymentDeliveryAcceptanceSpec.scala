@@ -1,3 +1,5 @@
+import example.bankwealth.domain.services.impl.{BankBalanceComputations, StableOrderIdentity}
+import example.bankwealth.infrastructure.process.BankPaymentBindings
 import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.actor.testkit.typed.scaladsl.ActorTestKit
 import akka.persistence.query.PersistenceQuery
@@ -10,12 +12,10 @@ import akka.stream.scaladsl.Sink
 import com.google.protobuf.ByteString
 import com.typesafe.config.ConfigFactory
 import example.bankwealth.application.{bank_cash_payment_v1Execution => Execution, bank_payment_hostDefinition => Definition, bank_payment_hostHost => Host, bank_payment_hostHostIO => HostIO, bank_payment_hostTechnicalPorts => Technical}
-import example.bankwealth.bindings.{BankBalanceComputations, BankPaymentBindings, StableOrderIdentity}
 import example.bankwealth.domain._
 import example.bankwealth.domain.values._
 import example.bankwealth.infrastructure.proto._
 import example.bankwealth.infrastructure.serialization.DomainConverters
-import example.bankwealth.service.UnitConfigurationCheck
 import net.imadz.infra.saga.strict._
 import net.imadz.monarch.persistence.{DurableRunObserver, PersistentMonarch}
 import org.scalatest.funsuite.AnyFunSuite

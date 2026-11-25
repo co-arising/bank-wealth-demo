@@ -1,5 +1,9 @@
 package example.bankwealth.service
 
+import example.bankwealth.application.services.{BankCashRequests, BankPersistenceIds, BankTrustedAdmission}
+import example.bankwealth.infrastructure.bootstrap.BankRuntime
+import example.bankwealth.infrastructure.persistence.BankPersistenceJournal
+import example.bankwealth.infrastructure.security.{BankDemoConfiguration, BankDemoPrincipal, BankFund, BankSeed, BankSeedAuthority}
 import akka.actor.typed.ActorSystem
 import akka.actor.testkit.typed.scaladsl.ActorTestKit
 import akka.actor.typed.scaladsl.AskPattern._
@@ -9,10 +13,7 @@ import akka.util.Timeout
 import com.typesafe.config.ConfigFactory
 import example.bankwealth.domain._
 import example.bankwealth.domain.values._
-import example.bankwealth.integration._
-import example.bankwealth.security._
 import example.bankwealth.infrastructure.proto._
-import example.bankwealth.service.BankServiceService._
 import net.imadz.infra.saga.strict._
 import org.scalatest.funsuite.AnyFunSuite
 import scala.concurrent.{Await, Future}

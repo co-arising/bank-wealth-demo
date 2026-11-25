@@ -1,3 +1,8 @@
+import example.bankwealth.application.services.{BankPersistenceIds, BankRequestIdentity}
+import example.bankwealth.domain.services.impl.BankBalanceComputations
+import example.bankwealth.infrastructure.bootstrap.BankActorHandle
+import example.bankwealth.infrastructure.persistence.BankPersistenceJournal
+import example.bankwealth.infrastructure.security.{BankSeed, BankSeedAuthority}
 import akka.actor.typed.ActorSystem
 import akka.actor.testkit.typed.scaladsl.ActorTestKit
 import akka.persistence.query.PersistenceQuery
@@ -5,12 +10,8 @@ import akka.persistence.testkit.query.scaladsl.PersistenceTestKitReadJournal
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.util.Timeout
 import com.typesafe.config.ConfigFactory
-import example.bankwealth.bindings.{BankBalanceComputations, StableOrderIdentity, StableSipIdentity}
 import example.bankwealth.domain._
 import example.bankwealth.domain.values._
-import example.bankwealth.integration._
-import example.bankwealth.security._
-import example.bankwealth.service.UnitConfigurationCheck
 import org.scalatest.funsuite.AnyFunSuite
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._

@@ -1,14 +1,13 @@
 package example.bankwealth.service
 
+import example.bankwealth.infrastructure.security.{BankDemoAuthority, BankDemoConfiguration, BankDemoPrincipal, BankFund, BankSeed}
+import example.bankwealth.interfaces.web.{BankBrowserPages, BankServiceEndpoints}
 import akka.stream.Materializer
 import akka.stream.scaladsl.Source
 import akka.util.ByteString
 import com.typesafe.config.ConfigFactory
 import example.bankwealth.domain.values._
-import example.bankwealth.integration._
-import example.bankwealth.security._
-import example.bankwealth.service.BankServiceService._
-import example.bankwealth.web.BankBrowserPages
+import example.bankwealth.interfaces.web.BankBrowserPages
 import org.scalatest.funsuite.AnyFunSuite
 import play.api.{ApplicationLoader, Configuration, Environment, Mode}
 import play.api.inject.DefaultApplicationLifecycle

@@ -1,5 +1,14 @@
 package example.bankwealth.service
 
+import example.bankwealth.application.process.sip.BankSipApplication
+import example.bankwealth.application.process.ta.BankTaRefundApplication
+import example.bankwealth.application.services.{BankCashRequests, BankPersistenceIds, BankTrustedAdmission}
+import example.bankwealth.infrastructure.bootstrap.{BankActorHandle, BankCashRuntime, BankRefundRuntime, BankRuntime, BankRuntimeDirectory, BankSipDispatchRuntime, BankTaRuntime}
+import example.bankwealth.infrastructure.connectors.{BankTaEffectBindings, MockTAClient}
+import example.bankwealth.infrastructure.persistence.{BankJournal, BankJournalEnvelope, BankPersistenceJournal}
+import example.bankwealth.infrastructure.process.{BankPaymentBindings, BankRefundBindings}
+import example.bankwealth.infrastructure.recovery.{BankRecovery, BankRecoveryLoop}
+import example.bankwealth.infrastructure.security.{BankDemoConfiguration, BankDemoPrincipal, BankFund, BankSeed, BankSeedAuthority}
 import akka.NotUsed
 import akka.actor.typed.{ActorSystem, ActorRef, Behavior}
 import akka.actor.typed.scaladsl.{Behaviors, AskPattern}
@@ -20,16 +29,12 @@ import example.bankwealth.application.{bank_cash_payment_v1Execution => Cash,
   bank_payment_hostHost => PaymentHost, bank_refund_hostHost => RefundHost,
   bank_payment_hostDefinition => PaymentDefinition, bank_refund_hostDefinition => RefundDefinition,
   bank_ta_effectEffectHost => TaHost}
-import example.bankwealth.bindings.{BankTaEffectBindings, BankPaymentBindings, BankRefundBindings, MockTAClient}
 import example.bankwealth.domain._
 import example.bankwealth.domain.values._
 import example.bankwealth.infrastructure.proto._
 import example.bankwealth.infrastructure.serialization.DomainConverters
-import example.bankwealth.integration._
-import example.bankwealth.security._
-import example.bankwealth.service.BankServiceService._
-import example.bankwealth.sip.BankSipApplication
-import example.bankwealth.ta.BankTaRefundApplication
+import example.bankwealth.application.process.sip.BankSipApplication
+import example.bankwealth.application.process.ta.BankTaRefundApplication
 import net.imadz.infra.saga.strict._
 import net.imadz.monarch.persistence.{PersistentMonarch, RunObserver}
 import scalapb.GeneratedMessage
