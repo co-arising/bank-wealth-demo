@@ -191,14 +191,14 @@ debt** — see [continuation status](docs/TRUTHSRC-CONTINUATION.md).
 ## The only author surface & the directory contract
 
 **Enter only via root `truthsrc.project.json` into `truth/bank-wealth/`.**
-Business lives in the author tree; named technical choices in
-`bindings/implementation/`. Never hand-edit canonical, complete requests,
-SQLite stores, ledgers, anchors or generated code.
+Business lives in the author tree; Saga, runtime, and execution technical
+bindings are auto-derived from the truth tree and root config. Never hand-edit
+canonical, complete requests, SQLite stores, ledgers, anchors or generated code.
 
 | Location | Responsibility |
 |---|---|
 | [`truth/bank-wealth/`](truth/bank-wealth/) | system/context declarations, four-flow knowledge, structure sharing, stories & provenance |
-| [`truthsrc.project.json`](truthsrc.project.json) · [`bindings/implementation/`](bindings/implementation/) | project config & explicit technical choices |
+| [`truthsrc.project.json`](truthsrc.project.json) | project config, exact type/codec pins, runtime pin & external handwritten roots (Saga/runtime/execution bindings auto-derived) |
 | [`handwritten/scala/`](handwritten/scala/) | bank ports, owner/DTOs, TA/refund/SIP adapters, pages, runtime assembly |
 | [`test/scala/`](test/scala/) | fixed business/readside/HTTP/recovery expectations, run only by explicit manifest |
 | [`third-party/`](third-party/) | licenses and provenance materials that must stay |

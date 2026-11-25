@@ -5,7 +5,7 @@
 根 [`truthsrc.project.json`](truthsrc.project.json) 是唯一当前项目入口：
 
 - [`truth/bank-wealth/`](truth/bank-wealth/)：系统声明、`contexts/bankwealth/`内的领域与协作知识，以及`inbox/`内有来源的背景/决策。
-- [`bindings/implementation/`](bindings/implementation/)与根配置：具名技术选择、编码、宿主、runtime pin与外置源码路径。它们不构成另一份人工维护的完整业务request。
+- [`truthsrc.project.json`](truthsrc.project.json) 根配置：精确类型/编解码、runtime pin 与外置源码路径；Saga / Runtime / Execution 技术绑定由编译器直接从真源树与根配置自动推导，不再维护冗余的手工绑定 JSON。
 - 结构共享与受控微语法按公共工具规则展开；虚拟原子路径是展开坐标，不能沿它创建第二份作者文件。身份与seq不得为整理目录而重排。
 
 只修改被授权的作者输入。业务规则由显式声明定义，不由旧快照、生成器猜测或页面文案补足；未支持或缺失的能力必须明确拒绝，不能回退到旧树或虚构成功。

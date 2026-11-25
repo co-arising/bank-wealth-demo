@@ -207,74 +207,9 @@
       }
     }
   ],
-  "documents": [
-    {
-      "id": "payment-sagas",
-      "file": "bindings/implementation/payment-sagas.json"
-    },
-    {
-      "id": "payment-runtime",
-      "file": "bindings/implementation/payment-runtime.json"
-    },
-    {
-      "id": "payment-execution",
-      "file": "bindings/implementation/payment-execution.json"
-    },
-    {
-      "id": "refund-sagas",
-      "file": "bindings/implementation/refund-sagas.json"
-    },
-    {
-      "id": "refund-runtime",
-      "file": "bindings/implementation/refund-runtime.json"
-    },
-    {
-      "id": "refund-execution",
-      "file": "bindings/implementation/refund-execution.json"
-    },
-    {
-      "id": "sip-execution",
-      "file": "bindings/implementation/sip-execution.json"
-    },
-    {
-      "id": "ta-execution",
-      "file": "bindings/implementation/ta-execution.json"
-    }
-  ],
-  "assemblies": [
-    {
-      "id": "sagas",
-      "kind": "saga-bindings-union",
-      "sources": [
-        "payment-sagas",
-        "refund-sagas"
-      ]
-    },
-    {
-      "id": "runtime",
-      "kind": "runtime-bindings-union",
-      "sources": [
-        "payment-runtime",
-        "refund-runtime"
-      ]
-    },
-    {
-      "id": "execution",
-      "kind": "execution-bindings-union",
-      "sources": [
-        "payment-execution",
-        "refund-execution",
-        "sip-execution",
-        "ta-execution"
-      ],
-      "sagaBinding": "sagas"
-    }
-  ],
-  "roles": {
-    "sagaBinding": "sagas",
-    "runtimeBinding": "runtime",
-    "executionBinding": "execution"
-  },
+  "documents": [],
+  "assemblies": [],
+  "roles": {},
   "generator": "scala-cqrs-play-service",
   "options": {
     "packages": [
