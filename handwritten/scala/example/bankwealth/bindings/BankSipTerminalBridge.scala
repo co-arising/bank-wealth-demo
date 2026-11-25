@@ -3,8 +3,9 @@ package example.bankwealth.bindings
 import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.util.Timeout
-import example.bankwealth.application.process.{BankCashPaymentExecution => Cash, BankPaymentHost => PaymentHost,
-  BankIndependentRefundExecution => Refund, BankRefundHost => RefundHost}
+import example.bankwealth.application.process.cash_payment.{BankCashPaymentExecution => Cash}
+import example.bankwealth.application.process.independent_refund.{BankIndependentRefundExecution => Refund}
+import example.bankwealth.infrastructure.process.{BankPaymentHost => PaymentHost, BankRefundHost => RefundHost}
 import example.bankwealth.application.aggregates.{FundOrderProtocol, SipPlanProtocol}
 import example.bankwealth.domain.entities.{FundOrderEntity, SipPlanEntity}
 import example.bankwealth.domain.invariants.params.FundOrderRuleParams
@@ -13,10 +14,10 @@ import example.bankwealth.interfaces.api.ApiCommands._
 import example.bankwealth.interfaces.api.ApiKeys._
 import example.bankwealth.interfaces.api.ApiResponses._
 import example.bankwealth.interfaces.api.ApiWire._
-import example.bankwealth.application.projection._
-import example.bankwealth.application.process._
-import example.bankwealth.application.process.BankPaymentMessages._
-import example.bankwealth.application.process.BankRefundMessages._
+import example.bankwealth.application.readmodels.ReadModelViews._
+import example.bankwealth.application.process.protocol._
+import example.bankwealth.application.process.protocol.BankPaymentMessages._
+import example.bankwealth.application.process.protocol.BankRefundMessages._
 import example.bankwealth.application.connectors._
 import example.bankwealth.application.connectors.BankSipDispatchProtocol._
 import example.bankwealth.application.connectors.BankTaEffectProtocol._
@@ -62,7 +63,7 @@ final class BankSipTerminalBridge(plan: ActorRef[SipPlanProtocol.Command], order
           e.reason == s.taRejectionReason && s.taReceipts.get(e.receiptId).contains(e.receiptBody)
       case _ => false
     }
-    expectedRefundOperation = StableOrderIdentity.StableRefundOperationId(s, FundOrderRuleParams.RequestFundPurchaseRefundParams(o.fundOrderId, expectedPayment))
+    expectedRefundOperation = StableOrderIdentity.stableRefundOperationId(s, FundOrderRuleParams.RequestFundPurchaseRefundParams(o.fundOrderId, expectedPayment))
     expectedRefund = TxId(RefundHost.operationIdentity(Refund.State(Refund.Inputs(o.fundOrderId, expectedPayment,
       o.config.investorAccountId, o.config.fundCollectionAccountId, o.config.amount, expectedRefundOperation))))
     refundRequested = taRejected && s.refundOperationId == expectedRefundOperation && decodedEvents.exists {

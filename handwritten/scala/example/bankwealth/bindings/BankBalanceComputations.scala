@@ -9,13 +9,13 @@ object BankBalanceComputations extends CreditBalanceComputations {
   private def available(state: CreditBalanceEntity.State, currency: String): Money =
     state.accountBalance.getOrElse(currency, throw new IllegalArgumentException("initialized currency balance required"))
 
-  def BalanceAfterReserveFunds(state: CreditBalanceEntity.State, p: ReserveFundsParams): Money =
+  def balanceAfterReserveFunds(state: CreditBalanceEntity.State, p: ReserveFundsParams): Money =
     available(state, p.amount.currency).minus(p.amount)
 
-  def BalanceAfterCommitIncomingCredits(state: CreditBalanceEntity.State, p: CommitIncomingCreditsParams): Money =
+  def balanceAfterCommitIncomingCredits(state: CreditBalanceEntity.State, p: CommitIncomingCreditsParams): Money =
     available(state, p.amount.currency).plus(p.amount)
 
-  def BalanceAfterReleaseReservedFunds(state: CreditBalanceEntity.State, p: ReleaseReservedFundsParams): Money =
+  def balanceAfterReleaseReservedFunds(state: CreditBalanceEntity.State, p: ReleaseReservedFundsParams): Money =
     state.reservedAmount.get(p.txid) match {
       case Some(reserved) => available(state, p.amount.currency).plus(reserved)
       case None => available(state, p.amount.currency)

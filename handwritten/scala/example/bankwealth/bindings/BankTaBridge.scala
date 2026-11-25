@@ -12,10 +12,10 @@ import example.bankwealth.interfaces.api.ApiCommands._
 import example.bankwealth.interfaces.api.ApiKeys._
 import example.bankwealth.interfaces.api.ApiResponses._
 import example.bankwealth.interfaces.api.ApiWire._
-import example.bankwealth.application.projection._
-import example.bankwealth.application.process._
-import example.bankwealth.application.process.BankPaymentMessages._
-import example.bankwealth.application.process.BankRefundMessages._
+import example.bankwealth.application.readmodels.ReadModelViews._
+import example.bankwealth.application.process.protocol._
+import example.bankwealth.application.process.protocol.BankPaymentMessages._
+import example.bankwealth.application.process.protocol.BankRefundMessages._
 import example.bankwealth.application.connectors._
 import example.bankwealth.application.connectors.BankSipDispatchProtocol._
 import example.bankwealth.application.connectors.BankTaEffectProtocol._
@@ -64,13 +64,13 @@ final class BankTaBridge(order: ActorRef[FundOrderProtocol.Command], ta: MockTAC
     _ <- if (before.taRequestId.value.isEmpty)
       execute(FundOrderProtocol.RegisterFundTASubmission(before.id, before.selectedPaymentTxId, _))
       else {
-        require(before.taRequestId == StableOrderIdentity.StableTaRequestId(before,
+        require(before.taRequestId == StableOrderIdentity.stableTaRequestId(before,
           FundOrderRuleParams.RegisterFundTASubmissionParams(before.id, before.selectedPaymentTxId)), "retained TA identity is not the original")
         Future.successful(())
       }
     retained <- state()
     _ = require(retained.id == before.id && retained.selectedPaymentTxId == before.selectedPaymentTxId &&
-      retained.taRequestId == StableOrderIdentity.StableTaRequestId(retained,
+      retained.taRequestId == StableOrderIdentity.stableTaRequestId(retained,
         FundOrderRuleParams.RegisterFundTASubmissionParams(retained.id, retained.selectedPaymentTxId)), "registered TA original changed")
   } yield BankTaEffectRequest(retained.taRequestId, retained.id, retained.selectedPaymentTxId)
 

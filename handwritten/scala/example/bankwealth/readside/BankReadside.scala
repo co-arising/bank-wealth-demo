@@ -9,19 +9,19 @@ import example.bankwealth.interfaces.api.ApiCommands._
 import example.bankwealth.interfaces.api.ApiKeys._
 import example.bankwealth.interfaces.api.ApiResponses._
 import example.bankwealth.interfaces.api.ApiWire._
-import example.bankwealth.application.projection._
-import example.bankwealth.application.process._
-import example.bankwealth.application.process.BankPaymentMessages._
-import example.bankwealth.application.process.BankRefundMessages._
+import example.bankwealth.application.readmodels.ReadModelViews._
+import example.bankwealth.application.process.protocol._
+import example.bankwealth.application.process.protocol.BankPaymentMessages._
+import example.bankwealth.application.process.protocol.BankRefundMessages._
 import example.bankwealth.application.connectors._
 import example.bankwealth.application.connectors.BankSipDispatchProtocol._
 import example.bankwealth.application.connectors.BankTaEffectProtocol._
 import example.bankwealth.domain.values._
 import example.bankwealth.infrastructure.proto.SipOccurrencePO
 import example.bankwealth.infrastructure.persistence.converters.DomainConverters
-import example.bankwealth.application.projection.BankJournalReadsideProjectionHandler
-import example.bankwealth.application.projection.repository.BankJournalReadsideRepository
-import example.bankwealth.application.projection.repository.BankJournalReadsideRepository.{Row, State, Pending, Occurrence, hash}
+import example.bankwealth.application.readmodels.bank_journal.BankJournalReadsideProjectionHandler
+import example.bankwealth.application.readmodels.bank_journal.repository.BankJournalReadsideRepository
+import example.bankwealth.application.readmodels.bank_journal.repository.BankJournalReadsideRepository.{Row, State, Pending, Occurrence, hash}
 import example.bankwealth.infrastructure.repositories.projection.{BankJournalReadsideDomain, BankJournalReadsideRepositoryImpl, BankJournalReadsideRunner}
 import example.bankwealth.integration._
 import example.bankwealth.security.{BankDemoConfiguration, BankDemoPrincipal}

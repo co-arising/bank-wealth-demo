@@ -3,9 +3,9 @@ package example.bankwealth.bindings
 import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.util.Timeout
-import example.bankwealth.application.process.{BankCashPaymentExecution => Cash}
-import example.bankwealth.application.process.{BankSipDispatchExecution => Dispatch}
-import example.bankwealth.application.connectors.{BankSipDispatchEffectHost => Host}
+import example.bankwealth.application.process.cash_payment.{BankCashPaymentExecution => Cash}
+import example.bankwealth.application.process.sip_dispatch.{BankSipDispatchExecution => Dispatch}
+import example.bankwealth.infrastructure.connectors.{BankSipDispatchEffectHost => Host}
 import example.bankwealth.infrastructure.persistence.BankCashPaymentStateCodec
 import example.bankwealth.application.aggregates.{FundOrderProtocol, SipPlanProtocol}
 import example.bankwealth.domain.entities.{FundOrderEntity, SipPlanEntity}
@@ -14,10 +14,10 @@ import example.bankwealth.interfaces.api.ApiCommands._
 import example.bankwealth.interfaces.api.ApiKeys._
 import example.bankwealth.interfaces.api.ApiResponses._
 import example.bankwealth.interfaces.api.ApiWire._
-import example.bankwealth.application.projection._
-import example.bankwealth.application.process._
-import example.bankwealth.application.process.BankPaymentMessages._
-import example.bankwealth.application.process.BankRefundMessages._
+import example.bankwealth.application.readmodels.ReadModelViews._
+import example.bankwealth.application.process.protocol._
+import example.bankwealth.application.process.protocol.BankPaymentMessages._
+import example.bankwealth.application.process.protocol.BankRefundMessages._
 import example.bankwealth.application.connectors._
 import example.bankwealth.application.connectors.BankSipDispatchProtocol._
 import example.bankwealth.application.connectors.BankTaEffectProtocol._

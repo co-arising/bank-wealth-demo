@@ -5,7 +5,7 @@ import akka.actor.typed.scaladsl.AskPattern._
 import akka.stream.{Materializer, SystemMaterializer}
 import akka.stream.scaladsl.Sink
 import akka.util.Timeout
-import example.bankwealth.application.process.{BankSipDispatchExecution => Dispatch}
+import example.bankwealth.application.process.sip_dispatch.{BankSipDispatchExecution => Dispatch}
 import example.bankwealth.infrastructure.persistence.BankSipDispatchStateCodec
 import example.bankwealth.bindings.{BankSipTerminalBridge, StableSipIdentity}
 import example.bankwealth.application.aggregates.{FundOrderProtocol, SipPlanProtocol}
@@ -16,10 +16,10 @@ import example.bankwealth.interfaces.api.ApiCommands._
 import example.bankwealth.interfaces.api.ApiKeys._
 import example.bankwealth.interfaces.api.ApiResponses._
 import example.bankwealth.interfaces.api.ApiWire._
-import example.bankwealth.application.projection._
-import example.bankwealth.application.process._
-import example.bankwealth.application.process.BankPaymentMessages._
-import example.bankwealth.application.process.BankRefundMessages._
+import example.bankwealth.application.readmodels.ReadModelViews._
+import example.bankwealth.application.process.protocol._
+import example.bankwealth.application.process.protocol.BankPaymentMessages._
+import example.bankwealth.application.process.protocol.BankRefundMessages._
 import example.bankwealth.application.connectors._
 import example.bankwealth.application.connectors.BankSipDispatchProtocol._
 import example.bankwealth.application.connectors.BankTaEffectProtocol._
@@ -282,7 +282,7 @@ final class BankSipApplication(directory: BankRuntimeDirectory, journal: BankJou
     _ = validatePrefix(s, intent)
     _ = check(s.id == o.planId && s.occurrences.get(o.dueSlot).contains(o) && s.scheduleSealed)
     position = s.slots.collectFirst { case (p, slot) if slot == o.dueSlot => p }.getOrElse(reject(RequestConflict))
-    expected = StableSipIdentity.StableSipOccurrence(s, SipPlanRuleParams.TriggerSipInstallmentParams(position, o.dueSlot, o.revision, o.config))
+    expected = StableSipIdentity.stableSipOccurrence(s, SipPlanRuleParams.TriggerSipInstallmentParams(position, o.dueSlot, o.revision, o.config))
     _ = check(expected == o && s.revisions.get(o.revision).contains(o.config) &&
       o.dueSlot >= o.config.effectiveSlot && s.revisionEnds.get(o.revision).forall(o.dueSlot < _))
     events <- journal.readPb(h.persistenceId)

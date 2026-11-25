@@ -1,20 +1,22 @@
 package example.bankwealth.integration
 
 import akka.actor.typed.ActorRef
-import example.bankwealth.application.process.{BankCashPaymentExecution => Cash, BankIndependentRefundExecution => Refund,
-  BankPaymentHost => PaymentHost, BankRefundHost => RefundHost}
-import example.bankwealth.application.process.{BankTaSubmissionExecution => Ta, BankSipDispatchExecution => SipDispatch}
-import example.bankwealth.application.connectors.{BankTaEffectHost => TaHost, BankSipDispatchEffectHost => SipHost}
+import example.bankwealth.application.process.cash_payment.{BankCashPaymentExecution => Cash}
+import example.bankwealth.application.process.independent_refund.{BankIndependentRefundExecution => Refund}
+import example.bankwealth.infrastructure.process.{BankPaymentHost => PaymentHost, BankRefundHost => RefundHost}
+import example.bankwealth.application.process.ta_submission.{BankTaSubmissionExecution => Ta}
+import example.bankwealth.application.process.sip_dispatch.{BankSipDispatchExecution => SipDispatch}
+import example.bankwealth.infrastructure.connectors.{BankTaEffectHost => TaHost, BankSipDispatchEffectHost => SipHost}
 import example.bankwealth.application.aggregates.{CreditBalanceProtocol, FundOrderProtocol, SipPlanProtocol}
 import example.bankwealth.interfaces.api.ApiAcknowledgements._
 import example.bankwealth.interfaces.api.ApiCommands._
 import example.bankwealth.interfaces.api.ApiKeys._
 import example.bankwealth.interfaces.api.ApiResponses._
 import example.bankwealth.interfaces.api.ApiWire._
-import example.bankwealth.application.projection._
-import example.bankwealth.application.process._
-import example.bankwealth.application.process.BankPaymentMessages._
-import example.bankwealth.application.process.BankRefundMessages._
+import example.bankwealth.application.readmodels.ReadModelViews._
+import example.bankwealth.application.process.protocol._
+import example.bankwealth.application.process.protocol.BankPaymentMessages._
+import example.bankwealth.application.process.protocol.BankRefundMessages._
 import example.bankwealth.application.connectors._
 import example.bankwealth.application.connectors.BankSipDispatchProtocol._
 import example.bankwealth.application.connectors.BankTaEffectProtocol._

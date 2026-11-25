@@ -3,8 +3,9 @@ package example.bankwealth.bindings
 import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.util.Timeout
-import example.bankwealth.application.process.{BankCashPaymentExecution => Execution, BankPaymentSagaDefinition => Definition, BankPaymentHost => Host, BankPaymentPorts}
-import example.bankwealth.application.process.BankPaymentPorts.{CompletionContext, OperationNotExecuted}
+import example.bankwealth.application.process.cash_payment.{BankCashPaymentExecution => Execution, BankPaymentSagaDefinition => Definition, BankPaymentPorts}
+import example.bankwealth.infrastructure.process.{BankPaymentHost => Host}
+import example.bankwealth.application.process.cash_payment.BankPaymentPorts.{CompletionContext, OperationNotExecuted}
 import example.bankwealth.infrastructure.bootstrap.{BankPaymentPortBindings => Technical, BankPaymentProcessBootstrap => ProcessBootstrap}
 import example.bankwealth.infrastructure.persistence.BankPaymentProcessCodecs
 import example.bankwealth.application.aggregates.{CreditBalanceProtocol, FundOrderProtocol}
@@ -14,13 +15,13 @@ import example.bankwealth.interfaces.api.ApiCommands._
 import example.bankwealth.interfaces.api.ApiKeys._
 import example.bankwealth.interfaces.api.ApiResponses._
 import example.bankwealth.interfaces.api.ApiWire._
-import example.bankwealth.application.projection._
-import example.bankwealth.application.process._
-import example.bankwealth.application.process.BankPaymentMessages._
-import example.bankwealth.application.process.BankRefundMessages._
-import example.bankwealth.application.process.CreditFundCollectionStep._
-import example.bankwealth.application.process.ReserveCashFundOrderStep._
-import example.bankwealth.application.process.ReserveInvestorFundsStep._
+import example.bankwealth.application.readmodels.ReadModelViews._
+import example.bankwealth.application.process.protocol._
+import example.bankwealth.application.process.protocol.BankPaymentMessages._
+import example.bankwealth.application.process.protocol.BankRefundMessages._
+import example.bankwealth.application.process.protocol.CreditFundCollectionStep._
+import example.bankwealth.application.process.protocol.ReserveCashFundOrderStep._
+import example.bankwealth.application.process.protocol.ReserveInvestorFundsStep._
 import example.bankwealth.application.connectors._
 import example.bankwealth.application.connectors.BankSipDispatchProtocol._
 import example.bankwealth.application.connectors.BankTaEffectProtocol._

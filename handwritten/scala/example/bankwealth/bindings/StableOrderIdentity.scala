@@ -17,8 +17,8 @@ object StableOrderIdentity extends FundOrderComputations {
     }
     Base64.getUrlEncoder.withoutPadding.encodeToString(bytes)
   }
-  def StableTaRequestId(state: FundOrderEntity.State, p: RegisterFundTASubmissionParams): TaRequestId =
+  def stableTaRequestId(state: FundOrderEntity.State, p: RegisterFundTASubmissionParams): TaRequestId =
     TaRequestId("bank-ta-v1/" + identity(p.fundOrderId.value, p.paymentTxId.value))
-  def StableRefundOperationId(state: FundOrderEntity.State, p: RequestFundPurchaseRefundParams): OperationId =
+  def stableRefundOperationId(state: FundOrderEntity.State, p: RequestFundPurchaseRefundParams): OperationId =
     OperationId("bank-refund-v1/" + identity(p.fundOrderId.value, p.paymentTxId.value))
 }

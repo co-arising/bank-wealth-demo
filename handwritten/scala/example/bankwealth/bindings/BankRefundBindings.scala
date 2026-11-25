@@ -3,8 +3,9 @@ package example.bankwealth.bindings
 import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.util.Timeout
-import example.bankwealth.application.process.{BankIndependentRefundExecution => Execution, BankRefundSagaDefinition => Definition, BankRefundHost => Host, BankRefundPorts}
-import example.bankwealth.application.process.BankRefundPorts.{CompletionContext, OperationNotExecuted}
+import example.bankwealth.application.process.independent_refund.{BankIndependentRefundExecution => Execution, BankRefundSagaDefinition => Definition, BankRefundPorts}
+import example.bankwealth.infrastructure.process.{BankRefundHost => Host}
+import example.bankwealth.application.process.independent_refund.BankRefundPorts.{CompletionContext, OperationNotExecuted}
 import example.bankwealth.infrastructure.bootstrap.{BankRefundPortBindings => Technical, BankRefundProcessBootstrap => ProcessBootstrap}
 import example.bankwealth.infrastructure.persistence.BankRefundProcessCodecs
 import example.bankwealth.application.aggregates.{CreditBalanceProtocol, FundOrderProtocol}
@@ -15,12 +16,12 @@ import example.bankwealth.interfaces.api.ApiCommands._
 import example.bankwealth.interfaces.api.ApiKeys._
 import example.bankwealth.interfaces.api.ApiResponses._
 import example.bankwealth.interfaces.api.ApiWire._
-import example.bankwealth.application.projection._
-import example.bankwealth.application.process._
-import example.bankwealth.application.process.BankPaymentMessages._
-import example.bankwealth.application.process.BankRefundMessages._
-import example.bankwealth.application.process.CreditOriginalInvestorStep._
-import example.bankwealth.application.process.DebitFundCollectionStep._
+import example.bankwealth.application.readmodels.ReadModelViews._
+import example.bankwealth.application.process.protocol._
+import example.bankwealth.application.process.protocol.BankPaymentMessages._
+import example.bankwealth.application.process.protocol.BankRefundMessages._
+import example.bankwealth.application.process.protocol.CreditOriginalInvestorStep._
+import example.bankwealth.application.process.protocol.DebitFundCollectionStep._
 import example.bankwealth.application.connectors._
 import example.bankwealth.application.connectors.BankSipDispatchProtocol._
 import example.bankwealth.application.connectors.BankTaEffectProtocol._
@@ -140,7 +141,7 @@ final class BankRefundBindings(
       o.id == original.fundOrderId && o.selectedPaymentTxId == original.paymentTxId && o.cashPaymentFinalResults.get(original.paymentTxId).contains("succeeded") &&
       o.taStatus == "rejected" && o.refundOperationId == original.refundOperationId && o.investorAccountId == original.investorAccountId &&
       o.fundCollectionAccountId == original.fundCollectionAccountId && o.amount == original.amount &&
-      original.refundOperationId == StableOrderIdentity.StableRefundOperationId(o,
+      original.refundOperationId == StableOrderIdentity.stableRefundOperationId(o,
         FundOrderRuleParams.RequestFundPurchaseRefundParams(original.fundOrderId, original.paymentTxId)) &&
       events.exists { case e: FundOrderEntity.FundCashPaymentSucceeded => e.txid == original.paymentTxId; case _ => false } &&
       events.exists { case e: FundOrderEntity.FundTASubmissionRegistered => e.fundOrderId == o.id && e.paymentTxId == original.paymentTxId && e.taRequestId == o.taRequestId; case _ => false } &&

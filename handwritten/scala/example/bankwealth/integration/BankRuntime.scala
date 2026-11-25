@@ -4,10 +4,12 @@ import akka.actor.typed.{ActorRef, ActorSystem, Behavior}
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.scaladsl.adapter._
 import akka.util.Timeout
-import example.bankwealth.application.process.{BankCashPaymentExecution => Cash, BankIndependentRefundExecution => Refund,
-  BankPaymentHost => PaymentHost, BankRefundHost => RefundHost}
-import example.bankwealth.application.process.{BankTaSubmissionExecution => Ta, BankSipDispatchExecution => Dispatch}
-import example.bankwealth.application.connectors.{BankTaEffectHost => TaHost, BankSipDispatchEffectHost => SipHost}
+import example.bankwealth.application.process.cash_payment.{BankCashPaymentExecution => Cash}
+import example.bankwealth.application.process.independent_refund.{BankIndependentRefundExecution => Refund}
+import example.bankwealth.infrastructure.process.{BankPaymentHost => PaymentHost, BankRefundHost => RefundHost}
+import example.bankwealth.application.process.ta_submission.{BankTaSubmissionExecution => Ta}
+import example.bankwealth.application.process.sip_dispatch.{BankSipDispatchExecution => Dispatch}
+import example.bankwealth.infrastructure.connectors.{BankTaEffectHost => TaHost, BankSipDispatchEffectHost => SipHost}
 import example.bankwealth.infrastructure.bootstrap.{BankPaymentProcessBootstrap => PaymentBootstrap,
   BankRefundProcessBootstrap => RefundBootstrap, BankTaEffectBootstrap => TaBootstrap,
   BankSipDispatchEffectBootstrap => SipBootstrap}
@@ -19,10 +21,10 @@ import example.bankwealth.interfaces.api.ApiCommands._
 import example.bankwealth.interfaces.api.ApiKeys._
 import example.bankwealth.interfaces.api.ApiResponses._
 import example.bankwealth.interfaces.api.ApiWire._
-import example.bankwealth.application.projection._
-import example.bankwealth.application.process._
-import example.bankwealth.application.process.BankPaymentMessages._
-import example.bankwealth.application.process.BankRefundMessages._
+import example.bankwealth.application.readmodels.ReadModelViews._
+import example.bankwealth.application.process.protocol._
+import example.bankwealth.application.process.protocol.BankPaymentMessages._
+import example.bankwealth.application.process.protocol.BankRefundMessages._
 import example.bankwealth.application.connectors._
 import example.bankwealth.application.connectors.BankSipDispatchProtocol._
 import example.bankwealth.application.connectors.BankTaEffectProtocol._
@@ -120,7 +122,7 @@ final class BankRuntime(
       val saga = spawn(ids.paymentSaga(original.operationId), PaymentBootstrap.coordinatorBehavior(ids.paymentSaga(original.operationId), PaymentBootstrap.portsFromTechnical(bindings.installed), reconcileAuthorizer))
       coordinator = saga.ref
       val host = spawn(ids.paymentHost(original.operationId), PaymentBootstrap.hostBehavior(ids.paymentHost(original.operationId), saga.ref, bindings.installed))
-      val parent = spawn(ids.paymentRun(original.operationId), PaymentBootstrap.executionBehavior(ids.paymentRun(original.operationId), Cash.install(host.ref), new RunObserver[Cash.State] {}))
+      val parent = spawn(ids.paymentRun(original.operationId), PaymentBootstrap.executionBehavior(ids.paymentRun(original.operationId), PaymentBootstrap.install(host.ref), new RunObserver[Cash.State] {}))
       BankCashRuntime(original, bindings.operationId, saga, host, parent)
     }
   }.map { value => require(value.original == original, "same cash identity has conflicting body"); value }
@@ -141,7 +143,7 @@ final class BankRuntime(
       val saga = spawn(ids.refundSaga(original.refundOperationId), RefundBootstrap.coordinatorBehavior(ids.refundSaga(original.refundOperationId), RefundBootstrap.portsFromTechnical(bindings.installed), reconcileAuthorizer))
       coordinator = saga.ref
       val host = spawn(ids.refundHost(original.refundOperationId), RefundBootstrap.hostBehavior(ids.refundHost(original.refundOperationId), saga.ref, bindings.installed))
-      val parent = spawn(ids.refundRun(original.refundOperationId), RefundBootstrap.executionBehavior(ids.refundRun(original.refundOperationId), Refund.install(host.ref), new RunObserver[Refund.State] {}))
+      val parent = spawn(ids.refundRun(original.refundOperationId), RefundBootstrap.executionBehavior(ids.refundRun(original.refundOperationId), RefundBootstrap.install(host.ref), new RunObserver[Refund.State] {}))
       BankRefundRuntime(original, bindings.operationId, saga, host, parent)
     }
   }.map { value => require(value.original == original, "same refund identity has conflicting body"); value }
@@ -153,7 +155,7 @@ final class BankRuntime(
       _ = require(state.taRequestId == request.taRequestId && state.selectedPaymentTxId == request.paymentTxId && state.cashPaymentFinalResults.get(request.paymentTxId).contains("succeeded"), "TA graph requires original paid submission")
     } yield synchronized {
       val host = spawn(ids.taHost(request.taRequestId), TaBootstrap.hostBehavior(ids.taHost(request.taRequestId), taBindings(destination.ref)))
-      val parent = spawn(ids.taRun(request.taRequestId), TaBootstrap.executionBehavior(ids.taRun(request.taRequestId), Ta.install(host.ref), new RunObserver[Ta.State] {}))
+      val parent = spawn(ids.taRun(request.taRequestId), TaBootstrap.executionBehavior(ids.taRun(request.taRequestId), TaBootstrap.install(host.ref), new RunObserver[Ta.State] {}))
       BankTaRuntime(request, host, parent)
     }
   }.map { value => require(value.request == request, "same TA identity has conflicting body"); value }
@@ -173,7 +175,7 @@ final class BankRuntime(
     } yield synchronized {
       val bindings = new BankSipDispatchBindings(source.ref, source.persistenceId, destination.ref, cash.parent.ref, cash.parent.persistenceId, journal.readAll(_))
       val host = spawn(ids.sipHost(occurrence.occurrenceId), SipBootstrap.hostBehavior(ids.sipHost(occurrence.occurrenceId), bindings.installed))
-      val parent = spawn(ids.sipRun(occurrence.occurrenceId), SipBootstrap.executionBehavior(ids.sipRun(occurrence.occurrenceId), Dispatch.install(host.ref), new RunObserver[Dispatch.State] {}))
+      val parent = spawn(ids.sipRun(occurrence.occurrenceId), SipBootstrap.executionBehavior(ids.sipRun(occurrence.occurrenceId), SipBootstrap.install(host.ref), new RunObserver[Dispatch.State] {}))
       BankSipDispatchRuntime(occurrence, host, parent)
     }
   }.map { value => require(value.occurrence == occurrence, "same dispatch identity has conflicting body"); value }

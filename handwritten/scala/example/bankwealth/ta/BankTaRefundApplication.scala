@@ -5,9 +5,10 @@ import akka.actor.typed.scaladsl.AskPattern._
 import akka.stream.{KillSwitches, Materializer, SystemMaterializer}
 import akka.stream.scaladsl.{RestartSource, Sink, Source}
 import akka.util.Timeout
-import example.bankwealth.application.process.{BankIndependentRefundExecution => Refund, BankRefundHost => RefundHost}
-import example.bankwealth.application.process.{BankTaSubmissionExecution => Ta}
-import example.bankwealth.application.connectors.{BankTaEffectHost => TaHost}
+import example.bankwealth.application.process.independent_refund.{BankIndependentRefundExecution => Refund}
+import example.bankwealth.infrastructure.process.{BankRefundHost => RefundHost}
+import example.bankwealth.application.process.ta_submission.{BankTaSubmissionExecution => Ta}
+import example.bankwealth.infrastructure.connectors.{BankTaEffectHost => TaHost}
 import example.bankwealth.infrastructure.persistence.{BankIndependentRefundStateCodec, BankTaSubmissionStateCodec}
 import example.bankwealth.bindings.{BankTaBridge, BankTaEffectBindings, MockTAClient, StableOrderIdentity}
 import example.bankwealth.application.aggregates.FundOrderProtocol
@@ -18,10 +19,10 @@ import example.bankwealth.interfaces.api.ApiCommands._
 import example.bankwealth.interfaces.api.ApiKeys._
 import example.bankwealth.interfaces.api.ApiResponses._
 import example.bankwealth.interfaces.api.ApiWire._
-import example.bankwealth.application.projection._
-import example.bankwealth.application.process._
-import example.bankwealth.application.process.BankPaymentMessages._
-import example.bankwealth.application.process.BankRefundMessages._
+import example.bankwealth.application.readmodels.ReadModelViews._
+import example.bankwealth.application.process.protocol._
+import example.bankwealth.application.process.protocol.BankPaymentMessages._
+import example.bankwealth.application.process.protocol.BankRefundMessages._
 import example.bankwealth.application.connectors._
 import example.bankwealth.application.connectors.BankSipDispatchProtocol._
 import example.bankwealth.application.connectors.BankTaEffectProtocol._
@@ -151,7 +152,7 @@ final class BankTaRefundApplication(directory: BankRuntimeDirectory, journal: Ba
     }, "exact original payment journal evidence required")
   }
   private def registered(s: FundOrderEntity.State, events: Vector[Any]): Unit = {
-    require(s.taRequestId == StableOrderIdentity.StableTaRequestId(s, FundOrderRuleParams.RegisterFundTASubmissionParams(s.id, s.selectedPaymentTxId)) &&
+    require(s.taRequestId == StableOrderIdentity.stableTaRequestId(s, FundOrderRuleParams.RegisterFundTASubmissionParams(s.id, s.selectedPaymentTxId)) &&
       events.exists {
         case e: FundOrderEntity.FundTASubmissionRegistered => e.fundOrderId == s.id && e.paymentTxId == s.selectedPaymentTxId && e.taRequestId == s.taRequestId
         case _ => false
@@ -244,7 +245,7 @@ final class BankTaRefundApplication(directory: BankRuntimeDirectory, journal: Ba
         for {
           retained <- state(handle)
           evidence <- history(handle.persistenceId)
-          _ = require(original.refundOperationId == StableOrderIdentity.StableRefundOperationId(retained,
+          _ = require(original.refundOperationId == StableOrderIdentity.stableRefundOperationId(retained,
             FundOrderRuleParams.RequestFundPurchaseRefundParams(original.fundOrderId, original.paymentTxId)), "refund identity must be stable and independent")
           _ = require(evidence.exists {
             case e: FundOrderEntity.FundPurchaseRefundRequested => BankRefundOriginal(e.fundOrderId, e.paymentTxId,
