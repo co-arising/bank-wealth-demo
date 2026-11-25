@@ -64,14 +64,14 @@ final class BankTaBridge(order: ActorRef[FundOrderProtocol.Command], ta: MockTAC
     _ <- if (before.taRequestId.value.isEmpty)
       execute(FundOrderProtocol.RegisterFundTASubmission(before.id, before.selectedPaymentTxId, _))
       else {
-        require(before.taRequestId == StableOrderIdentity.stableTaRequestId(before,
-          FundOrderRuleParams.RegisterFundTASubmissionParams(before.id, before.selectedPaymentTxId)), "retained TA identity is not the original")
+        require(StableOrderIdentity.stableTaRequestId(before,
+          FundOrderRuleParams.RegisterFundTASubmissionParams(before.id, before.selectedPaymentTxId)).contains(before.taRequestId), "retained TA identity is not the original")
         Future.successful(())
       }
     retained <- state()
     _ = require(retained.id == before.id && retained.selectedPaymentTxId == before.selectedPaymentTxId &&
-      retained.taRequestId == StableOrderIdentity.stableTaRequestId(retained,
-        FundOrderRuleParams.RegisterFundTASubmissionParams(retained.id, retained.selectedPaymentTxId)), "registered TA original changed")
+      StableOrderIdentity.stableTaRequestId(retained,
+        FundOrderRuleParams.RegisterFundTASubmissionParams(retained.id, retained.selectedPaymentTxId)).contains(retained.taRequestId), "registered TA original changed")
   } yield BankTaEffectRequest(retained.taRequestId, retained.id, retained.selectedPaymentTxId)
 
   def submit(scenario: String): Future[JsonNode] = for {

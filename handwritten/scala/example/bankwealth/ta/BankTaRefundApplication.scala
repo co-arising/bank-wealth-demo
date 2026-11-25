@@ -152,7 +152,7 @@ final class BankTaRefundApplication(directory: BankRuntimeDirectory, journal: Ba
     }, "exact original payment journal evidence required")
   }
   private def registered(s: FundOrderEntity.State, events: Vector[Any]): Unit = {
-    require(s.taRequestId == StableOrderIdentity.stableTaRequestId(s, FundOrderRuleParams.RegisterFundTASubmissionParams(s.id, s.selectedPaymentTxId)) &&
+    require(StableOrderIdentity.stableTaRequestId(s, FundOrderRuleParams.RegisterFundTASubmissionParams(s.id, s.selectedPaymentTxId)).contains(s.taRequestId) &&
       events.exists {
         case e: FundOrderEntity.FundTASubmissionRegistered => e.fundOrderId == s.id && e.paymentTxId == s.selectedPaymentTxId && e.taRequestId == s.taRequestId
         case _ => false
@@ -245,8 +245,8 @@ final class BankTaRefundApplication(directory: BankRuntimeDirectory, journal: Ba
         for {
           retained <- state(handle)
           evidence <- history(handle.persistenceId)
-          _ = require(original.refundOperationId == StableOrderIdentity.stableRefundOperationId(retained,
-            FundOrderRuleParams.RequestFundPurchaseRefundParams(original.fundOrderId, original.paymentTxId)), "refund identity must be stable and independent")
+          _ = require(StableOrderIdentity.stableRefundOperationId(retained,
+            FundOrderRuleParams.RequestFundPurchaseRefundParams(original.fundOrderId, original.paymentTxId)).contains(original.refundOperationId), "refund identity must be stable and independent")
           _ = require(evidence.exists {
             case e: FundOrderEntity.FundPurchaseRefundRequested => BankRefundOriginal(e.fundOrderId, e.paymentTxId,
               e.investorAccountId, e.fundCollectionAccountId, e.amount, e.refundOperationId) == original

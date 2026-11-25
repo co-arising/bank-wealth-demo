@@ -64,6 +64,7 @@ final class BankSipTerminalBridge(plan: ActorRef[SipPlanProtocol.Command], order
       case _ => false
     }
     expectedRefundOperation = StableOrderIdentity.stableRefundOperationId(s, FundOrderRuleParams.RequestFundPurchaseRefundParams(o.fundOrderId, expectedPayment))
+      .fold(e => throw new IllegalStateException(e.message), identity)
     expectedRefund = TxId(RefundHost.operationIdentity(Refund.State(Refund.Inputs(o.fundOrderId, expectedPayment,
       o.config.investorAccountId, o.config.fundCollectionAccountId, o.config.amount, expectedRefundOperation))))
     refundRequested = taRejected && s.refundOperationId == expectedRefundOperation && decodedEvents.exists {

@@ -283,7 +283,7 @@ final class BankSipApplication(directory: BankRuntimeDirectory, journal: BankJou
     _ = check(s.id == o.planId && s.occurrences.get(o.dueSlot).contains(o) && s.scheduleSealed)
     position = s.slots.collectFirst { case (p, slot) if slot == o.dueSlot => p }.getOrElse(reject(RequestConflict))
     expected = StableSipIdentity.stableSipOccurrence(s, SipPlanRuleParams.TriggerSipInstallmentParams(position, o.dueSlot, o.revision, o.config))
-    _ = check(expected == o && s.revisions.get(o.revision).contains(o.config) &&
+    _ = check(expected.contains(o) && s.revisions.get(o.revision).contains(o.config) &&
       o.dueSlot >= o.config.effectiveSlot && s.revisionEnds.get(o.revision).forall(o.dueSlot < _))
     events <- journal.readPb(h.persistenceId)
     _ = check(events.exists {

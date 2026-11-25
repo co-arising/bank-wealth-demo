@@ -19,6 +19,7 @@ import example.bankwealth.application.connectors._
 import example.bankwealth.application.connectors.BankSipDispatchProtocol._
 import example.bankwealth.application.connectors.BankTaEffectProtocol._
 import example.bankwealth.domain.values._
+import net.imadz.common.CommonTypes.iMadzError
 
 object StableSipIdentity extends SipPlanComputations {
   private def component(value: String): Array[Byte] = {
@@ -26,12 +27,14 @@ object StableSipIdentity extends SipPlanComputations {
     ByteBuffer.allocate(4 + bytes.length).putInt(bytes.length).put(bytes).array()
   }
 
-  def stableSipOccurrence(state: SipPlanEntity.State, p: TriggerSipInstallmentParams): SipOccurrence = {
-    require(state.id.value.nonEmpty && p.revision.value.nonEmpty && p.dueSlot >= 0,
-      "retained plan/revision/due-slot identity required")
-    val bytes = component(state.id.value) ++ component(p.revision.value) ++ ByteBuffer.allocate(8).putLong(p.dueSlot).array()
-    val identity = Base64.getUrlEncoder.withoutPadding.encodeToString(bytes)
-    SipOccurrence(state.id, p.revision, p.dueSlot, OccurrenceId("sip-occurrence-v1/" + identity),
-      OperationId("sip-payment-v1/" + identity), FundOrderId("sip-order-v1/" + identity), p.config)
+  def stableSipOccurrence(state: SipPlanEntity.State, p: TriggerSipInstallmentParams): Either[iMadzError, SipOccurrence] = {
+    if (state.id.value.isEmpty || p.revision.value.isEmpty || p.dueSlot < 0) {
+      Left(iMadzError("SIP_IDENTITY_REQUIRED", "retained plan/revision/due-slot identity required"))
+    } else {
+      val bytes = component(state.id.value) ++ component(p.revision.value) ++ ByteBuffer.allocate(8).putLong(p.dueSlot).array()
+      val identity = Base64.getUrlEncoder.withoutPadding.encodeToString(bytes)
+      Right(SipOccurrence(state.id, p.revision, p.dueSlot, OccurrenceId("sip-occurrence-v1/" + identity),
+        OperationId("sip-payment-v1/" + identity), FundOrderId("sip-order-v1/" + identity), p.config))
+    }
   }
 }

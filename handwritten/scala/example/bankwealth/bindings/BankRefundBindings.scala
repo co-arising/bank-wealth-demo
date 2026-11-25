@@ -141,8 +141,8 @@ final class BankRefundBindings(
       o.id == original.fundOrderId && o.selectedPaymentTxId == original.paymentTxId && o.cashPaymentFinalResults.get(original.paymentTxId).contains("succeeded") &&
       o.taStatus == "rejected" && o.refundOperationId == original.refundOperationId && o.investorAccountId == original.investorAccountId &&
       o.fundCollectionAccountId == original.fundCollectionAccountId && o.amount == original.amount &&
-      original.refundOperationId == StableOrderIdentity.stableRefundOperationId(o,
-        FundOrderRuleParams.RequestFundPurchaseRefundParams(original.fundOrderId, original.paymentTxId)) &&
+      StableOrderIdentity.stableRefundOperationId(o,
+        FundOrderRuleParams.RequestFundPurchaseRefundParams(original.fundOrderId, original.paymentTxId)).contains(original.refundOperationId) &&
       events.exists { case e: FundOrderEntity.FundCashPaymentSucceeded => e.txid == original.paymentTxId; case _ => false } &&
       events.exists { case e: FundOrderEntity.FundTASubmissionRegistered => e.fundOrderId == o.id && e.paymentTxId == original.paymentTxId && e.taRequestId == o.taRequestId; case _ => false } &&
       events.collectFirst {
