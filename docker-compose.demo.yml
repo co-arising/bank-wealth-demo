@@ -1,0 +1,47 @@
+# Local teaching-demo infrastructure for bank-wealth-demo.
+# Uses isolated localhost ports (19001 / 19002) to avoid colliding with default local databases.
+#
+# Notes:
+# - MongoDB is pinned to 4.4 because akka-persistence-mongo-rxmongo 3.0.8 (ReactiveMongo 1.0.10)
+#   requires the MongoDB 4.4 wire protocol.
+# - Reset all demo state at any time with:
+#     docker compose -f docker-compose.demo.yml down -v
+
+services:
+  mongo:
+    image: mongo:4.4
+    container_name: bank-wealth-demo-mongo
+    ports:
+      - "127.0.0.1:19001:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: bankdemo
+      MONGO_INITDB_ROOT_PASSWORD: bankdemopass
+    volumes:
+      - bank_demo_mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongo", "--quiet", "-u", "bankdemo", "-p", "bankdemopass", "--authenticationDatabase", "admin", "--eval", "db.runCommand({ping:1}).ok"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+
+  mysql:
+    image: mysql:8.0
+    container_name: bank-wealth-demo-mysql
+    ports:
+      - "127.0.0.1:19002:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: bankdemoroot
+      MYSQL_DATABASE: bankdemo
+      MYSQL_USER: bankdemo
+      MYSQL_PASSWORD: bankdemopass
+    volumes:
+      - bank_demo_mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-ubankdemo", "-pbankdemopass", "--silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  bank_demo_mongo_data:
+  bank_demo_mysql_data:

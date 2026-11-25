@@ -225,6 +225,7 @@ the original README and the 1134 handover are read via the
 
 ## Keep reading
 
+- **Run the live demo locally with Docker:** [DEMO-QUICK-START.md](docs/DEMO-QUICK-START.md) — start MongoDB 4.4 + MySQL 8.0 via `docker-compose.demo.yml`, run `npm run demo:smoke` or `npm run demo:start`, and open `http://127.0.0.1:19000/bank/v1`
 - **What came from where, what to build first:** [BUILD-RECIPE.md](docs/BUILD-RECIPE.md)
 - **Learn the tool from zero:** the [Counter tutorial](../metarch-truthsrc/TUTORIAL.md) in an isolated project
 - **Business + code in depth:** [TRUTH-TUTORIAL.md](docs/TRUTH-TUTORIAL.md) — generation, offline graph, span-exact reverse lookup, safe updates

@@ -22,6 +22,8 @@
     "project": "node tools/prepare-truthsrc-runtime.mjs && node tools/truthsrc-project.mjs generate --out generated/current",
     "project:check": "node tools/truthsrc-project.mjs generate --out generated/current --plan",
     "project:status": "node tools/truthsrc-project.mjs status --out generated/current",
-    "runtime:prepare": "node tools/prepare-truthsrc-runtime.mjs"
+    "runtime:prepare": "node tools/prepare-truthsrc-runtime.mjs",
+    "demo:start": "node tools/demo-start.mjs",
+    "demo:smoke": "node tools/demo-start.mjs --smoke"
   }
 }
