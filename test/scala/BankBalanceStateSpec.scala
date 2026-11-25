@@ -81,9 +81,9 @@ final class BankBalanceStateSpec extends AnyFunSuite {
     assert(DomainConverters.AmountDecimalToWire(decimal).value == minor)
     assert(DomainConverters.AmountDecimalFromPO(AmountDecimalPO(minor)).value.bigDecimal.toPlainString == major)
     assert(DomainConverters.decodeAmountDecimalPB(AmountDecimalPB.parseFrom(DomainConverters.encodeAmountDecimalPB(decimal).toByteArray)) == decimal)
-    intercept[IllegalArgumentException](value.plus(Money(BigDecimal("0.01"), "CNY")))
-    intercept[ArithmeticException](Money(BigDecimal("0.001"), "CNY"))
-    intercept[IllegalArgumentException](Money(BigDecimal("1.00"), "USD"))
+    assert(value.plus(Money(BigDecimal("0.01"), "CNY")).isLeft)
+    assert(Money.create(BigDecimal("0.001"), "CNY").isLeft)
+    assert(Money.create(BigDecimal("1.00"), "USD").isLeft)
     for (bad <- Vector("01", "-0", "1.0", "1e2", "100000000000000000000000000000000000000")) {
       intercept[IllegalArgumentException](DomainConverters.MoneyFromWire(MoneyWire(bad, "CNY")))
     }

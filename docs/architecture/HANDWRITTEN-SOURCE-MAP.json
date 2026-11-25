@@ -20,7 +20,7 @@
     "example/bankwealth/application/services/BankCashRequests.scala": "sha256:e5d36522e1dbd434b8588317c28bc87d4e8062059dd133d3fe15c47dbc9966a1",
     "example/bankwealth/application/services/BankRequestIdentity.scala": "sha256:92af6d471c74d8aa02ef39331d1bd19c5c62c845e826786794ae1e56609b74bb",
     "example/bankwealth/application/services/BankTrustedAdmission.scala": "sha256:152a2e49f350bad3634a18cc777b3a41a9e774d5ef4810d16dcb080886237bb6",
-    "example/bankwealth/domain/services/impl/BankBalanceComputations.scala": "sha256:9c432b7887f2933fbe58f2b8c9156067f7b1130e10a4218adc8a951035815a86",
+    "example/bankwealth/domain/services/impl/BankBalanceComputations.scala": "sha256:a9248d8577cb1e39703162b182b68433d425cb3a003519c93c7c1143d540c78a",
     "example/bankwealth/domain/services/impl/StableOrderIdentity.scala": "sha256:891564404c960577f137666c9fdd9943283d2581a3f76980bdb52fb96b5b5b5e",
     "example/bankwealth/domain/services/impl/StableSipIdentity.scala": "sha256:381ec37974d19c4cbf78304895a36ed6804c758fcf475f2426dc886bb864bcd6",
     "example/bankwealth/infrastructure/bootstrap/BankRuntime.scala": "sha256:1a51aec57359b14d094037b6abc6c549541fb4e99c87bc4c7ea44613b28e59b5",

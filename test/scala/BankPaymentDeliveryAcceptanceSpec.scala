@@ -365,7 +365,7 @@ final class BankPaymentDeliveryAcceptanceSpec extends AnyFunSuite {
         assert(done.head.cursor == cursor && done.head.metadata == Map.empty[String, String] && done.head.timestamp > 0L)
         assert(Execution.codec.decode(done.head.snapshot) == expected)
         assert(done.head.snapshot.toVector == Execution.codec.encode(expected).toVector)
-        assert(Execution.outputs(Execution.codec.decode(done.head.snapshot)).paymentTxid == txid)
+        assert(Execution.outputs(Execution.codec.decode(done.head.snapshot)).map(_.paymentTxid) == Right(txid))
         assert(events(monarchPid).collect { case e: PersistentMonarch.RunCompleted => e.runId } == Vector(runId))
         assert(events(monarchPid).size == 3)
       } else {
