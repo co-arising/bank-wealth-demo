@@ -25,7 +25,7 @@
     "example/bankwealth/domain/services/impl/StableSipIdentity.scala": "sha256:381ec37974d19c4cbf78304895a36ed6804c758fcf475f2426dc886bb864bcd6",
     "example/bankwealth/infrastructure/bootstrap/BankRuntime.scala": "sha256:1a51aec57359b14d094037b6abc6c549541fb4e99c87bc4c7ea44613b28e59b5",
     "example/bankwealth/infrastructure/bootstrap/BankRuntimeDirectory.scala": "sha256:f42c822c7590b104c5e17ab8c89de58416bda56cddf3c91b2975383301311603",
-    "example/bankwealth/infrastructure/bootstrap/BankServiceFactory.scala": "sha256:c33659c916e44504b4a8efd282260a2607e87282d8c7c5f3192ffb6a1c5270a5",
+    "example/bankwealth/infrastructure/bootstrap/BankServiceFactory.scala": "sha256:31c87cd8d020188a79b2a761bac165d48e5da021466adbf45b8c0e2537fc3664",
     "example/bankwealth/infrastructure/clock/BankBusinessClock.scala": "sha256:1553d4aa66cd8635d795d8965bb1c84a7a1e06a88fbe5167c0b2441be31966c3",
     "example/bankwealth/infrastructure/connectors/BankSipDispatchBindings.scala": "sha256:43c151a60519959137027a72870e469299f3b673d2609c58ed7b75d525877d1e",
     "example/bankwealth/infrastructure/connectors/BankTaBridge.scala": "sha256:346c7ebd3c8b90b66e68110d24639bf971428d20dd9cf9d0618a25b1e5153401",
@@ -34,7 +34,7 @@
     "example/bankwealth/infrastructure/persistence/BankJdbcDataSource.scala": "sha256:1421b83c5deed748ec414f89c729d76f975bee17b37ea394e5b403203951c0bc",
     "example/bankwealth/infrastructure/persistence/BankJournal.scala": "sha256:acf0664a8a6ef87149d2f76cc3bc8c0fe62ff59f9cbc5682956cb257808d52a4",
     "example/bankwealth/infrastructure/persistence/BankPersistenceJournal.scala": "sha256:9dd9c34099c5b47e3d35a472e0a52de03d6341eec6fc32eac00e42159258095b",
-    "example/bankwealth/infrastructure/persistence/BankReadside.scala": "sha256:92a2fbbfd26ef78e365af00dddd1dfad06f8ec85b2c243302c8c7ad66eff2726",
+    "example/bankwealth/infrastructure/persistence/BankReadside.scala": "sha256:10927f478ff6fb4473e48600cf8fd13a3be2d4bac146a5f42ebf7af843433e22",
     "example/bankwealth/infrastructure/persistence/BankReadsideSchema.scala": "sha256:e0732b4f2823a4b0080af203414e64925580f1b287ce08632afbf5e695d17cea",
     "example/bankwealth/infrastructure/persistence/BankResourceCleanup.scala": "sha256:914b0e250ea903e5d698aafc4d2a9b47101f12b1bff20be62151eba252c2ed44",
     "example/bankwealth/infrastructure/process/BankPaymentBindings.scala": "sha256:5f8f7c74bbd134f12968f380d0775dd86bf6350c7856c71bc8679b8203a284e8",
@@ -48,7 +48,8 @@
     "example/bankwealth/interfaces/web/BankPagesController.scala": "sha256:6f1f3766f59063cee3c67448070a01596be85c46ef59ab639c77fb3557e220fd",
     "example/bankwealth/interfaces/web/BankQueryController.scala": "sha256:72aec0d8e8ea5bb557ce3e41c6c4844399a67ab1751ffd1281b9b1d6b66bada4",
     "example/bankwealth/interfaces/web/BankServiceEndpoints.scala": "sha256:3d9a2735825fb322993ac7f48cc403e099cbd4e76a11e7cb81703233e0c19dfe",
-    "example/bankwealth/interfaces/web/BankServiceJson.scala": "sha256:24a530ff6354683c908c6569b7fa9057705be6eb69d132263bd3e6fa3e1eee70"
+    "example/bankwealth/interfaces/web/BankServiceJson.scala": "sha256:24a530ff6354683c908c6569b7fa9057705be6eb69d132263bd3e6fa3e1eee70",
+    "example/bankwealth/modules/HandwrittenBindingsModule.scala": "sha256:af28f381f3b5aa48333856560343a47cfa94d93504ede42fbf86d73cb2650599"
   },
   "entries": [
     {
@@ -404,6 +405,14 @@
       "rationale": "Strict bank DTO encoding and decoding for declared endpoint input/output types.",
       "sources": [
         "source:bank-v1#/artifactContracts/2/deployment/service/endpoints"
+      ]
+    },
+    {
+      "file": "example/bankwealth/modules/HandwrittenBindingsModule.scala",
+      "relation": "supports",
+      "rationale": "Guice DI bindings for handwritten domain service computations and readside projection ports.",
+      "sources": [
+        "source:bank-v1#/ports/64"
       ]
     }
   ],

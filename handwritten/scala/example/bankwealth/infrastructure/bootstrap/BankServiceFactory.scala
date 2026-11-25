@@ -43,15 +43,12 @@ import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration._
 import scala.util.control.NonFatal
 
-final class BankServiceFactory extends BankServiceService.Factory {
-  val implementation = "example.bankwealth.infrastructure.bootstrap.BankServiceFactory"
-  val version = "bank-v1-service-1"
-
-  def create(context: ApplicationLoader.Context): BankServiceService.Composition = {
-    val configuration = context.initialConfiguration
-    BankServiceConfiguration.validate(configuration)
+object BankServiceFactory {
+  def loadDemoConfiguration(configuration: play.api.Configuration): BankDemoConfiguration = {
     require(configuration.get[String]("bank.demo.authMode") == "fixed-local-demo", "explicit demo authentication mode required")
-    val authorityConfig = BankDemoConfiguration(configuration.get[String]("bank.demo.version"), configuration.get[String]("bank.demo.origin"),
+    BankDemoConfiguration(
+      configuration.get[String]("bank.demo.version"),
+      configuration.get[String]("bank.demo.origin"),
       configuration.get[Seq[play.api.Configuration]]("bank.demo.principals").map { p =>
         BankDemoPrincipal(p.get[String]("id"), AccountId(p.get[String]("accountId")), p.get[Seq[String]]("roles").toSet,
           p.get[String]("token"), p.get[String]("csrfToken"))
@@ -62,7 +59,19 @@ final class BankServiceFactory extends BankServiceService.Factory {
       configuration.get[Seq[play.api.Configuration]]("bank.demo.seeds").map { s =>
         val amount = DomainConverters.MoneyFromWire(MoneyWire(s.get[String]("minorUnits"), "CNY"))
         BankSeed(AccountId(s.get[String]("accountId")), "CNY", amount)
-      }.toVector)
+      }.toVector
+    )
+  }
+}
+
+final class BankServiceFactory extends BankServiceService.Factory {
+  val implementation = "example.bankwealth.infrastructure.bootstrap.BankServiceFactory"
+  val version = "bank-v1-service-1"
+
+  def create(context: ApplicationLoader.Context): BankServiceService.Composition = {
+    val configuration = context.initialConfiguration
+    BankServiceConfiguration.validate(configuration)
+    val authorityConfig = BankServiceFactory.loadDemoConfiguration(configuration)
     val namespace = configuration.get[String]("bank.namespace")
     val workerConfig = MockTAClient.Configuration(Paths.get(configuration.get[String]("bank.mockTa.node")),
       Paths.get(configuration.get[String]("bank.mockTa.worker")), Paths.get(configuration.get[String]("bank.mockTa.ownedRoot")))

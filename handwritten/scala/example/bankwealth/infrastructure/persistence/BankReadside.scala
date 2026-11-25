@@ -30,6 +30,108 @@ import javax.sql.DataSource
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
+object BankReadside {
+  private type Session = BankJournalReadsideRepository#Session
+  private def text(value: String): Option[String] = Option(value).filter(_.nonEmpty)
+  private def paymentStatus(s: FundOrderEntity.State): String = s.cashPaymentFinalResults.get(s.selectedPaymentTxId)
+    .orElse(text(s.paymentOutcome)).getOrElse(if (s.status == "new") "intent-recorded" else s.status)
+  private def taStatus(s: FundOrderEntity.State): String = text(s.taStatus).getOrElse("not-submitted")
+  private def refundStatus(s: FundOrderEntity.State): String = text(s.refundOutcome)
+    .getOrElse(if (s.taStatus == "rejected" && paymentStatus(s) == "succeeded") "refund-in-progress" else "not-required")
+  private def pendingPut(c: Session, value: BankPendingOperationView, pid: String): Unit =
+    c.putPending(Pending(hash(value.operationId.value), value.flow, value.operationId.value, value.orderId.map(_.value),
+      value.planId.map(_.value), value.occurrenceId.map(_.value), pid, value.phase, value.status, value.recoverable))
+  private def pendingDelete(c: Session, op: OperationId, flow: String): Unit = c.deletePending(hash(op.value), flow)
+
+  def createBindings(namespace: String, config: BankDemoConfiguration): BankJournalReadsideProjectionHandler.Bindings = {
+    val ids = new BankPersistenceIds(namespace)
+    val ownership = new BankJournalReadsideDomain.Ownership {
+      def account(r: Row, next: CreditBalanceEntity.State): (Option[String], Option[String]) = (Some(r.resource), None)
+      def order(r: Row, next: FundOrderEntity.State): (Option[String], Option[String]) = {
+        val admission = new BankTrustedAdmission(config)
+        next.cashRequestSource.foreach { source =>
+          require(source.fundOrderId.value == r.resource, "cash source identity mismatch")
+          admission.validateCashSource(source)
+        }
+        val owner = next.cashRequestSource.map(_.investorAccountId.value).orElse(text(next.investorAccountId.value))
+        val principal = next.cashRequestSource.map(_.principalId)
+        require(r.account.isEmpty || owner.isEmpty || r.account == owner, "order owner conflict")
+        require(r.principal.isEmpty || principal.isEmpty || r.principal == principal, "order principal conflict")
+        (owner.orElse(r.account), principal.orElse(r.principal))
+      }
+      def plan(r: Row, next: SipPlanEntity.State): (Option[String], Option[String]) = {
+        val admission = new BankTrustedAdmission(config)
+        next.createIntent.foreach { source =>
+          require(source.planId.value == r.resource, "SIP intent identity mismatch")
+          admission.validateSipOrigination(source)
+        }
+        val owner = next.createIntent.map(_.config.investorAccountId.value)
+          .orElse(next.revisions.get(next.latestRevision).map(_.investorAccountId.value))
+        val principal = next.createIntent.map(_.principalId)
+        require(r.account.isEmpty || owner.isEmpty || r.account == owner, "plan owner conflict")
+        require(r.principal.isEmpty || principal.isEmpty || r.principal == principal, "plan principal conflict")
+        (owner.orElse(r.account), principal.orElse(r.principal))
+      }
+    }
+    new BankJournalReadsideProjectionHandler.Bindings {
+      def identity(pid: String): (String, String) = {
+        require(ids.owns(pid), "foreign journal namespace")
+        val parts = pid.substring(ids.prefix.length).split("/", -1)
+        require(parts.length == 2, "invalid persistence identity")
+        val value = new String(java.util.Base64.getUrlDecoder.decode(parts(1)), java.nio.charset.StandardCharsets.UTF_8)
+        val canonical = parts(0) match {
+          case "account" => ids.account(AccountId(value))
+          case "order" => ids.order(FundOrderId(value))
+          case "plan" => ids.plan(PlanId(value))
+          case "payment-saga" => ids.paymentSaga(OperationId(value))
+          case "payment-host" => ids.paymentHost(OperationId(value))
+          case "payment-run" => ids.paymentRun(OperationId(value))
+          case "refund-saga" => ids.refundSaga(OperationId(value))
+          case "refund-host" => ids.refundHost(OperationId(value))
+          case "refund-run" => ids.refundRun(OperationId(value))
+          case "ta-host" => ids.taHost(TaRequestId(value))
+          case "ta-run" => ids.taRun(TaRequestId(value))
+          case "sip-host" => ids.sipHost(OccurrenceId(value))
+          case "sip-run" => ids.sipRun(OccurrenceId(value))
+          case _ => throw new IllegalArgumentException("unrecognized bank persistence kind")
+        }
+        require(canonical == pid, "noncanonical persistence identity")
+        parts(0) -> value
+      }
+      def fold(row: Row, event: Any): State = BankJournalReadsideDomain.fold(row, event, ownership)
+      def indexes(c: Session, r: Row): Unit = r.kind match {
+        case "order" =>
+          val s = BankJournalReadsideDomain.orderState(r)
+          val op = text(s.operationId.value).map(OperationId.apply).orElse(s.cashRequestSource.map(_.operationId))
+          op.foreach { operation =>
+            val payment = paymentStatus(s)
+            if (!Set("succeeded", "rejected-before-effects", "compensated")(payment))
+              pendingPut(c, BankPendingOperationView(operation, "payment", Some(FundOrderId(r.resource)), None, None, "payment", payment, true), r.pid)
+            else pendingDelete(c, operation, "payment")
+            if (payment == "succeeded" && !Set("confirmed", "rejected")(taStatus(s)))
+              pendingPut(c, BankPendingOperationView(operation, "ta", Some(FundOrderId(r.resource)), None, None, "ta", taStatus(s), true), r.pid)
+            else pendingDelete(c, operation, "ta")
+          }
+          text(s.refundOperationId.value).map(OperationId.apply).foreach { operation =>
+            if (refundStatus(s) != "succeeded") pendingPut(c, BankPendingOperationView(operation, "refund", Some(FundOrderId(r.resource)), None, None, "refund", refundStatus(s), true), r.pid)
+            else pendingDelete(c, operation, "refund")
+          }
+        case "plan" =>
+          val s = BankJournalReadsideDomain.planState(r)
+          s.occurrences.toVector.sortBy(_._1).foreach { case (due, occurrence) =>
+            require(occurrence.planId.value == r.resource && r.account.contains(occurrence.config.investorAccountId.value), "occurrence ownership mismatch")
+            c.putOccurrence(Occurrence(hash(r.pid), due, hash(occurrence.occurrenceId.value), hash(ids.order(occurrence.fundOrderId)),
+              occurrence.config.investorAccountId.value, DomainConverters.encodeSipOccurrencePO(occurrence).toByteArray))
+            if (!s.firstTerminals.contains(occurrence.occurrenceId))
+              pendingPut(c, BankPendingOperationView(occurrence.operationId, "sip-dispatch", Some(occurrence.fundOrderId), Some(occurrence.planId), Some(occurrence.occurrenceId), "installment", s.occurrenceProgress.getOrElse(occurrence.occurrenceId, "pending"), true), r.pid)
+            else pendingDelete(c, occurrence.operationId, "sip-dispatch")
+          }
+        case _ => ()
+      }
+    }
+  }
+}
+
 /** Application-specific ownership, query views and index selection over the generated read side. */
 final class BankReadside(journal: BankJournal, config: BankDemoConfiguration, dataSource: DataSource)
     (implicit system: ActorSystem[_], ec: ExecutionContext) extends BankReadQueries with AutoCloseable {
@@ -38,65 +140,8 @@ final class BankReadside(journal: BankJournal, config: BankDemoConfiguration, da
   private type Session = BankJournalReadsideRepository#Session
   private final case class Denied(failure: Failure) extends RuntimeException
 
-  private def identity(pid: String): (String, String) = {
-    require(ids.owns(pid), "foreign journal namespace")
-    val parts = pid.substring(ids.prefix.length).split("/", -1)
-    require(parts.length == 2, "invalid persistence identity")
-    val value = new String(java.util.Base64.getUrlDecoder.decode(parts(1)), java.nio.charset.StandardCharsets.UTF_8)
-    val canonical = parts(0) match {
-      case "account" => ids.account(AccountId(value))
-      case "order" => ids.order(FundOrderId(value))
-      case "plan" => ids.plan(PlanId(value))
-      case "payment-saga" => ids.paymentSaga(OperationId(value))
-      case "payment-host" => ids.paymentHost(OperationId(value))
-      case "payment-run" => ids.paymentRun(OperationId(value))
-      case "refund-saga" => ids.refundSaga(OperationId(value))
-      case "refund-host" => ids.refundHost(OperationId(value))
-      case "refund-run" => ids.refundRun(OperationId(value))
-      case "ta-host" => ids.taHost(TaRequestId(value))
-      case "ta-run" => ids.taRun(TaRequestId(value))
-      case "sip-host" => ids.sipHost(OccurrenceId(value))
-      case "sip-run" => ids.sipRun(OccurrenceId(value))
-      case _ => throw new IllegalArgumentException("unrecognized bank persistence kind")
-    }
-    require(canonical == pid, "noncanonical persistence identity")
-    parts(0) -> value
-  }
-
-  private val ownership = new BankJournalReadsideDomain.Ownership {
-    def account(r: Row, next: CreditBalanceEntity.State): (Option[String], Option[String]) = (Some(r.resource), None)
-    def order(r: Row, next: FundOrderEntity.State): (Option[String], Option[String]) = {
-      val admission = new BankTrustedAdmission(config)
-      next.cashRequestSource.foreach { source =>
-        require(source.fundOrderId.value == r.resource, "cash source identity mismatch")
-        admission.validateCashSource(source)
-      }
-      val owner = next.cashRequestSource.map(_.investorAccountId.value).orElse(text(next.investorAccountId.value))
-      val principal = next.cashRequestSource.map(_.principalId)
-      require(r.account.isEmpty || owner.isEmpty || r.account == owner, "order owner conflict")
-      require(r.principal.isEmpty || principal.isEmpty || r.principal == principal, "order principal conflict")
-      (owner.orElse(r.account), principal.orElse(r.principal))
-    }
-    def plan(r: Row, next: SipPlanEntity.State): (Option[String], Option[String]) = {
-      val admission = new BankTrustedAdmission(config)
-      next.createIntent.foreach { source =>
-        require(source.planId.value == r.resource, "SIP intent identity mismatch")
-        admission.validateSipOrigination(source)
-      }
-      val owner = next.createIntent.map(_.config.investorAccountId.value)
-        .orElse(next.revisions.get(next.latestRevision).map(_.investorAccountId.value))
-      val principal = next.createIntent.map(_.principalId)
-      require(r.account.isEmpty || owner.isEmpty || r.account == owner, "plan owner conflict")
-      require(r.principal.isEmpty || principal.isEmpty || r.principal == principal, "plan principal conflict")
-      (owner.orElse(r.account), principal.orElse(r.principal))
-    }
-  }
   private val repository = new BankJournalReadsideRepositoryImpl(journal.namespace, dataSource)
-  private val bindings = new BankJournalReadsideProjectionHandler.Bindings {
-    def identity(pid: String): (String, String) = BankReadside.this.identity(pid)
-    def fold(row: Row, event: Any): State = BankJournalReadsideDomain.fold(row, event, ownership)
-    def indexes(session: Session, row: Row): Unit = BankReadside.this.indexes(session, row)
-  }
+  private val bindings = BankReadside.createBindings(journal.namespace, config)
   private val handler = new BankJournalReadsideProjectionHandler(system, repository, bindings)
   private val source = new BankJournalReadsideRunner.Journal {
     val namespace: String = journal.namespace
@@ -125,40 +170,6 @@ final class BankReadside(journal: BankJournal, config: BankDemoConfiguration, da
   private def taStatus(s: FundOrderEntity.State): String = text(s.taStatus).getOrElse("not-submitted")
   private def refundStatus(s: FundOrderEntity.State): String = text(s.refundOutcome)
     .getOrElse(if (s.taStatus == "rejected" && paymentStatus(s) == "succeeded") "refund-in-progress" else "not-required")
-
-  private def pendingPut(c: Session, value: BankPendingOperationView, pid: String): Unit =
-    c.putPending(Pending(hash(value.operationId.value), value.flow, value.operationId.value, value.orderId.map(_.value),
-      value.planId.map(_.value), value.occurrenceId.map(_.value), pid, value.phase, value.status, value.recoverable))
-  private def pendingDelete(c: Session, op: OperationId, flow: String): Unit = c.deletePending(hash(op.value), flow)
-  private def indexes(c: Session, r: Row): Unit = r.kind match {
-    case "order" =>
-      val s = orderState(r)
-      val op = text(s.operationId.value).map(OperationId.apply).orElse(s.cashRequestSource.map(_.operationId))
-      op.foreach { operation =>
-        val payment = paymentStatus(s)
-        if (!Set("succeeded", "rejected-before-effects", "compensated")(payment))
-          pendingPut(c, BankPendingOperationView(operation, "payment", Some(FundOrderId(r.resource)), None, None, "payment", payment, true), r.pid)
-        else pendingDelete(c, operation, "payment")
-        if (payment == "succeeded" && !Set("confirmed", "rejected")(taStatus(s)))
-          pendingPut(c, BankPendingOperationView(operation, "ta", Some(FundOrderId(r.resource)), None, None, "ta", taStatus(s), true), r.pid)
-        else pendingDelete(c, operation, "ta")
-      }
-      text(s.refundOperationId.value).map(OperationId.apply).foreach { operation =>
-        if (refundStatus(s) != "succeeded") pendingPut(c, BankPendingOperationView(operation, "refund", Some(FundOrderId(r.resource)), None, None, "refund", refundStatus(s), true), r.pid)
-        else pendingDelete(c, operation, "refund")
-      }
-    case "plan" =>
-      val s = planState(r)
-      s.occurrences.toVector.sortBy(_._1).foreach { case (due, occurrence) =>
-        require(occurrence.planId.value == r.resource && r.account.contains(occurrence.config.investorAccountId.value), "occurrence ownership mismatch")
-        c.putOccurrence(Occurrence(hash(r.pid), due, hash(occurrence.occurrenceId.value), hash(ids.order(occurrence.fundOrderId)),
-          occurrence.config.investorAccountId.value, DomainConverters.encodeSipOccurrencePO(occurrence).toByteArray))
-        if (!s.firstTerminals.contains(occurrence.occurrenceId))
-          pendingPut(c, BankPendingOperationView(occurrence.operationId, "sip-dispatch", Some(occurrence.fundOrderId), Some(occurrence.planId), Some(occurrence.occurrenceId), "installment", s.occurrenceProgress.getOrElse(occurrence.occurrenceId, "pending"), true), r.pid)
-        else pendingDelete(c, occurrence.operationId, "sip-dispatch")
-      }
-    case _ => ()
-  }
 
   private def customer(p: Principal): Either[Failure, BankDemoPrincipal] =
     if (p == null) Left(NotAuthenticated) else config.customer(p).toRight(NotAuthorized)
