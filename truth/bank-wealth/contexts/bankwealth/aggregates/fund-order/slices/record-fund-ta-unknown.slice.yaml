@@ -50,7 +50,8 @@ events:
         "receiptBody: String @PROPAGATED",
         "fundCode: String @PROPAGATED",
         "currency: String @PROPAGATED",
-        "outcome: String @PROPAGATED"
+        "outcome: String @PROPAGATED",
+        "tenantId: TenantId @PROPAGATED"
       ],
       "bindings": [
         "fundOrderId <- param.fundOrderId",
@@ -61,7 +62,8 @@ events:
         "receiptBody <- param.receiptBody",
         "fundCode <- param.fundCode",
         "currency <- param.currency",
-        "outcome <- \"literal:unknown\""
+        "outcome <- \"literal:unknown\"",
+        "tenantId <- state.tenantId"
       ],
       "foldAssignments": [
         "taReceipts := @fold[put](key=event.receiptId, value=event.receiptBody)",

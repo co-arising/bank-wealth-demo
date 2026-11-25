@@ -86,7 +86,7 @@ final class BankCashRequests(directory: BankRuntimeDirectory, config: BankDemoCo
   def submitOccurrence(occurrence: SipOccurrence): Future[Outcome[BankPaymentOriginal]] = {
     directory.plan(occurrence.planId).flatMap(_.ref.ask[SipPlanEntity.State](SipPlanProtocol.GetState)).flatMap { state =>
       require(state.occurrences.get(occurrence.dueSlot).contains(occurrence), "machine cash requires original persisted occurrence")
-      start(BankPaymentOriginal(occurrence.operationId, occurrence.fundOrderId, occurrence.config.investorAccountId,
+      start(BankPaymentOriginal(occurrence.operationId, occurrence.fundOrderId, TenantId("bankwealth"), occurrence.config.investorAccountId,
         occurrence.config.fundCollectionAccountId, occurrence.config.fundCode, occurrence.config.amount))
     }.recover { case NonFatal(_) => Left(Unavailable) }
   }
@@ -94,11 +94,11 @@ final class BankCashRequests(directory: BankRuntimeDirectory, config: BankDemoCo
   private def start(original: BankPaymentOriginal): Future[Outcome[BankPaymentOriginal]] = {
     directory.order(original.fundOrderId).flatMap { handle =>
       handle.ref.ask[FundOrderProtocol.Reply](FundOrderProtocol.RequestFundPurchaseSettlement(
-        original.operationId, original.fundOrderId, original.investorAccountId, original.fundCollectionAccountId, original.fundCode, original.amount, _)).flatMap {
+        original.operationId, original.fundOrderId, original.tenantId, original.investorAccountId, original.fundCollectionAccountId, original.fundCode, original.amount, _)).flatMap {
         case _: FundOrderProtocol.Refused => Future.successful(Left(RequestConflict))
         case _: FundOrderProtocol.Accepted => directory.ensureCash(original).flatMap { runtime =>
           val state = Cash.State(Cash.Inputs(original.operationId, original.operationId, original.investorAccountId,
-            original.fundOrderId, original.fundCollectionAccountId, original.amount, original.fundCode))
+            original.fundOrderId, original.fundCollectionAccountId, original.amount, original.fundCode, original.tenantId))
           runtime.parent.ref.ask[PersistentMonarch.RunReply](r => PersistentMonarch.StartRun(original.operationId.value, state, r)).flatMap { _ =>
             journal.readAll(runtime.parent.persistenceId).map { events =>
               require(events.exists {

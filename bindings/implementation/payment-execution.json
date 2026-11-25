@@ -36,6 +36,10 @@
         {
           "id": "Text",
           "implementation": "java.lang.String"
+        },
+        {
+          "id": "TenantId",
+          "implementation": "example.bankwealth.domain.values.TenantId"
         }
       ],
       "ports": [],

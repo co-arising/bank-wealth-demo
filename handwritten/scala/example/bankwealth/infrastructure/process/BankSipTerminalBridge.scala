@@ -44,7 +44,7 @@ final class BankSipTerminalBridge(plan: ActorRef[SipPlanProtocol.Command], order
       s.investorAccountId == o.config.investorAccountId && s.fundCollectionAccountId == o.config.fundCollectionAccountId &&
       s.amount == o.config.amount && s.fundCode == o.config.fundCode, "terminal original occurrence association mismatch")
     expectedPayment = TxId(PaymentHost.operationIdentity(Cash.State(Cash.Inputs(o.operationId, o.operationId, o.config.investorAccountId,
-      o.fundOrderId, o.config.fundCollectionAccountId, o.config.amount, o.config.fundCode))))
+      o.fundOrderId, o.config.fundCollectionAccountId, o.config.amount, o.config.fundCode, s.tenantId))))
     _ = require(s.selectedPaymentTxId.value.isEmpty || s.selectedPaymentTxId == expectedPayment,
       "terminal selected payment differs from original occurrence")
     paid = s.selectedPaymentTxId == expectedPayment && s.cashPaymentFinalResults.get(expectedPayment).contains("succeeded") && decodedEvents.exists {
@@ -67,7 +67,7 @@ final class BankSipTerminalBridge(plan: ActorRef[SipPlanProtocol.Command], order
     expectedRefundOperation = StableOrderIdentity.stableRefundOperationId(s, FundOrderRuleParams.RequestFundPurchaseRefundParams(o.fundOrderId, expectedPayment))
       .fold(e => throw new IllegalStateException(e.message), identity)
     expectedRefund = TxId(RefundHost.operationIdentity(Refund.State(Refund.Inputs(o.fundOrderId, expectedPayment,
-      o.config.investorAccountId, o.config.fundCollectionAccountId, o.config.amount, expectedRefundOperation))))
+      o.config.investorAccountId, o.config.fundCollectionAccountId, o.config.amount, expectedRefundOperation, s.tenantId))))
     refundRequested = taRejected && s.refundOperationId == expectedRefundOperation && decodedEvents.exists {
       case e: FundOrderEntity.FundPurchaseRefundRequested =>
         e.fundOrderId == o.fundOrderId && e.paymentTxId == expectedPayment && e.refundOperationId == s.refundOperationId &&

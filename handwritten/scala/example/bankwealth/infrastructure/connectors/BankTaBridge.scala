@@ -115,7 +115,7 @@ final class BankTaBridge(order: ActorRef[FundOrderProtocol.Command], ta: MockTAC
     } yield refundOriginal(retained)
   }
   private def refundOriginal(s: FundOrderEntity.State): BankRefundOriginal =
-    BankRefundOriginal(s.id, s.selectedPaymentTxId, s.investorAccountId, s.fundCollectionAccountId, s.amount, s.refundOperationId)
+    BankRefundOriginal(s.id, s.selectedPaymentTxId, s.investorAccountId, s.fundCollectionAccountId, s.amount, s.refundOperationId, s.tenantId)
 
   private def responseAssociation(response: JsonNode, s: FundOrderEntity.State): Unit = {
     require(response != null && response.isObject && text(response, "requestId") == s.taRequestId.value &&

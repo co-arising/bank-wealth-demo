@@ -253,13 +253,13 @@ final class BankTaRefundApplication(directory: BankRuntimeDirectory, journal: Ba
             FundOrderRuleParams.RequestFundPurchaseRefundParams(original.fundOrderId, original.paymentTxId)).contains(original.refundOperationId), "refund identity must be stable and independent")
           _ = require(evidence.exists {
             case e: FundOrderEntity.FundPurchaseRefundRequested => BankRefundOriginal(e.fundOrderId, e.paymentTxId,
-              e.investorAccountId, e.fundCollectionAccountId, e.amount, e.refundOperationId) == original
+              e.investorAccountId, e.fundCollectionAccountId, e.amount, e.refundOperationId, e.tenantId) == original
             case _ => false
           }, "independent refund must be durably requested before assembly")
           _ = active()
           runtime <- directory.ensureRefund(original)
           input = Refund.State(Refund.Inputs(original.fundOrderId, original.paymentTxId, original.investorAccountId,
-            original.fundCollectionAccountId, original.amount, original.refundOperationId))
+            original.fundCollectionAccountId, original.amount, original.refundOperationId, original.tenantId))
           _ = require(runtime.original == original && runtime.transactionId == RefundHost.operationIdentity(input) &&
             runtime.transactionId != original.paymentTxId.value && runtime.parent.persistenceId == ids.refundRun(original.refundOperationId) &&
             runtime.host.persistenceId == ids.refundHost(original.refundOperationId) && runtime.coordinator.persistenceId == ids.refundSaga(original.refundOperationId),

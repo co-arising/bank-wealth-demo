@@ -57,7 +57,7 @@ final class BankRecoveryLoop(journal: BankJournal, cash: BankCashRequests, ta: B
             val s = DomainConverters.decodeCashRequestSourceRecordedPO(pb.event.cashRequestSourceRecorded.get).original
             example.bankwealth.interfaces.api.ApiCommands.BankCashOriginal(s.principalId, s.clientRequestId, s.authorityVersion,
               example.bankwealth.interfaces.api.ApiCommands.BankCashSubmit(s.clientRequestId, s.fundCode, DomainConverters.MoneyToWire(s.amount)),
-              example.bankwealth.application.process.protocol.BankPaymentMessages.BankPaymentOriginal(s.operationId, s.fundOrderId, s.investorAccountId, s.fundCollectionAccountId, s.fundCode, s.amount))
+              example.bankwealth.application.process.protocol.BankPaymentMessages.BankPaymentOriginal(s.operationId, s.fundOrderId, example.bankwealth.domain.values.TenantId("bankwealth"), s.investorAccountId, s.fundCollectionAccountId, s.fundCode, s.amount))
           }.distinct
           val plans = rows.collect { case pb: SipPlanEventPO if pb.event.isSipCreateIntentRecorded => DomainConverters.decodeSipCreateIntentRecordedPO(pb.event.sipCreateIntentRecorded.get).intent.planId }.distinct
           val settlements = rows.collect { case pb: FundOrderEventPO if pb.event.isFundPurchaseSettlementRequested => DomainConverters.decodeFundPurchaseSettlementRequestedPO(pb.event.fundPurchaseSettlementRequested.get) }.distinct
@@ -67,10 +67,10 @@ final class BankRecoveryLoop(journal: BankJournal, cash: BankCashRequests, ta: B
             cashResults <- Future.traverse(originals)(o => attempt(cash.resumePersisted(o)))
             sipResults <- Future.traverse(plans)(p => attempt(sip.recoverExisting(p)))
             paymentResults <- Future.traverse(settlements)(s => attempt(recovery.resumePayment(example.bankwealth.application.process.protocol.BankPaymentMessages.BankPaymentOriginal(
-              s.operationId, s.fundOrderId, s.investorAccountId, s.fundCollectionAccountId, s.fundCode, s.amount))))
+              s.operationId, s.fundOrderId, s.tenantId, s.investorAccountId, s.fundCollectionAccountId, s.fundCode, s.amount))))
             taResults <- Future.traverse(orders)(o => attempt(ta.resumeExisting(o)))
             refundResults <- Future.traverse(refunds)(r => attempt(recovery.resumeRefund(example.bankwealth.application.process.protocol.BankRefundMessages.BankRefundOriginal(
-              r.fundOrderId, r.paymentTxId, r.investorAccountId, r.fundCollectionAccountId, r.amount, r.refundOperationId))))
+              r.fundOrderId, r.paymentTxId, r.investorAccountId, r.fundCollectionAccountId, r.amount, r.refundOperationId, r.tenantId))))
           } yield if ((cashResults ++ sipResults ++ paymentResults ++ taResults ++ refundResults).forall(identity)) pending else pending :+ pid
         }.recover { case NonFatal(_) => pending :+ pid }
       }

@@ -93,7 +93,7 @@ object BankTaApplicationFixture {
     val original = BankCashOriginal("alice", "owner-b-request", config.version,
       BankCashSubmit("owner-b-request", "FUND-中文-001", MoneyWire("10000", "CNY")),
       BankPaymentOriginal(BankRequestIdentity.operation("alice", "owner-b-request"),
-        BankRequestIdentity.order("alice", "owner-b-request"), investor, collection, "FUND-中文-001", Money.create(BigDecimal("100.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)))
+        BankRequestIdentity.order("alice", "owner-b-request"), TenantId("bankwealth"), investor, collection, "FUND-中文-001", Money.create(BigDecimal("100.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)))
     val payment = original.payment
     val selectedScenario = new AtomicReference[String](scenario)
     val loseEffectReply = new AtomicBoolean(loseTaReply)
@@ -203,7 +203,7 @@ object BankTaApplicationFixture {
     def recordOrder(): Unit = {
       admission.validateCash(original)
       assert(send(FundOrderProtocol.RecordCashRequestSource(original, Some(original))).isInstanceOf[FundOrderAggregate.Accepted])
-      assert(send(FundOrderProtocol.RequestFundPurchaseSettlement(payment.operationId, payment.fundOrderId,
+      assert(send(FundOrderProtocol.RequestFundPurchaseSettlement(payment.operationId, payment.fundOrderId, TenantId("bankwealth"),
         investor, collection, payment.fundCode, payment.amount)).isInstanceOf[FundOrderAggregate.Accepted])
     }
     def pay(): Unit = {
@@ -213,7 +213,7 @@ object BankTaApplicationFixture {
       cashGraph = Some(cash)
       assert(await(cash.parent.ref.ask[PersistentMonarch.RunReply](r => PersistentMonarch.StartRun(
         payment.operationId.value, Cash.State(Cash.Inputs(payment.operationId, payment.operationId, investor,
-          payment.fundOrderId, collection, payment.amount, payment.fundCode)), r))).isInstanceOf[PersistentMonarch.Accepted])
+          payment.fundOrderId, collection, payment.amount, payment.fundCode, payment.tenantId)), r))).isInstanceOf[PersistentMonarch.Accepted])
       eventually {
         assert(state.cashPaymentFinalResults.get(TxId(cash.transactionId)).contains("succeeded"))
         assert(state.selectedPaymentTxId == TxId(cash.transactionId))
@@ -238,7 +238,7 @@ object BankTaApplicationFixture {
     }
     def refundOriginal: BankRefundOriginal = {
       val s = state
-      BankRefundOriginal(s.id, s.selectedPaymentTxId, s.investorAccountId, s.fundCollectionAccountId, s.amount, s.refundOperationId)
+      BankRefundOriginal(s.id, s.selectedPaymentTxId, s.investorAccountId, s.fundCollectionAccountId, s.amount, s.refundOperationId, s.tenantId)
     }
     def refundRuntime: BankRefundRuntime = {
       val graph = await(runtime.ensureRefund(refundOriginal))

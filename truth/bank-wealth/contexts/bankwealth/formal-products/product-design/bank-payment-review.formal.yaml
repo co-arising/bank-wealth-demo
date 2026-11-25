@@ -29,6 +29,7 @@ payload:
       "@ref(bankwealth:command/FundOrder#RequestFundPurchaseSettlement)",
       "@ref(bankwealth:parameter/FundOrder/RequestFundPurchaseSettlement#operationId)",
       "@ref(bankwealth:parameter/FundOrder/RequestFundPurchaseSettlement#fundOrderId)",
+      "@ref(bankwealth:parameter/FundOrder/RequestFundPurchaseSettlement#tenantId)",
       "@ref(bankwealth:parameter/FundOrder/RequestFundPurchaseSettlement#investorAccountId)",
       "@ref(bankwealth:parameter/FundOrder/RequestFundPurchaseSettlement#fundCollectionAccountId)",
       "@ref(bankwealth:parameter/FundOrder/RequestFundPurchaseSettlement#fundCode)",
@@ -84,6 +85,7 @@ payload:
           "@ref(bankwealth:command/FundOrder#RequestFundPurchaseSettlement)",
           "@ref(bankwealth:parameter/FundOrder/RequestFundPurchaseSettlement#operationId)",
           "@ref(bankwealth:parameter/FundOrder/RequestFundPurchaseSettlement#fundOrderId)",
+          "@ref(bankwealth:parameter/FundOrder/RequestFundPurchaseSettlement#tenantId)",
           "@ref(bankwealth:parameter/FundOrder/RequestFundPurchaseSettlement#investorAccountId)",
           "@ref(bankwealth:parameter/FundOrder/RequestFundPurchaseSettlement#fundCollectionAccountId)",
           "@ref(bankwealth:parameter/FundOrder/RequestFundPurchaseSettlement#fundCode)",
@@ -127,6 +129,20 @@ payload:
               },
               "origin": "user",
               "slot": "fundOrderId",
+              "from": null
+            },
+            {
+              "parameter": {
+                "context": "bankwealth",
+                "kind": "parameter",
+                "owner": [
+                  "FundOrder",
+                  "RequestFundPurchaseSettlement"
+                ],
+                "id": "tenantId"
+              },
+              "origin": "user",
+              "slot": "tenantId",
               "from": null
             },
             {

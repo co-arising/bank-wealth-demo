@@ -212,10 +212,10 @@ object BankSipCrashRecoveryMain {
     Files.move(temporary, target, StandardCopyOption.ATOMIC_MOVE)
   }
 
-  private def payment(o: SipOccurrence): BankPaymentOriginal = BankPaymentOriginal(o.operationId, o.fundOrderId,
+  private def payment(o: SipOccurrence): BankPaymentOriginal = BankPaymentOriginal(o.operationId, o.fundOrderId, TenantId("bankwealth"),
     o.config.investorAccountId, o.config.fundCollectionAccountId, o.config.fundCode, o.config.amount)
   private def cashInput(p: BankPaymentOriginal): Cash.State = Cash.State(Cash.Inputs(
-    p.operationId, p.operationId, p.investorAccountId, p.fundOrderId, p.fundCollectionAccountId, p.amount, p.fundCode))
+    p.operationId, p.operationId, p.investorAccountId, p.fundOrderId, p.fundCollectionAccountId, p.amount, p.fundCode, p.tenantId))
   private def paymentTx(o: SipOccurrence): String = PaymentHost.operationIdentity(cashInput(payment(o)))
   private def dispatchInput(o: SipOccurrence): Dispatch.State = Dispatch.State(Dispatch.Inputs(o.occurrenceId, o))
   private final case class Facts(original: BankSipCreateIntent, occurrences: Vector[SipOccurrence], ta: Vector[BankTaEffectRequest])
@@ -641,7 +641,7 @@ object BankSipCrashRecoveryMain {
       val settlements = i.events(pid).collect { case p: FundOrderFundPurchaseSettlementRequestedPB =>
         DomainConverters.decodeFundOrderFundPurchaseSettlementRequestedPB(p)
       }
-      require(settlements.size == 1 && BankPaymentOriginal(settlements.head.operationId, settlements.head.fundOrderId,
+      require(settlements.size == 1 && BankPaymentOriginal(settlements.head.operationId, settlements.head.fundOrderId, settlements.head.tenantId,
         settlements.head.investorAccountId, settlements.head.fundCollectionAccountId, settlements.head.fundCode, settlements.head.amount) == payment(o),
         "exact original occurrence settlement required")
       require(i.count[FundOrderCashRequestSourceRecordedPB](pid) == 0 && i.count[FundOrderReserveFundSubscriptionConfirmedPB](pid) == 1 &&

@@ -198,7 +198,7 @@ object BankMysqlNegativeMain extends Assertions {
       def cashOriginal(key: String, owner: String = "alice"): BankCashOriginal = {
         val account = if (owner == "alice") investor else otherInvestor
         BankCashOriginal(owner, key, config.version, BankCashSubmit(key, "fund", MoneyWire("10000", "CNY")),
-          BankPaymentOriginal(BankRequestIdentity.operation(owner, key), BankRequestIdentity.order(owner, key),
+          BankPaymentOriginal(BankRequestIdentity.operation(owner, key), BankRequestIdentity.order(owner, key), TenantId("bankwealth"),
             account, collection, "fund", Money.create(BigDecimal("100.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)))
       }
       def orderEvents(payment: BankPaymentOriginal, source: Option[BankCashOriginal]): Vector[BankJournalEnvelope] = {
@@ -213,7 +213,7 @@ object BankMysqlNegativeMain extends Assertions {
           require(replies.receiveMessage().isInstanceOf[FundOrderAggregate.Accepted])
         }
         source.foreach(v => send(FundOrderProtocol.RecordCashRequestSource(v, Some(v))))
-        send(FundOrderProtocol.RequestFundPurchaseSettlement(payment.operationId, payment.fundOrderId,
+        send(FundOrderProtocol.RequestFundPurchaseSettlement(payment.operationId, payment.fundOrderId, TenantId("bankwealth"),
           payment.investorAccountId, payment.fundCollectionAccountId, payment.fundCode, payment.amount))
         capture(pid)
       }
@@ -330,7 +330,7 @@ object BankMysqlNegativeMain extends Assertions {
             val BankSipOccurrenceView(beforeOccurrence, slot, progress, paymentBefore, taBefore, refundBefore, terminalBefore) = beforeRows.head
             assert(beforeOccurrence == occurrence && paymentBefore == "unknown" && taBefore == "unknown" && refundBefore == "unknown" && terminalBefore.isEmpty)
             snapshot("before-order")
-            val payment = BankPaymentOriginal(occurrence.operationId, occurrence.fundOrderId, occurrence.config.investorAccountId,
+            val payment = BankPaymentOriginal(occurrence.operationId, occurrence.fundOrderId, TenantId("bankwealth"), occurrence.config.investorAccountId,
               occurrence.config.fundCollectionAccountId, occurrence.config.fundCode, occurrence.config.amount)
             replay(orderEvents(payment, None))
             val BankSipOccurrencePage(afterMeta, afterRows, _) = await(readside.occurrences(alice, key)).fold(e => sys.error(e.code), identity)

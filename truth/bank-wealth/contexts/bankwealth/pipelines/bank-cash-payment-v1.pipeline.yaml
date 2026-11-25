@@ -192,6 +192,11 @@ execution:
         "id": "fundCode",
         "type": "Text",
         "durability": "start-record"
+      },
+      {
+        "id": "tenantId",
+        "type": "TenantId",
+        "durability": "start-record"
       }
     ],
     "outputs": [
@@ -210,7 +215,8 @@ execution:
         "input:fundOrderId",
         "input:fundCollectionAccountId",
         "input:amount",
-        "input:fundCode"
+        "input:fundCode",
+        "input:tenantId"
       ],
       "planVersion": "bank-v1-1",
       "planCompatibility": "exact",

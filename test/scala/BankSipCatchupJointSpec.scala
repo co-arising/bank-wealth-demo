@@ -65,7 +65,7 @@ final class BankSipCatchupJointSpec extends AnyFunSuite {
         val order = kit.spawn(FundOrderAggregate(orderPid, FundOrderState.empty.copy(id = o.fundOrderId), StableOrderIdentity, new FundOrderAggregate.ExternalAuthority {
           def authorize(producer: String, authorization: String, identity: Vector[String]): Boolean = false
         }))
-        val original = BankPaymentOriginal(o.operationId, o.fundOrderId, investorId, collectionId, config.fundCode, config.amount)
+        val original = BankPaymentOriginal(o.operationId, o.fundOrderId, TenantId("bankwealth"), investorId, collectionId, config.fundCode, config.amount)
         @volatile var coordinator: ActorRef[StrictSagaCoordinator.Command] = null
         val binding = new BankPaymentBindings(original, investor, "catch-investor", collection, "catch-collection", order, orderPid, messages, () => coordinator)
         coordinator = kit.spawn(Payment.coordinator("catch-saga-" + position, Payment.fromTechnical(binding.installed), new ReconcileAuthorizer {

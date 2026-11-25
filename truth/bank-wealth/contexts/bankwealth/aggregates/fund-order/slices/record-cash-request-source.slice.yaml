@@ -36,11 +36,13 @@ events:
       "name": "CashRequestSourceRecorded",
       "payloads": [
         "original: CashPurchaseSource @PROPAGATED",
-        "source: \"Option[CashPurchaseSource]\" @PROPAGATED"
+        "source: \"Option[CashPurchaseSource]\" @PROPAGATED",
+        "tenantId: TenantId @PROPAGATED"
       ],
       "bindings": [
         "original <- param.original",
-        "source <- param.source"
+        "source <- param.source",
+        "tenantId <- state.tenantId"
       ],
       "foldAssignments": [
         "cashRequestSource := event.source",

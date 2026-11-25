@@ -60,7 +60,7 @@ final class BankPaymentJointSpec extends AnyFunSuite {
         Some(sipState().occurrences(10L))
       } else None
       val orderId = occurrence.map(_.fundOrderId).getOrElse(FundOrderId("order"))
-      val original = BankPaymentOriginal(occurrence.map(_.operationId).getOrElse(OperationId("cash-operation")), orderId, investorId, collectionId, "FUND-中文-001", amount)
+      val original = BankPaymentOriginal(occurrence.map(_.operationId).getOrElse(OperationId("cash-operation")), orderId, TenantId("bankwealth"), investorId, collectionId, "FUND-中文-001", amount)
       val investor = kit.spawn(CreditBalanceAggregate("joint-investor", CreditBalanceState.empty.copy(id = investorId), BankBalanceComputations))
       val collection = kit.spawn(CreditBalanceAggregate("joint-collection", CreditBalanceState.empty.copy(id = collectionId), BankBalanceComputations))
       val order = kit.spawn(FundOrderAggregate("joint-order", FundOrderState.empty.copy(id = orderId), StableOrderIdentity,
@@ -76,7 +76,7 @@ final class BankPaymentJointSpec extends AnyFunSuite {
       ledger(collection, CreditBalanceProtocol.InitializeAccount(collectionId, "CNY", Money.create(BigDecimal("0.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)))
       val orderReplies = kit.createTestProbe[FundOrderAggregate.Reply]()
       if (!sip) {
-        order ! FundOrderAggregate.Execute(FundOrderProtocol.RequestFundPurchaseSettlement(original.operationId, orderId, investorId, collectionId, original.fundCode, amount), orderReplies.ref)
+        order ! FundOrderAggregate.Execute(FundOrderProtocol.RequestFundPurchaseSettlement(original.operationId, orderId, TenantId("bankwealth"), investorId, collectionId, original.fundCode, amount), orderReplies.ref)
         assert(orderReplies.receiveMessage().isInstanceOf[FundOrderAggregate.Accepted])
       }
       val beforePrematureTa = journal.persistedInStorage("joint-order").size
@@ -193,7 +193,7 @@ final class BankPaymentJointSpec extends AnyFunSuite {
         before.foreach { case (pid, count) => assert(journal.persistedInStorage(pid).size == count) }
         val retainedOrder = orderState()
         for ((who, sum) <- Vector((investorId, amount), (AccountId("other-investor"), amount), (investorId, Money.create(BigDecimal("101.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)))) {
-          order ! FundOrderAggregate.Execute(FundOrderProtocol.RequestFundPurchaseSettlement(original.operationId, orderId, who, collectionId, original.fundCode, sum), orderReplies.ref)
+          order ! FundOrderAggregate.Execute(FundOrderProtocol.RequestFundPurchaseSettlement(original.operationId, orderId, TenantId("bankwealth"), who, collectionId, original.fundCode, sum), orderReplies.ref)
           val reply = orderReplies.receiveMessage()
           if (who == investorId && sum == amount) assert(reply == FundOrderAggregate.Accepted(Vector.empty))
           else assert(reply == FundOrderAggregate.Refused("ORDER_REPLAY_CONFLICT"))

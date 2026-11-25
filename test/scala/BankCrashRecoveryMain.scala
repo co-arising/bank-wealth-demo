@@ -256,9 +256,9 @@ object BankCrashRecoveryMain {
     def refundTx: Option[String] = refund.map(r => RefundHost.operationIdentity(refundInput(r)))
   }
   private def cashInput(p: BankPaymentOriginal): Cash.State = Cash.State(Cash.Inputs(
-    p.operationId, p.operationId, p.investorAccountId, p.fundOrderId, p.fundCollectionAccountId, p.amount, p.fundCode))
+    p.operationId, p.operationId, p.investorAccountId, p.fundOrderId, p.fundCollectionAccountId, p.amount, p.fundCode, p.tenantId))
   private def refundInput(r: BankRefundOriginal): Refund.State = Refund.State(Refund.Inputs(
-    r.fundOrderId, r.paymentTxId, r.investorAccountId, r.fundCollectionAccountId, r.amount, r.refundOperationId))
+    r.fundOrderId, r.paymentTxId, r.investorAccountId, r.fundCollectionAccountId, r.amount, r.refundOperationId, r.tenantId))
 
   private def eventIdentity(event: Any): JsonNode = event match {
     case e: PaymentHost.Associated => obj("operation" -> json(e.operation),
@@ -765,7 +765,7 @@ object BankCrashRecoveryMain {
       val refunds = image.rows.collect { case r if r.row.event.isInstanceOf[FundOrderFundPurchaseRefundRequestedPB] =>
         val e = DomainConverters.decodeFundOrderFundPurchaseRefundRequestedPB(r.row.event.asInstanceOf[FundOrderFundPurchaseRefundRequestedPB])
         require(r.row.persistenceId == ids.order(original.payment.fundOrderId), "refund intent PID mismatch")
-        BankRefundOriginal(e.fundOrderId, e.paymentTxId, e.investorAccountId, e.fundCollectionAccountId, e.amount, e.refundOperationId)
+        BankRefundOriginal(e.fundOrderId, e.paymentTxId, e.investorAccountId, e.fundCollectionAccountId, e.amount, e.refundOperationId, e.tenantId)
       }
       require(refunds.size <= 1, "duplicate durable refund intents")
       val registrations = image.rows.collect { case r if r.row.event.isInstanceOf[FundOrderFundTASubmissionRegisteredPB] =>
@@ -806,7 +806,7 @@ object BankCrashRecoveryMain {
         DomainConverters.decodeFundOrderFundPurchaseSettlementRequestedPB(p)
       }
       require(rows.size == expected, "settlement event count mismatch")
-      rows.foreach(e => require(BankPaymentOriginal(e.operationId, e.fundOrderId, e.investorAccountId,
+      rows.foreach(e => require(BankPaymentOriginal(e.operationId, e.fundOrderId, e.tenantId, e.investorAccountId,
         e.fundCollectionAccountId, e.fundCode, e.amount) == f.payment, "settlement changed the original request"))
     }
     private def checkParent[S](i: JournalImage, pid: String, run: String, input: S,

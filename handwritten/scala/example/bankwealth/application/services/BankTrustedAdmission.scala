@@ -30,7 +30,7 @@ final class BankTrustedAdmission(config: BankDemoConfiguration) {
           require(amount.currency == "CNY" && amount.amount > 0 && customer.accountId != fund.collectionAccountId)
           val original = BankCashOriginal(customer.id, request.clientRequestId, config.version, request,
             BankPaymentOriginal(BankRequestIdentity.operation(customer.id, request.clientRequestId),
-              BankRequestIdentity.order(customer.id, request.clientRequestId), customer.accountId, fund.collectionAccountId, request.fundCode, amount))
+              BankRequestIdentity.order(customer.id, request.clientRequestId), TenantId("bankwealth"), customer.accountId, fund.collectionAccountId, request.fundCode, amount))
           validateCash(original)
           original
         }
@@ -83,7 +83,7 @@ final class BankTrustedAdmission(config: BankDemoConfiguration) {
       original.payment.fundCollectionAccountId, original.payment.fundCode, original.payment.amount)
   def toCashOriginal(source: CashPurchaseSource): BankCashOriginal = {
     val submit = BankCashSubmit(source.clientRequestId, source.fundCode, DomainConverters.MoneyToWire(source.amount))
-    val payment = BankPaymentOriginal(source.operationId, source.fundOrderId, source.investorAccountId,
+    val payment = BankPaymentOriginal(source.operationId, source.fundOrderId, TenantId("bankwealth"), source.investorAccountId,
       source.fundCollectionAccountId, source.fundCode, source.amount)
     BankCashOriginal(source.principalId, source.clientRequestId, source.authorityVersion, submit, payment)
   }

@@ -24,7 +24,8 @@ payload:
         "refundOperationId: OperationId @PROPAGATED",
         "receiptId: String @PROPAGATED",
         "receiptBody: String @PROPAGATED",
-        "kind: String @PROPAGATED"
+        "kind: String @PROPAGATED",
+        "tenantId: TenantId @PROPAGATED"
       ],
       "events-fund-refund-compensated-fold-assignments": [
         "refundResultReceipts := @fold[put](key=event.receiptId, value=event.receiptBody)",
@@ -74,7 +75,8 @@ payload:
                 "refundOperationId <- param.refundOperationId",
                 "receiptId <- param.receiptId",
                 "receiptBody <- param.receiptBody",
-                "kind <- \"literal:compensated\""
+                "kind <- \"literal:compensated\"",
+                "tenantId <- state.tenantId"
               ],
               "foldAssignments": {"$value":"events-fund-refund-compensated-fold-assignments"}
             }
@@ -103,7 +105,8 @@ payload:
                 "refundOperationId <- param.refundOperationId",
                 "receiptId <- param.receiptId",
                 "receiptBody <- param.receiptBody",
-                "kind <- \"literal:outcome-unknown\""
+                "kind <- \"literal:outcome-unknown\"",
+                "tenantId <- state.tenantId"
               ],
               "foldAssignments": {"$value":"events-fund-refund-outcome-unknown-fold-assignments"}
             }
@@ -132,7 +135,8 @@ payload:
                 "refundOperationId <- param.refundOperationId",
                 "receiptId <- param.receiptId",
                 "receiptBody <- param.receiptBody",
-                "kind <- \"literal:recovery-required\""
+                "kind <- \"literal:recovery-required\"",
+                "tenantId <- state.tenantId"
               ],
               "foldAssignments": {"$value":"events-fund-refund-outcome-unknown-fold-assignments"}
             }
@@ -168,7 +172,8 @@ payload:
                 "refundOperationId <- param.refundOperationId",
                 "receiptId <- param.receiptId",
                 "receiptBody <- param.receiptBody",
-                "kind <- \"literal:rejected-before-effects\""
+                "kind <- \"literal:rejected-before-effects\"",
+                "tenantId <- state.tenantId"
               ],
               "foldAssignments": {"$value":"events-fund-refund-compensated-fold-assignments"}
             }
@@ -204,7 +209,8 @@ payload:
                 "refundOperationId <- param.refundOperationId",
                 "receiptId <- param.receiptId",
                 "receiptBody <- param.receiptBody",
-                "kind <- \"literal:succeeded\""
+                "kind <- \"literal:succeeded\"",
+                "tenantId <- state.tenantId"
               ],
               "foldAssignments": {"$value":"events-fund-refund-compensated-fold-assignments"}
             }
