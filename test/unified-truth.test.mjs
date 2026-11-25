@@ -34,14 +34,16 @@ test('narrative stories, read models, and use cases remain intact', () => {
   assert.ok(current.productDesigns.every(p => p.status === 'proposal' && p.approvalSource === null));
 });
 
-test('current complete request uses only current tree and bindings/implementation; all 14 products compile', async () => {
+test('current complete request uses only current tree with auto-derived technical bindings; all 14 products compile', async () => {
   const captured = captureProject(project);
   const { copyImmutableData } = await import('../../metarch-truthsrc/lib/immutable-data.mjs');
   assert.doesNotThrow(() => copyImmutableData(captured.sourceIndex));
   assert.equal(captured.compilation.result.products.length, 14);
   assert.ok(captured.sources.filter(s => s.file).every(s => !s.file.includes('/formal-inputs/') && !s.file.endsWith('/request.json') && !s.file.startsWith(join(ROOT, 'tree') + '/') && !s.file.startsWith(join(ROOT, 'v1/tree') + '/')));
   const config = captured.config;
-  for (const doc of config.documents) assert.ok(doc.file.startsWith('bindings/implementation/'));
+  assert.deepEqual(config.documents, []);
+  assert.deepEqual(config.assemblies, []);
+  assert.deepEqual(config.roles, {});
 });
 
 test('current narrative references resolve to declared technical ports and real execution sources', () => {
