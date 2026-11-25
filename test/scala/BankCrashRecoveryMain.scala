@@ -371,8 +371,8 @@ object BankCrashRecoveryMain {
     private val config = BankDemoConfiguration("bank-crash-authority-v1", "http://127.0.0.1:18081", Vector(
       BankDemoPrincipal("alice", investor, Set("customer"), "crash-synthetic-token", "crash-synthetic-csrf")),
       Vector(BankFund("fund", collection)), Vector(
-        BankSeed(investor, "CNY", Money(BigDecimal("1000.00"), "CNY")),
-        BankSeed(collection, "CNY", Money(BigDecimal("0.00"), "CNY"))))
+        BankSeed(investor, "CNY", Money.create(BigDecimal("1000.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)),
+        BankSeed(collection, "CNY", Money.create(BigDecimal("0.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity))))
     private val admission = new BankTrustedAdmission(config)
     private val transactions = ConcurrentHashMap.newKeySet[String]()
     private val cashGraph = new AtomicReference[Option[BankCashRuntime]](None)
@@ -446,7 +446,7 @@ object BankCrashRecoveryMain {
           val credit = if (settings.refundCase) investor else collection
           val fault = settings.crashing && settings.phaseCase && tx.exists { transaction => rows.exists { row =>
             ledgerFact(pid, row.event).exists { fact =>
-              fact.tx == transaction && fact.amount == Money(BigDecimal("100.00"), "CNY") &&
+              fact.tx == transaction && fact.amount == Money.create(BigDecimal("100.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity) &&
                 (settings.phase match {
                   case "prepare" => fact.kind == "reserve" && fact.resource == debit && pid == ids.account(debit)
                   case "collection-commit" if settings.refundCase => fact.kind == "deduct" && fact.resource == debit && pid == ids.account(debit)
@@ -1008,7 +1008,7 @@ object BankCrashRecoveryMain {
         "generated paid order differs from the original durable request")
     private def checkAccounts(f: Facts, s: ObservedState, refunded: Boolean): Unit = {
       def account(a: CreditBalanceState, id: AccountId, balance: String, outgoing: Map[TxId, Money], incoming: Map[TxId, Money]): Unit =
-        require(a.id == id && a.initialized && a.accountBalance == Map("CNY" -> Money(BigDecimal(balance), "CNY")) &&
+        require(a.id == id && a.initialized && a.accountBalance == Map("CNY" -> Money.create(BigDecimal(balance), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)) &&
           a.reservedAmount.isEmpty && a.incomingCredits.isEmpty && a.compensatedOutgoing.isEmpty && a.compensatedIncoming.isEmpty &&
           a.committedOutgoing == outgoing && a.committedIncoming == incoming, "generated account effects/balance do not reconcile")
       val paid = Map(TxId(f.paymentTx) -> f.payment.amount)

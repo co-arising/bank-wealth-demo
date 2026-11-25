@@ -17,7 +17,7 @@ import scala.concurrent.duration._
 final class BankAutomaticRecoverySpec extends AnyFunSuite {
   UnitConfigurationCheck.main(Array.empty)
   private val original = BankPaymentOriginal(OperationId("original-operation"), FundOrderId("original-order"),
-    AccountId("customer"), AccountId("collection"), "fund", Money(BigDecimal("10.00"), "CNY"))
+    AccountId("customer"), AccountId("collection"), "fund", Money.create(BigDecimal("10.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity))
   private val identity = TransactionIdentity("original-transaction", "definition", 1, "args-digest",
     "definition-digest", CodecPin("args", 1), "plan-digest")
 

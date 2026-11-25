@@ -285,9 +285,9 @@ object BankSipCrashRecoveryMain {
       BankDemoPrincipal("alice", investor, Set("customer"), "crash-sip-customer-token", "crash-sip-customer-csrf"),
       BankDemoPrincipal("operator", operatorAccount, Set("operator"), "crash-sip-operator-token", "crash-sip-operator-csrf")),
       Vector(BankFund("fund", collection)), Vector(
-        BankSeed(investor, "CNY", Money(BigDecimal("1000.00"), "CNY")),
-        BankSeed(collection, "CNY", Money(BigDecimal("0.00"), "CNY")),
-        BankSeed(operatorAccount, "CNY", Money(BigDecimal("0.00"), "CNY"))))
+        BankSeed(investor, "CNY", Money.create(BigDecimal("1000.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)),
+        BankSeed(collection, "CNY", Money.create(BigDecimal("0.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)),
+        BankSeed(operatorAccount, "CNY", Money.create(BigDecimal("0.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity))))
     private val admission = new BankTrustedAdmission(config)
     // These are actor handles / verified authorization evidence, not durable business maps.
     private val cashGraphs = new ConcurrentHashMap[OperationId, BankCashRuntime]()
@@ -399,7 +399,7 @@ object BankSipCrashRecoveryMain {
       val original = originals.head
       require(original.principalId == "alice" && original.clientRequestId == "crash-sip-request" && original.request == request &&
         original.config.investorAccountId == investor && original.config.fundCollectionAccountId == collection &&
-        original.config.amount == Money(BigDecimal("100.00"), "CNY"), "durable original differs from the fixed SIP oracle")
+        original.config.amount == Money.create(BigDecimal("100.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity), "durable original differs from the fixed SIP oracle")
       val occurrences = i.rows.collect { case r if r.row.event.isInstanceOf[SipPlanSipInstallmentTriggeredPB] =>
         val e = DomainConverters.decodeSipPlanSipInstallmentTriggeredPB(r.row.event.asInstanceOf[SipPlanSipInstallmentTriggeredPB])
         require(r.row.persistenceId == ids.plan(original.planId) && e.position >= 0L && e.position < request.dueSlots.size &&
@@ -763,7 +763,7 @@ object BankSipCrashRecoveryMain {
       s.accounts.foreach { a =>
         val balance = if (a.id == investor) BigDecimal("1000.00") - BigDecimal(100 * paid.size)
           else if (a.id == collection) BigDecimal(100 * paid.size) else BigDecimal("0.00")
-        require(config.seeds.exists(_.accountId == a.id) && a.initialized && a.accountBalance == Map("CNY" -> Money(balance, "CNY")) &&
+        require(config.seeds.exists(_.accountId == a.id) && a.initialized && a.accountBalance == Map("CNY" -> Money.create(balance, "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)) &&
           a.reservedAmount.isEmpty && a.incomingCredits.isEmpty && a.compensatedOutgoing.isEmpty && a.compensatedIncoming.isEmpty &&
           a.committedOutgoing == (if (a.id == investor) credits else Map.empty[TxId, Money]) &&
           a.committedIncoming == (if (a.id == collection) credits else Map.empty[TxId, Money]), "generated accounts do not reconcile with original payments")

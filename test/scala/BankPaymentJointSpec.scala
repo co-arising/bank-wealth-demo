@@ -45,7 +45,7 @@ final class BankPaymentJointSpec extends AnyFunSuite {
           messages
         }
       val investorId = AccountId("investor"); val collectionId = AccountId("collection")
-      val amount = Money(BigDecimal("100.00"), "CNY")
+      val amount = Money.create(BigDecimal("100.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)
       var sipPlan = kit.spawn(SipPlanAggregate("joint-sip", SipPlanState.empty, StableSipIdentity))
       val sipReplies = kit.createTestProbe[SipPlanAggregate.Reply]()
       val sipStates = kit.createTestProbe[SipPlanState]()
@@ -72,8 +72,8 @@ final class BankPaymentJointSpec extends AnyFunSuite {
         actor ! CreditBalanceAggregate.Execute(command, ledgerReplies.ref)
         assert(ledgerReplies.receiveMessage().isInstanceOf[CreditBalanceAggregate.Accepted])
       }
-      ledger(investor, CreditBalanceProtocol.InitializeAccount(investorId, "CNY", Money(BigDecimal(available), "CNY")))
-      ledger(collection, CreditBalanceProtocol.InitializeAccount(collectionId, "CNY", Money(BigDecimal("0.00"), "CNY")))
+      ledger(investor, CreditBalanceProtocol.InitializeAccount(investorId, "CNY", Money.create(BigDecimal(available), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)))
+      ledger(collection, CreditBalanceProtocol.InitializeAccount(collectionId, "CNY", Money.create(BigDecimal("0.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)))
       val orderReplies = kit.createTestProbe[FundOrderAggregate.Reply]()
       if (!sip) {
         order ! FundOrderAggregate.Execute(FundOrderProtocol.RequestFundPurchaseSettlement(original.operationId, orderId, investorId, collectionId, original.fundCode, amount), orderReplies.ref)
@@ -192,7 +192,7 @@ final class BankPaymentJointSpec extends AnyFunSuite {
         assert(replies.receiveMessage().isInstanceOf[Host.Completed])
         before.foreach { case (pid, count) => assert(journal.persistedInStorage(pid).size == count) }
         val retainedOrder = orderState()
-        for ((who, sum) <- Vector((investorId, amount), (AccountId("other-investor"), amount), (investorId, Money(BigDecimal("101.00"), "CNY")))) {
+        for ((who, sum) <- Vector((investorId, amount), (AccountId("other-investor"), amount), (investorId, Money.create(BigDecimal("101.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)))) {
           order ! FundOrderAggregate.Execute(FundOrderProtocol.RequestFundPurchaseSettlement(original.operationId, orderId, who, collectionId, original.fundCode, sum), orderReplies.ref)
           val reply = orderReplies.receiveMessage()
           if (who == investorId && sum == amount) assert(reply == FundOrderAggregate.Accepted(Vector.empty))
@@ -294,7 +294,7 @@ final class BankPaymentJointSpec extends AnyFunSuite {
               @volatile var refundCoordinator: ActorRef[StrictSagaCoordinator.Command] = null
               val refund = new BankRefundBindings(intent, investor, "joint-investor", collection, "joint-collection", order, "joint-order", refundRead, () => refundCoordinator)
               assert(refund.operationId != bindings.operationId)
-              assert(!Await.result(refund.installed.BankRefundEntry(intent.copy(amount = Money(BigDecimal("101.00"), "CNY"))), 5.seconds))
+              assert(!Await.result(refund.installed.BankRefundEntry(intent.copy(amount = Money.create(BigDecimal("101.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity))), 5.seconds))
               refundCanceled.foreach {
                 case 0 => ledger(collection, CreditBalanceProtocol.ReleaseReservedFunds(TxId(refund.operationId), collectionId, amount))
                 case 1 => ledger(investor, CreditBalanceProtocol.CancelIncomingCredit(TxId(refund.operationId), investorId, amount))

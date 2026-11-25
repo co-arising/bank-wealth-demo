@@ -47,7 +47,7 @@ final class BankRefundApplicationSpec extends AnyFunSuite {
       val collection = h.await(h.runtime.account(h.collection))
       val binding = new BankRefundBindings(original, investor.ref, investor.persistenceId, collection.ref,
         collection.persistenceId, h.order.ref, h.order.persistenceId, pid => h.journal.readPb(pid), () => graph.coordinator.ref)(h.system)
-      assert(!h.await(binding.installed.BankRefundEntry(original.copy(amount = Money(BigDecimal("101.00"), "CNY")))))
+      assert(!h.await(binding.installed.BankRefundEntry(original.copy(amount = Money.create(BigDecimal("101.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)))))
       intercept[IllegalArgumentException](h.await(h.runtime.ensureRefund(original.copy(paymentTxId = TxId("substitute-payment")))))
       val observed = Vector(h.order.persistenceId, investor.persistenceId, collection.persistenceId,
         graph.coordinator.persistenceId, graph.host.persistenceId, graph.parent.persistenceId, ta.host.persistenceId, ta.parent.persistenceId)

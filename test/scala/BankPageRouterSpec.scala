@@ -25,7 +25,7 @@ final class BankPageRouterSpec extends AnyFunSuite {
     BankDemoPrincipal("alice", AccountId("alice"), Set("customer"), "router-customer", "router-customer-csrf"),
     BankDemoPrincipal("operator", AccountId("operator"), Set("operator"), "router-operator", "router-operator-csrf")),
     Vector(BankFund("fund", AccountId("collection"))),
-    Vector("alice", "operator", "collection").map(id => BankSeed(AccountId(id), "CNY", Money(BigDecimal("1000.00"), "CNY"))))
+    Vector("alice", "operator", "collection").map(id => BankSeed(AccountId(id), "CNY", Money.create(BigDecimal("1000.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity))))
   private def await[A](value: Future[A]): A = Await.result(value, 8.seconds)
 
   private final class Fixture(readiness: Future[Unit] = Future.successful(())) {

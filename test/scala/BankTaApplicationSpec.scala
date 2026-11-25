@@ -87,13 +87,13 @@ object BankTaApplicationFixture {
     val config = BankDemoConfiguration("demo-v1", "http://127.0.0.1:18081", Vector(
       BankDemoPrincipal("alice", investor, Set("customer"), "test-token", "test-csrf")),
       Vector(BankFund("FUND-中文-001", collection)), Vector(
-        BankSeed(investor, "CNY", Money(BigDecimal("1000.00"), "CNY")),
-        BankSeed(collection, "CNY", Money(BigDecimal("0.00"), "CNY"))))
+        BankSeed(investor, "CNY", Money.create(BigDecimal("1000.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)),
+        BankSeed(collection, "CNY", Money.create(BigDecimal("0.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity))))
     val admission = new BankTrustedAdmission(config)
     val original = BankCashOriginal("alice", "owner-b-request", config.version,
       BankCashSubmit("owner-b-request", "FUND-中文-001", MoneyWire("10000", "CNY")),
       BankPaymentOriginal(BankRequestIdentity.operation("alice", "owner-b-request"),
-        BankRequestIdentity.order("alice", "owner-b-request"), investor, collection, "FUND-中文-001", Money(BigDecimal("100.00"), "CNY")))
+        BankRequestIdentity.order("alice", "owner-b-request"), investor, collection, "FUND-中文-001", Money.create(BigDecimal("100.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)))
     val payment = original.payment
     val selectedScenario = new AtomicReference[String](scenario)
     val loseEffectReply = new AtomicBoolean(loseTaReply)

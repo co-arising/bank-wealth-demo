@@ -62,7 +62,7 @@ final class BankPaymentDeliveryAcceptanceSpec extends AnyFunSuite {
     val runId = prefix + "-run"
     val investorId = AccountId("investor")
     val collectionId = AccountId("collection")
-    val amount = Money(BigDecimal("100.00"), "CNY")
+    val amount = Money.create(BigDecimal("100.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)
     val original = BankPaymentOriginal(OperationId("cash-operation"), FundOrderId("original-order"),
       investorId, collectionId, "FUND-中文-001", amount)
     val decoyOriginal = original.copy(operationId = OperationId("decoy-operation"), fundOrderId = FundOrderId("decoy-order"))
@@ -112,8 +112,8 @@ final class BankPaymentDeliveryAcceptanceSpec extends AnyFunSuite {
         input.investorAccountId, input.fundCollectionAccountId, input.fundCode, input.amount), orderReplies.ref)
       assert(orderReplies.receiveMessage().isInstanceOf[FundOrderAggregate.Accepted])
     }
-    ledger(investor, CreditBalanceProtocol.InitializeAccount(investorId, "CNY", Money(BigDecimal(available), "CNY")))
-    ledger(collection, CreditBalanceProtocol.InitializeAccount(collectionId, "CNY", Money(BigDecimal("0.00"), "CNY")))
+    ledger(investor, CreditBalanceProtocol.InitializeAccount(investorId, "CNY", Money.create(BigDecimal(available), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)))
+    ledger(collection, CreditBalanceProtocol.InitializeAccount(collectionId, "CNY", Money.create(BigDecimal("0.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)))
     request(order, original)
     request(decoy, decoyOriginal)
     private val decoyBefore = orderState(decoy)
@@ -270,7 +270,7 @@ final class BankPaymentDeliveryAcceptanceSpec extends AnyFunSuite {
         original.copy(operationId = decoyOriginal.operationId),
         original.copy(investorAccountId = AccountId("other-investor")),
         original.copy(fundCollectionAccountId = AccountId("other-collection")),
-        original.copy(fundCode = "OTHER-FUND"), original.copy(amount = Money(BigDecimal("101.00"), "CNY")))
+        original.copy(fundCode = "OTHER-FUND"), original.copy(amount = Money.create(BigDecimal("101.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)))
       changedOriginals.foreach { changed =>
         rejected(authority(kind, changed, context))
         rejected(authority(kind, original, context.copy(original = changed)))
@@ -299,7 +299,7 @@ final class BankPaymentDeliveryAcceptanceSpec extends AnyFunSuite {
       val changedInputs = Vector(
         input.inputs.copy(operation = decoyOriginal.operationId), input.inputs.copy(occurrence = OperationId("other-occurrence")),
         input.inputs.copy(investorAccountId = AccountId("other-investor")), input.inputs.copy(fundOrderId = decoyOriginal.fundOrderId),
-        input.inputs.copy(fundCollectionAccountId = AccountId("other-collection")), input.inputs.copy(amount = Money(BigDecimal("101.00"), "CNY")),
+        input.inputs.copy(fundCollectionAccountId = AccountId("other-collection")), input.inputs.copy(amount = Money.create(BigDecimal("101.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)),
         input.inputs.copy(fundCode = "OTHER-FUND"))
       changedInputs.foreach { changed =>
         host ! Host.Invoke(input.copy(inputs = changed), hostReplies.ref)
@@ -334,8 +334,8 @@ final class BankPaymentDeliveryAcceptanceSpec extends AnyFunSuite {
       val a = balance(investor)
       val b = balance(collection)
       val pending = kind == "recovery-required" || kind == "outcome-unknown"
-      assert(a.accountBalance("CNY") == Money(BigDecimal(if (kind == "succeeded" || pending) "900.00" else available), "CNY"))
-      assert(b.accountBalance("CNY") == Money(BigDecimal(if (kind == "succeeded") "100.00" else "0.00"), "CNY"))
+      assert(a.accountBalance("CNY") == Money.create(BigDecimal(if (kind == "succeeded" || pending) "900.00" else available), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity))
+      assert(b.accountBalance("CNY") == Money.create(BigDecimal(if (kind == "succeeded") "100.00" else "0.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity))
       assert(a.reservedAmount == (if (pending) Map(txid -> amount) else Map.empty[TxId, Money]))
       assert(a.committedOutgoing == (if (kind == "succeeded") Map(txid -> amount) else Map.empty[TxId, Money]))
       assert(b.committedIncoming == (if (kind == "succeeded") Map(txid -> amount) else Map.empty[TxId, Money]))

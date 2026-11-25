@@ -152,7 +152,7 @@ object BankMysqlNegativeMain extends Assertions {
         BankDemoPrincipal("bob", otherInvestor, Set("customer"), "bob-token", "bob-csrf"),
         BankDemoPrincipal("operator", operatorAccount, Set("operator"), "operator-token", "operator-csrf")),
         Vector(BankFund("fund", collection)), Vector(investor, otherInvestor, collection, operatorAccount)
-          .map(id => BankSeed(id, "CNY", Money(BigDecimal("1000.00"), "CNY"))))
+          .map(id => BankSeed(id, "CNY", Money.create(BigDecimal("1000.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity))))
       val alice = Principal("alice", Set("customer"))
       val journal = new Journal("neg" + UUID.randomUUID().toString.replace("-", ""))
       val ids = new BankPersistenceIds(journal.namespace)
@@ -191,15 +191,15 @@ object BankMysqlNegativeMain extends Assertions {
           actor ! CreditBalanceAggregate.Execute(c, replies.ref)
           require(replies.receiveMessage().isInstanceOf[CreditBalanceAggregate.Accepted])
         }
-        send(CreditBalanceProtocol.InitializeAccount(account, "CNY", Money(BigDecimal(balance), "CNY")))
-        if (reserve) send(CreditBalanceProtocol.ReserveFunds(TxId("reserved"), account, Money(BigDecimal("100.00"), "CNY")))
+        send(CreditBalanceProtocol.InitializeAccount(account, "CNY", Money.create(BigDecimal(balance), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)))
+        if (reserve) send(CreditBalanceProtocol.ReserveFunds(TxId("reserved"), account, Money.create(BigDecimal("100.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)))
         capture(pid)
       }
       def cashOriginal(key: String, owner: String = "alice"): BankCashOriginal = {
         val account = if (owner == "alice") investor else otherInvestor
         BankCashOriginal(owner, key, config.version, BankCashSubmit(key, "fund", MoneyWire("10000", "CNY")),
           BankPaymentOriginal(BankRequestIdentity.operation(owner, key), BankRequestIdentity.order(owner, key),
-            account, collection, "fund", Money(BigDecimal("100.00"), "CNY")))
+            account, collection, "fund", Money.create(BigDecimal("100.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)))
       }
       def orderEvents(payment: BankPaymentOriginal, source: Option[BankCashOriginal]): Vector[BankJournalEnvelope] = {
         val pid = ids.order(payment.fundOrderId)
@@ -220,7 +220,7 @@ object BankMysqlNegativeMain extends Assertions {
       def planEvents(key: String): (Vector[BankJournalEnvelope], SipOccurrence) = {
         val intent = BankSipCreateIntent("alice", key, config.version,
           BankSipCreate(key, "fund", MoneyWire("10000", "CNY"), 0L, Vector(10L, 20L)), BankRequestIdentity.plan("alice", key),
-          SipRevisionConfig(RevisionId("initial"), 0L, investor, collection, "fund", Money(BigDecimal("100.00"), "CNY")))
+          SipRevisionConfig(RevisionId("initial"), 0L, investor, collection, "fund", Money.create(BigDecimal("100.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)))
         val pid = ids.plan(intent.planId)
         val actor = kit.spawn(SipPlanAggregate(pid, SipPlanState.empty.copy(id = intent.planId), StableSipIdentity))
         val replies = kit.createTestProbe[SipPlanAggregate.Reply]()

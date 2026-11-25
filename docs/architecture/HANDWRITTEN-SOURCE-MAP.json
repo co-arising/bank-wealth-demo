@@ -34,7 +34,7 @@
     "example/bankwealth/infrastructure/persistence/BankJdbcDataSource.scala": "sha256:1421b83c5deed748ec414f89c729d76f975bee17b37ea394e5b403203951c0bc",
     "example/bankwealth/infrastructure/persistence/BankJournal.scala": "sha256:acf0664a8a6ef87149d2f76cc3bc8c0fe62ff59f9cbc5682956cb257808d52a4",
     "example/bankwealth/infrastructure/persistence/BankPersistenceJournal.scala": "sha256:9dd9c34099c5b47e3d35a472e0a52de03d6341eec6fc32eac00e42159258095b",
-    "example/bankwealth/infrastructure/persistence/BankReadside.scala": "sha256:10927f478ff6fb4473e48600cf8fd13a3be2d4bac146a5f42ebf7af843433e22",
+    "example/bankwealth/infrastructure/persistence/BankReadside.scala": "sha256:a0011a75674b24b406aa62bf76ef913f1619d079ca7bc890e5381199a7369ec0",
     "example/bankwealth/infrastructure/persistence/BankReadsideSchema.scala": "sha256:e0732b4f2823a4b0080af203414e64925580f1b287ce08632afbf5e695d17cea",
     "example/bankwealth/infrastructure/persistence/BankResourceCleanup.scala": "sha256:914b0e250ea903e5d698aafc4d2a9b47101f12b1bff20be62151eba252c2ed44",
     "example/bankwealth/infrastructure/process/BankPaymentBindings.scala": "sha256:5f8f7c74bbd134f12968f380d0775dd86bf6350c7856c71bc8679b8203a284e8",

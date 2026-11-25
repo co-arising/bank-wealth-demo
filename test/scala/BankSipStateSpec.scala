@@ -12,7 +12,7 @@ import org.scalatest.funsuite.AnyFunSuite
 // Aggregate contract tests only. Terminal labels here do not certify the pending trusted completion bridge.
 final class BankSipStateSpec extends AnyFunSuite {
   private val config = SipRevisionConfig(RevisionId("revision-1"), 0L,
-    AccountId("investor"), AccountId("collection"), "fund-a", Money(BigDecimal("100.00"), "CNY"))
+    AccountId("investor"), AccountId("collection"), "fund-a", Money.create(BigDecimal("100.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity))
 
   private final class Fixture(id: String) {
     val kit = ActorTestKit(ConfigFactory.parseString("akka.actor.provider = local")
@@ -67,7 +67,7 @@ final class BankSipStateSpec extends AnyFunSuite {
       assert(f.state.occurrences(10L) == first)
       assert(f.accept(TriggerSipInstallment(0L, 10L, config.revision, config)).isEmpty)
       assert(f.events == persisted)
-      f.refuse(TriggerSipInstallment(0L, 10L, config.revision, config.copy(amount = Money(BigDecimal("200.00"), "CNY"))), "SIP_OCCURRENCE_REPLAY_CONFLICT")
+      f.refuse(TriggerSipInstallment(0L, 10L, config.revision, config.copy(amount = Money.create(BigDecimal("200.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity))), "SIP_OCCURRENCE_REPLAY_CONFLICT")
     }
   }
 
@@ -96,7 +96,7 @@ final class BankSipStateSpec extends AnyFunSuite {
     withFixture("sip-state-revision") { f =>
       f.seed(); f.accept(AdvanceSipClock(25L))
       f.accept(ObserveSipDueSlot(0L, 10L)); f.accept(ObserveSipDueSlot(1L, 20L))
-      val next = config.copy(revision = RevisionId("revision-2"), effectiveSlot = 30L, amount = Money(BigDecimal("200.00"), "CNY"))
+      val next = config.copy(revision = RevisionId("revision-2"), effectiveSlot = 30L, amount = Money.create(BigDecimal("200.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity))
       f.accept(ReviseSipPlan(next))
       f.refuse(TriggerSipInstallment(0L, 10L, next.revision, next), "SIP_REVISION_INTERVAL")
       f.accept(TriggerSipInstallment(0L, 10L, config.revision, config))

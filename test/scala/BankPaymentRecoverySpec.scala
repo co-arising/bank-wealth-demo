@@ -32,7 +32,7 @@ final class BankPaymentRecoverySpec extends AnyFunSuite {
     val ids = new BankPersistenceIds(namespace)
     val investor = AccountId("alice"); val collection = AccountId("collection")
     val config = BankDemoConfiguration("v1", "http://127.0.0.1:18081", Vector(BankDemoPrincipal("alice", investor, Set("customer"), "test", "csrf")),
-      Vector(BankFund("fund", collection)), Vector(BankSeed(investor, "CNY", Money(BigDecimal("1000.00"), "CNY")), BankSeed(collection, "CNY", Money(BigDecimal("0.00"), "CNY"))))
+      Vector(BankFund("fund", collection)), Vector(BankSeed(investor, "CNY", Money.create(BigDecimal("1000.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)), BankSeed(collection, "CNY", Money.create(BigDecimal("0.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity))))
     val admission = new BankTrustedAdmission(config)
     val runtime = new BankRuntime(namespace, journal, new ReconcileAuthorizer {
       def authorize(id: TransactionIdentity, token: String): Either[String,String] = Left("not requested")
@@ -59,8 +59,8 @@ final class BankPaymentRecoverySpec extends AnyFunSuite {
       assert(events.count(_.isInstanceOf[CreditBalanceReserveFundsConfirmedPB]) == 1)
       assert(events.count(_.isInstanceOf[CreditBalanceDeductFundsConfirmedPB]) == 1)
       assert(await(service.getOriginal(principal,"request")) == Right(original))
-      assert(await(runtime.account(investor).flatMap(_.ref.ask[CreditBalanceState](CreditBalanceAggregate.GetState))).accountBalance("CNY") == Money(BigDecimal("900.00"),"CNY"))
-      assert(await(runtime.account(collection).flatMap(_.ref.ask[CreditBalanceState](CreditBalanceAggregate.GetState))).accountBalance("CNY") == Money(BigDecimal("100.00"),"CNY"))
+      assert(await(runtime.account(investor).flatMap(_.ref.ask[CreditBalanceState](CreditBalanceAggregate.GetState))).accountBalance("CNY") == Money.create(BigDecimal("900.00"),"CNY").fold(e => throw new IllegalArgumentException(e.message), identity))
+      assert(await(runtime.account(collection).flatMap(_.ref.ask[CreditBalanceState](CreditBalanceAggregate.GetState))).accountBalance("CNY") == Money.create(BigDecimal("100.00"),"CNY").fold(e => throw new IllegalArgumentException(e.message), identity))
     } finally { runtime.close(); journal.close(); kit.shutdownTestKit() }
   }
 }

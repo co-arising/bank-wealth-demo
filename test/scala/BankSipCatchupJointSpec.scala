@@ -36,17 +36,17 @@ final class BankSipCatchupJointSpec extends AnyFunSuite {
       val investor = kit.spawn(CreditBalanceAggregate("catch-investor", CreditBalanceState.empty.copy(id = investorId), BankBalanceComputations))
       val collection = kit.spawn(CreditBalanceAggregate("catch-collection", CreditBalanceState.empty.copy(id = collectionId), BankBalanceComputations))
       val replies = kit.createTestProbe[CreditBalanceAggregate.Reply]()
-      investor ! CreditBalanceAggregate.Execute(CreditBalanceProtocol.InitializeAccount(investorId, "CNY", Money(BigDecimal("1000.00"), "CNY")), replies.ref)
+      investor ! CreditBalanceAggregate.Execute(CreditBalanceProtocol.InitializeAccount(investorId, "CNY", Money.create(BigDecimal("1000.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)), replies.ref)
       assert(replies.receiveMessage().isInstanceOf[CreditBalanceAggregate.Accepted])
-      collection ! CreditBalanceAggregate.Execute(CreditBalanceProtocol.InitializeAccount(collectionId, "CNY", Money(BigDecimal("0.00"), "CNY")), replies.ref)
+      collection ! CreditBalanceAggregate.Execute(CreditBalanceProtocol.InitializeAccount(collectionId, "CNY", Money.create(BigDecimal("0.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)), replies.ref)
       assert(replies.receiveMessage().isInstanceOf[CreditBalanceAggregate.Accepted])
       var plan = kit.spawn(SipPlanAggregate("catch-plan", SipPlanState.empty, StableSipIdentity))
       val planReplies = kit.createTestProbe[SipPlanAggregate.Reply](); val planStates = kit.createTestProbe[SipPlanState]()
       def send(c: SipPlanProtocol.Command): SipPlanAggregate.Reply = { plan ! SipPlanAggregate.Execute(c, planReplies.ref); planReplies.receiveMessage() }
       def accept(c: SipPlanProtocol.Command): Unit = assert(send(c).isInstanceOf[SipPlanAggregate.Accepted])
       def state(): SipPlanState = { plan ! SipPlanAggregate.GetState(planStates.ref); planStates.receiveMessage() }
-      val first = SipRevisionConfig(RevisionId("r1"), 0L, investorId, collectionId, "fund", Money(BigDecimal("100.00"), "CNY"))
-      val second = first.copy(revision = RevisionId("r2"), effectiveSlot = 30L, amount = Money(BigDecimal("200.00"), "CNY"))
+      val first = SipRevisionConfig(RevisionId("r1"), 0L, investorId, collectionId, "fund", Money.create(BigDecimal("100.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity))
+      val second = first.copy(revision = RevisionId("r2"), effectiveSlot = 30L, amount = Money.create(BigDecimal("200.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity))
       accept(SipPlanProtocol.CreateSipPlan(PlanId("catchup"), first))
       Vector(10L, 20L, 30L, 40L).zipWithIndex.foreach { case (slot, i) => accept(SipPlanProtocol.AppendSipDueSlot(i.toLong, slot)) }
       accept(SipPlanProtocol.SealSipSchedule())

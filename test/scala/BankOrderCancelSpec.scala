@@ -17,7 +17,7 @@ final class BankOrderCancelSpec extends AnyFunSuite {
       val id = FundOrderId("cancel-order")
       val operation = OperationId("cancel-operation")
       val tx = TxId("cancel-transaction")
-      val amount = Money(BigDecimal("100.00"), "CNY")
+      val amount = Money.create(BigDecimal("100.00"), "CNY").fold(e => throw new IllegalArgumentException(e.message), identity)
       def spawn() = kit.spawn(FundOrderAggregate("order-cancel-pid", FundOrderState.empty.copy(id = id), StableOrderIdentity,
         new FundOrderAggregate.ExternalAuthority {
           def authorize(producer: String, authorization: String, identity: Vector[String]): Boolean = false

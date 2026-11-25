@@ -231,9 +231,10 @@ final class BankReadside(journal: BankJournal, config: BankDemoConfiguration, da
     val r = c.row(ids.account(who.accountId))
     val view = r.filter(_.payload.nonEmpty).map { value =>
       val s = accountState(value)
-      val available = s.accountBalance.getOrElse("CNY", Money(BigDecimal("0.00"), "CNY"))
+      val available = s.accountBalance.getOrElse("CNY", Money.Zero)
       val reserved = s.reservedAmount.values.filter(_.currency == "CNY").foldLeft(BigDecimal("0.00"))((sum, money) => sum + money.amount)
-      BankAccountView(who.accountId, s.initialized, DomainConverters.MoneyToWire(available), DomainConverters.MoneyToWire(Money(reserved, "CNY")))
+      val reservedMoney = Money.create(reserved, "CNY").fold(err => throw new IllegalStateException(err.message), identity)
+      BankAccountView(who.accountId, s.initialized, DomainConverters.MoneyToWire(available), DomainConverters.MoneyToWire(reservedMoney))
     }
     BankAccountResponse(metadata(r.toVector, absent = view.isEmpty), view)
   }
