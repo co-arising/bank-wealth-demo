@@ -33,6 +33,8 @@
     "v2:generate": "node ../metarch-truthsrc/bin/truthsrc.js generate-v2 --in v2-pilot/.truthsrc/canonical-v2.json --out v2-pilot --target typescript,scala --package example.bankwealth.v2",
     "v2:emit-tests": "node ../metarch-truthsrc/bin/truthsrc.js emit-tests-v2 --in v2-pilot/.truthsrc/canonical-v2.json --out v2-pilot --target typescript,scala --package example.bankwealth.v2",
     "v2:verify": "node ../metarch-truthsrc/bin/truthsrc.js verify-v2 --root v2-pilot --target typescript,scala --canonical v2-pilot/.truthsrc/canonical-v2.json --db v2-pilot/.truthsrc/knowledge.sqlite",
+    "v2:audit-coverage": "node ../metarch-truthsrc/bin/truthsrc.js audit-coverage-v2 --root . --manifest v2-pilot/governance/coverage-manifest.json --db v2-pilot/.truthsrc/knowledge.sqlite",
+    "v2:tck": "node ../metarch-truthsrc/bin/truthsrc.js run-tck-v2 --adapter v2-pilot/handwritten/ta-effect-adapter.ts",
     "test:v2": "node --test --test-concurrency=1 test/v2-pilot-e2e.test.mjs"
   }
 }

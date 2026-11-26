@@ -1,0 +1,107 @@
+{
+  "schemaVersion": "co-arising.coverage-manifest/v2",
+  "system": "bank-wealth",
+  "context": "bankwealth",
+  "effectBindingFile": "v2-pilot/truth/bindings/bankwealth-effects.yaml",
+  "governedRoots": [
+    { "root": "handwritten/scala", "extensions": [".scala"] },
+    { "root": "v2-pilot/generated-scaffold", "extensions": [".ts", ".scala"] },
+    { "root": "v2-pilot/handwritten", "extensions": [".ts", ".scala"] }
+  ],
+  "files": [
+    { "path": "handwritten/scala/example/bankwealth/domain/services/impl/BankBalanceComputations.scala", "branch": "problem", "tier": "D1", "stage": "stage-1-shadow", "evidenceTier": "E1", "contractRef": "CreditBalance.ReserveFunds", "shadowMode": "sidecar", "rationale": "Pure L1 balance arithmetic shadowed and graduated to CreditBalanceBehavior in v2-pilot (Stage 3)" },
+    { "path": "handwritten/scala/example/bankwealth/domain/services/impl/StableOrderIdentity.scala", "branch": "problem", "tier": "D2", "stage": "stage-1-shadow", "evidenceTier": "E1", "contractRef": "@host(stableOrderIdentity)", "shadowMode": "sidecar", "rationale": "Deterministic identity derivation port (@host contract)" },
+    { "path": "handwritten/scala/example/bankwealth/domain/services/impl/StableSipIdentity.scala", "branch": "problem", "tier": "D2", "stage": "stage-1-shadow", "evidenceTier": "E1", "contractRef": "@host(stableSipIdentity)", "shadowMode": "sidecar", "rationale": "Deterministic SIP occurrence identity port (@host contract); v1 frozen file carries legacy unused interfaces/application wildcard imports flagged for v2 cleanup" },
+
+    { "path": "handwritten/scala/example/bankwealth/application/services/BankCashRequests.scala", "branch": "problem", "tier": "D2", "stage": "stage-1-shadow", "evidenceTier": "E1", "contractRef": "CashFundPurchase", "shadowMode": "sidecar", "rationale": "Cash purchase intake idempotency shadowed by CashFundPurchase.story.ears" },
+    { "path": "handwritten/scala/example/bankwealth/application/services/BankTrustedAdmission.scala", "branch": "problem", "tier": "D2", "stage": "stage-1-shadow", "evidenceTier": "E1", "contractRef": "CashFundPurchase", "shadowMode": "sidecar", "rationale": "Trusted principal/account admission shadowed by CashFundPurchase AX-APP-1" },
+    { "path": "handwritten/scala/example/bankwealth/application/services/BankApplicationPorts.scala", "branch": "solution", "tier": "S2", "stage": "stage-0-raw", "evidenceTier": "E3", "contractRef": "service-endpoints-ports", "shadowMode": "none", "rationale": "Internal application port trait facade verified by actor/runtime integration suites" },
+    { "path": "handwritten/scala/example/bankwealth/application/services/BankRequestIdentity.scala", "branch": "solution", "tier": "S2", "stage": "stage-0-raw", "evidenceTier": "E3", "contractRef": "namespace-persistence-id", "shadowMode": "none", "rationale": "Namespace persistence-id encoding helper verified by runtime tests" },
+    { "path": "handwritten/scala/example/bankwealth/application/process/sip/BankSipApplication.scala", "branch": "solution", "tier": "S1", "stage": "stage-1-shadow", "evidenceTier": "E2", "contractRef": "SipPlan.StreamBatch", "shadowMode": "sidecar", "rationale": "Multi-step SIP application orchestration; shadow-queued for S1 TCK + application BMC" },
+    { "path": "handwritten/scala/example/bankwealth/application/process/ta/BankTaRefundApplication.scala", "branch": "solution", "tier": "S1", "stage": "stage-1-shadow", "evidenceTier": "E2", "contractRef": "BankTaSubmissionEffect", "shadowMode": "sidecar", "rationale": "TA/refund bootstrap discovery & absence-proof orchestration shadowed by TaBridgeSettlement + S1 TCK" },
+
+    { "path": "handwritten/scala/example/bankwealth/infrastructure/connectors/BankSipDispatchBindings.scala", "branch": "solution", "tier": "S1", "stage": "stage-1-shadow", "evidenceTier": "E2", "contractRef": "BankCashAdmissionEffect", "shadowMode": "sidecar", "rationale": "SIP occurrence dispatch effect binding under S1 protocol contract" },
+    { "path": "handwritten/scala/example/bankwealth/infrastructure/connectors/BankTaBridge.scala", "branch": "solution", "tier": "S1", "stage": "stage-1-shadow", "evidenceTier": "E2", "contractRef": "TaBridgeSettlement", "shadowMode": "sidecar", "rationale": "TA receipt ingestion & rejection-to-refund bridge shadowed by TaBridgeSettlement + S1 TCK" },
+    { "path": "handwritten/scala/example/bankwealth/infrastructure/connectors/BankTaEffectBindings.scala", "branch": "solution", "tier": "S1", "stage": "stage-1-shadow", "evidenceTier": "E2", "contractRef": "BankTaSubmissionEffect", "shadowMode": "sidecar", "rationale": "Three-phase execute/query/reconcile TA effect bindings governed by S1 TCK" },
+    { "path": "handwritten/scala/example/bankwealth/infrastructure/connectors/MockTAClient.scala", "branch": "solution", "tier": "S2", "stage": "stage-0-raw", "evidenceTier": "E3", "contractRef": "ta-http-wire-v1", "shadowMode": "none", "rationale": "Simulated external TA HTTP worker transport verified by test:runtime-verifier" },
+
+    { "path": "handwritten/scala/example/bankwealth/infrastructure/process/BankPaymentBindings.scala", "branch": "solution", "tier": "S1", "stage": "stage-1-shadow", "evidenceTier": "E2", "contractRef": "BankCashAdmissionEffect", "shadowMode": "sidecar", "rationale": "Payment SagaHost phase authority & retry bindings under S1 TCK" },
+    { "path": "handwritten/scala/example/bankwealth/infrastructure/process/BankRefundBindings.scala", "branch": "solution", "tier": "S1", "stage": "stage-1-shadow", "evidenceTier": "E2", "contractRef": "BankTaSubmissionEffect", "shadowMode": "sidecar", "rationale": "Independent refund SagaHost reverse-principal bindings under S1 TCK" },
+    { "path": "handwritten/scala/example/bankwealth/infrastructure/process/BankSipTerminalBridge.scala", "branch": "solution", "tier": "S1", "stage": "stage-1-shadow", "evidenceTier": "E2", "contractRef": "SipPlan.StreamBatch", "shadowMode": "sidecar", "rationale": "Correlated journal-evidenced first-terminal bridge from FundOrder to SipPlan" },
+
+    { "path": "handwritten/scala/example/bankwealth/infrastructure/recovery/BankRecovery.scala", "branch": "solution", "tier": "S1", "stage": "stage-1-shadow", "evidenceTier": "E2", "contractRef": "BankTaSubmissionEffect", "shadowMode": "sidecar", "rationale": "Authorized recovery governed by TCK-07 zero-new-authorization invariant" },
+    { "path": "handwritten/scala/example/bankwealth/infrastructure/recovery/BankRecoveryLoop.scala", "branch": "solution", "tier": "S1", "stage": "stage-1-shadow", "evidenceTier": "E2", "contractRef": "BankTaSubmissionEffect", "shadowMode": "sidecar", "rationale": "Journal discovery & recovery loop governed by TCK-07 crash-recovery invariant" },
+
+    { "path": "handwritten/scala/example/bankwealth/infrastructure/persistence/BankReadside.scala", "branch": "problem", "tier": "D2", "stage": "stage-1-shadow", "evidenceTier": "E1", "contractRef": "CashFundPurchase", "shadowMode": "sidecar", "rationale": "Principal authorization & business view projection shadowed by US-CFP-06..08" },
+    { "path": "handwritten/scala/example/bankwealth/infrastructure/persistence/BankJdbcDataSource.scala", "branch": "solution", "tier": "S2", "stage": "stage-0-raw", "evidenceTier": "E3", "contractRef": "jdbc-datasource-v1", "shadowMode": "none", "rationale": "JDBC DriverManager adapter verified by readside/runtime integration tests" },
+    { "path": "handwritten/scala/example/bankwealth/infrastructure/persistence/BankJournal.scala", "branch": "solution", "tier": "S2", "stage": "stage-0-raw", "evidenceTier": "E3", "contractRef": "journal-adapter-v1", "shadowMode": "none", "rationale": "Application journal abstraction verified by runtime integration tests" },
+    { "path": "handwritten/scala/example/bankwealth/infrastructure/persistence/BankPersistenceJournal.scala", "branch": "solution", "tier": "S2", "stage": "stage-0-raw", "evidenceTier": "E3", "contractRef": "akka-persistence-query-v1", "shadowMode": "none", "rationale": "Akka persistence query driver verified by runtime integration tests" },
+    { "path": "handwritten/scala/example/bankwealth/infrastructure/persistence/BankReadsideSchema.scala", "branch": "solution", "tier": "S2", "stage": "stage-0-raw", "evidenceTier": "E3", "contractRef": "readside-ddl-v1", "shadowMode": "none", "rationale": "Read-side schema facade delegating to generated JDBC schema" },
+    { "path": "handwritten/scala/example/bankwealth/infrastructure/persistence/BankResourceCleanup.scala", "branch": "solution", "tier": "S2", "stage": "stage-0-raw", "evidenceTier": "E3", "contractRef": "lifecycle-cleanup-v1", "shadowMode": "none", "rationale": "Resource lifecycle shutdown helper verified by runtime tests" },
+
+    { "path": "handwritten/scala/example/bankwealth/infrastructure/bootstrap/BankRuntime.scala", "branch": "solution", "tier": "S2", "stage": "stage-0-raw", "evidenceTier": "E3", "contractRef": "bootstrap-runtime-v1", "shadowMode": "none", "rationale": "Single-process actor runtime assembly verified by test:runtime-verifier" },
+    { "path": "handwritten/scala/example/bankwealth/infrastructure/bootstrap/BankRuntimeDirectory.scala", "branch": "solution", "tier": "S2", "stage": "stage-0-raw", "evidenceTier": "E3", "contractRef": "bootstrap-directory-v1", "shadowMode": "none", "rationale": "Actor handle directory interfaces for bootstrap assembly" },
+    { "path": "handwritten/scala/example/bankwealth/infrastructure/bootstrap/BankServiceFactory.scala", "branch": "solution", "tier": "S2", "stage": "stage-0-raw", "evidenceTier": "E3", "contractRef": "bootstrap-factory-v1", "shadowMode": "none", "rationale": "Service bootstrap implementation factory verified by runtime smoke" },
+    { "path": "handwritten/scala/example/bankwealth/infrastructure/clock/BankBusinessClock.scala", "branch": "solution", "tier": "S2", "stage": "stage-0-raw", "evidenceTier": "E3", "contractRef": "clock-adapter-v1", "shadowMode": "none", "rationale": "Operator business-clock adapter verified by runtime/TA tests" },
+    { "path": "handwritten/scala/example/bankwealth/infrastructure/security/BankDemoAuthority.scala", "branch": "problem", "tier": "D2", "stage": "stage-1-shadow", "evidenceTier": "E1", "contractRef": "CashFundPurchase", "shadowMode": "sidecar", "rationale": "Session & Origin/CSRF guard shadowed by US-CFP-01" },
+    { "path": "handwritten/scala/example/bankwealth/infrastructure/security/BankSeedAuthority.scala", "branch": "solution", "tier": "S2", "stage": "stage-0-raw", "evidenceTier": "E3", "contractRef": "seed-bootstrap-v1", "shadowMode": "none", "rationale": "Demo account seed initialization adapter verified by runtime smoke" },
+
+    {
+      "path": "handwritten/scala/example/bankwealth/interfaces/web/BankBrowserPages.scala",
+      "branch": "solution",
+      "tier": "S3",
+      "stage": "stage-0-raw",
+      "evidenceTier": "E4",
+      "contractRef": "bank-order-view",
+      "shadowMode": "none",
+      "rationale": "Server-rendered demo HTML pages governed by E4 E2E + explicit SHA-256 human signoff",
+      "automatedEvidence": "npm run demo:smoke",
+      "humanSignoff": {
+        "reviewer": "architecture-owner",
+        "fileSha256": "7fabb186d388227ac4a2efbb7f0c39d0c1d61fbe15ad4b2b45f2b61eee7b5e7b",
+        "signedAt": "2026-11-26T05:45:00Z",
+        "checklist": ["html-escaping-verified", "csrf-header-present", "consumes-typed-readmodels-only"]
+      }
+    },
+    {
+      "path": "handwritten/scala/example/bankwealth/interfaces/web/BankPagesController.scala",
+      "branch": "solution",
+      "tier": "S3",
+      "stage": "stage-0-raw",
+      "evidenceTier": "E4",
+      "contractRef": "bank-order-view",
+      "shadowMode": "none",
+      "rationale": "Legacy page controller adapter governed by E4 HTTP tests + explicit SHA-256 human signoff",
+      "automatedEvidence": "test/truthsrc-runtime-controller.test.mjs",
+      "humanSignoff": {
+        "reviewer": "architecture-owner",
+        "fileSha256": "6f1f3766f59063cee3c67448070a01596be85c46ef59ab639c77fb3557e220fd",
+        "signedAt": "2026-11-26T05:45:00Z",
+        "checklist": ["controller-routes-audited", "no-direct-domain-mutation"]
+      }
+    },
+    { "path": "handwritten/scala/example/bankwealth/interfaces/web/BankQueryController.scala", "branch": "solution", "tier": "S2", "stage": "stage-0-raw", "evidenceTier": "E3", "contractRef": "query-http-wire-v1", "shadowMode": "none", "rationale": "HTTP query controller over typed query facades verified by runtime-http tests" },
+    { "path": "handwritten/scala/example/bankwealth/interfaces/web/BankServiceEndpoints.scala", "branch": "solution", "tier": "S2", "stage": "stage-0-raw", "evidenceTier": "E3", "contractRef": "service-endpoints-wire-v1", "shadowMode": "none", "rationale": "Endpoint facade verified by test:runtime-verifier" },
+    { "path": "handwritten/scala/example/bankwealth/interfaces/web/BankServiceJson.scala", "branch": "solution", "tier": "S2", "stage": "stage-0-raw", "evidenceTier": "E3", "contractRef": "service-json-codec-v1", "shadowMode": "none", "rationale": "Strict JSON DTO wire codec verified by runtime-http/controller tests" },
+    { "path": "handwritten/scala/example/bankwealth/modules/HandwrittenBindingsModule.scala", "branch": "solution", "tier": "S2", "stage": "stage-0-raw", "evidenceTier": "E3", "contractRef": "guice-di-wiring-v1", "shadowMode": "none", "rationale": "Guice DI module wiring verified by runtime boot" },
+
+    { "path": "v2-pilot/generated-scaffold/ts/exact.ts", "branch": "problem", "tier": "D1", "stage": "stage-3-generated", "evidenceTier": "E1", "contractRef": "exact-decimal-runtime", "shadowMode": "none", "rationale": "Generated zero-token BigInt fixed-point runtime" },
+    { "path": "v2-pilot/generated-scaffold/ts/types.ts", "branch": "problem", "tier": "D1", "stage": "stage-3-generated", "evidenceTier": "E1", "contractRef": "bankwealth-types", "shadowMode": "none", "rationale": "Generated value objects, exact types, and read-model views" },
+    { "path": "v2-pilot/generated-scaffold/ts/fund-quota.behavior.ts", "branch": "problem", "tier": "D1", "stage": "stage-3-generated", "evidenceTier": "E1", "contractRef": "FundQuota.ReserveSubscriptionQuota", "shadowMode": "none", "rationale": "Channel 4A zero-token deterministic L1 aggregate behavior + replay oracle" },
+    { "path": "v2-pilot/generated-scaffold/ts/credit-balance.behavior.ts", "branch": "problem", "tier": "D1", "stage": "stage-3-generated", "evidenceTier": "E1", "contractRef": "CreditBalance.ReserveFunds", "shadowMode": "none", "rationale": "Graduated Stage 3 Channel 4A zero-token L1 behavior replacing BankBalanceComputations" },
+    { "path": "v2-pilot/generated-scaffold/ts/fund-order.behavior.ts", "branch": "problem", "tier": "D2", "stage": "stage-3-generated", "evidenceTier": "E1", "contractRef": "FundOrder.ConfirmTAShares", "shadowMode": "none", "rationale": "Generated aggregate host & event fold delegating L2 QF_NIA command to @cloze" },
+    { "path": "v2-pilot/generated-scaffold/ts/cash-fund-purchase.port.ts", "branch": "problem", "tier": "D2", "stage": "stage-3-generated", "evidenceTier": "E1", "contractRef": "CashFundPurchase", "shadowMode": "none", "rationale": "Generated typed application port & caller contract" },
+    { "path": "v2-pilot/generated-scaffold/ts/ta-bridge-settlement.port.ts", "branch": "problem", "tier": "D2", "stage": "stage-3-generated", "evidenceTier": "E1", "contractRef": "TaBridgeSettlement", "shadowMode": "none", "rationale": "Generated typed TA bridge Assume-Guarantee application port" },
+
+    { "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/DomainTypes.scala", "branch": "problem", "tier": "D1", "stage": "stage-3-generated", "evidenceTier": "E1", "contractRef": "bankwealth-types", "shadowMode": "none", "rationale": "Generated Scala exact domain types" },
+    { "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/FundQuotaBehavior.scala", "branch": "problem", "tier": "D1", "stage": "stage-3-generated", "evidenceTier": "E1", "contractRef": "FundQuota.ReserveSubscriptionQuota", "shadowMode": "none", "rationale": "Channel 4A zero-token deterministic Scala L1 aggregate behavior" },
+    { "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/CreditBalanceBehavior.scala", "branch": "problem", "tier": "D1", "stage": "stage-3-generated", "evidenceTier": "E1", "contractRef": "CreditBalance.ReserveFunds", "shadowMode": "none", "rationale": "Graduated Stage 3 zero-token Scala L1 CreditBalance behavior" },
+    { "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/FundOrderBehavior.scala", "branch": "problem", "tier": "D2", "stage": "stage-3-generated", "evidenceTier": "E1", "contractRef": "FundOrder.ConfirmTAShares", "shadowMode": "none", "rationale": "Generated Scala aggregate host delegating L2 QF_NIA command to @cloze" },
+
+    { "path": "v2-pilot/handwritten/fund-order-confirm-tashares.cloze.ts", "branch": "problem", "tier": "D2", "stage": "stage-2-cloze", "evidenceTier": "E1", "contractRef": "FundOrder.ConfirmTAShares", "shadowMode": "none", "rationale": "L2 QF_NIA @cloze implementation verified by locked TS BDD oracles + boundary mutation kill + blind review" },
+    { "path": "v2-pilot/handwritten/scala/example/bankwealth/v2/FundOrderConfirmTASharesCloze.scala", "branch": "problem", "tier": "D2", "stage": "stage-2-cloze", "evidenceTier": "E1", "contractRef": "FundOrder.ConfirmTAShares", "shadowMode": "none", "rationale": "L2 QF_NIA Scala @cloze implementation verified by locked ScalaTest oracles + blind review" },
+    { "path": "v2-pilot/handwritten/cash-fund-purchase.cloze.ts", "branch": "problem", "tier": "D2", "stage": "stage-2-cloze", "evidenceTier": "E1", "contractRef": "CashFundPurchase", "shadowMode": "none", "rationale": "Application story @cloze verified by locked BDD oracles + mutation kill + blind review" },
+    { "path": "v2-pilot/handwritten/ta-bridge-settlement.cloze.ts", "branch": "problem", "tier": "D2", "stage": "stage-2-cloze", "evidenceTier": "E1", "contractRef": "TaBridgeSettlement", "shadowMode": "none", "rationale": "Assume-Guarantee TA bridge @cloze verified by locked BDD oracles" },
+    { "path": "v2-pilot/handwritten/ta-effect-adapter.ts", "branch": "solution", "tier": "S1", "stage": "stage-2-cloze", "evidenceTier": "E2", "contractRef": "BankTaSubmissionEffect", "shadowMode": "inline-marker", "rationale": "S1 three-phase-reconcile effect adapter verified by 8-scenario fault-injection TCK (TCK-01..08)" }
+  ]
+}

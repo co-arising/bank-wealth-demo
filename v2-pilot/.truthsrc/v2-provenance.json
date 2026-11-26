@@ -1,12 +1,12 @@
 {
   "schemaVersion": "co-arising.verify-v2/v1",
   "passed": true,
-  "canonicalSha256": "98bcc05de3f42d97d4b0c626b2a0bc703e7fe18867e0028faa378fe6ccd9b9f1",
+  "canonicalSha256": "8cb30df89124c2b7d2377fadeb6e845eb5eb0427231bc4de99f215bb546e181b",
   "manifestCheck": {
     "passed": true,
     "errors": [],
-    "verifiedFiles": 8,
-    "manifestSha256": "2db0840640632ddcca27b7e05ebc2816fd3602091999a40ca25bfb7a8ea7ecef"
+    "verifiedFiles": 13,
+    "manifestSha256": "c43d30ba46820e0fcdf4c1a625e66e078b3f6f3b2398206caf73a000943d7f68"
   },
   "tsCheck": {
     "skipped": false,
@@ -14,8 +14,10 @@
     "exitCode": 0,
     "specFiles": [
       "generated-tests/ts/cash-fund-purchase.ears.spec.ts",
+      "generated-tests/ts/credit-balance-reserve-funds.ears.spec.ts",
       "generated-tests/ts/fund-order-confirm-tashares.ears.spec.ts",
-      "generated-tests/ts/fund-quota-reserve-subscription-quota.ears.spec.ts"
+      "generated-tests/ts/fund-quota-reserve-subscription-quota.ears.spec.ts",
+      "generated-tests/ts/ta-bridge-settlement.ears.spec.ts"
     ],
     "failedSpecIds": []
   },
@@ -25,6 +27,7 @@
     "stage": "scalatest",
     "exitCode": 0,
     "suiteClasses": [
+      "example.bankwealth.v2.CreditBalanceReserveFundsEarsSpec",
       "example.bankwealth.v2.FundOrderConfirmTASharesEarsSpec",
       "example.bankwealth.v2.FundQuotaReserveSubscriptionQuotaEarsSpec"
     ],
@@ -33,8 +36,8 @@
   "provenanceCheck": {
     "passed": true,
     "errors": [],
-    "provenanceIdCount": 13,
-    "specAnchorCount": 18,
+    "provenanceIdCount": 21,
+    "specAnchorCount": 28,
     "clozeSlots": [
       {
         "slotId": "cash-fund-purchase",
@@ -47,11 +50,21 @@
         "unimplemented": false
       },
       {
+        "slotId": "ta-bridge-settlement",
+        "file": "handwritten/ta-bridge-settlement.cloze.ts",
+        "unimplemented": false
+      },
+      {
+        "slotId": "ta-effect-adapter",
+        "file": "handwritten/ta-effect-adapter.ts",
+        "unimplemented": false
+      },
+      {
         "slotId": "fund-order-confirm-tashares",
         "file": "handwritten/scala/example/bankwealth/v2/FundOrderConfirmTASharesCloze.scala",
         "unimplemented": false
       }
     ]
   },
-  "verifiedAt": "2026-11-26T04:10:27.614Z"
+  "verifiedAt": "2026-11-26T05:50:03.028Z"
 }

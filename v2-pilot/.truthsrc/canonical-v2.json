@@ -2,7 +2,7 @@
   "schemaVersion": "co-arising.canonical/v2",
   "system": "bank-wealth",
   "context": "bankwealth",
-  "canonicalSha256": "98bcc05de3f42d97d4b0c626b2a0bc703e7fe18867e0028faa378fe6ccd9b9f1",
+  "canonicalSha256": "8cb30df89124c2b7d2377fadeb6e845eb5eb0427231bc4de99f215bb546e181b",
   "structures": {
     "exactTypes": [
       {
@@ -257,6 +257,110 @@
           "TA_PAYMENT_NOT_SUCCEEDED": "TA confirmation requires succeeded payment",
           "TA_ALREADY_CONFIRMED": "TA confirmation is single-shot and cannot repeat"
         }
+      },
+      {
+        "name": "CreditBalance",
+        "aliases": [
+          "ledger",
+          "state",
+          "creditbalance"
+        ],
+        "idField": "id",
+        "stateFields": [
+          {
+            "name": "availableAmount",
+            "type": "AmountDecimal",
+            "defaultValue": "0.00",
+            "resolvedType": {
+              "kind": "decimal",
+              "typeName": "AmountDecimal",
+              "scale": 2
+            }
+          },
+          {
+            "name": "reservedTotal",
+            "type": "AmountDecimal",
+            "defaultValue": "0.00",
+            "resolvedType": {
+              "kind": "decimal",
+              "typeName": "AmountDecimal",
+              "scale": 2
+            }
+          },
+          {
+            "name": "reservedByTx",
+            "type": "Map[TxId, AmountDecimal]",
+            "defaultValue": [],
+            "resolvedType": {
+              "kind": "map",
+              "key": {
+                "kind": "string",
+                "typeName": "TxId"
+              },
+              "value": {
+                "kind": "decimal",
+                "typeName": "AmountDecimal",
+                "scale": 2
+              }
+            }
+          }
+        ],
+        "commands": [
+          {
+            "name": "ReserveFunds",
+            "parameters": [
+              {
+                "name": "txId",
+                "type": "TxId",
+                "resolvedType": {
+                  "kind": "string",
+                  "typeName": "TxId"
+                }
+              },
+              {
+                "name": "amount",
+                "type": "AmountDecimal",
+                "resolvedType": {
+                  "kind": "decimal",
+                  "typeName": "AmountDecimal",
+                  "scale": 2
+                }
+              }
+            ],
+            "produces": [
+              "FundsReserved"
+            ]
+          }
+        ],
+        "events": [
+          {
+            "name": "FundsReserved",
+            "fields": [
+              {
+                "name": "txId",
+                "type": "TxId",
+                "resolvedType": {
+                  "kind": "string",
+                  "typeName": "TxId"
+                }
+              },
+              {
+                "name": "amount",
+                "type": "AmountDecimal",
+                "resolvedType": {
+                  "kind": "decimal",
+                  "typeName": "AmountDecimal",
+                  "scale": 2
+                }
+              }
+            ]
+          }
+        ],
+        "ruleRefs": {
+          "BAL_NON_POSITIVE_AMOUNT": "Reserve amount must be strictly positive",
+          "BAL_INSUFFICIENT_FUNDS": "Available balance must cover reserve amount",
+          "BAL_TX_ALREADY_RESERVED": "Transaction reservation must not double-reserve"
+        }
       }
     ],
     "sagas": [],
@@ -311,6 +415,33 @@
             "operationId",
             "investorAccountId",
             "fundCollectionAccountId"
+          ]
+        },
+        "parameters": []
+      },
+      {
+        "name": "TaBridgeSettlement",
+        "description": "Assume-Guarantee external TA receipt ingestion and absence-proof-gated independent refund bridge",
+        "entryPort": "BankTaBridgePort",
+        "entryOperation": "ingestOutcome",
+        "queryPort": null,
+        "dispatches": [
+          "FundOrder.RecordFundTAConfirmed",
+          "FundOrder.RequestIndependentRefund"
+        ],
+        "pins": [
+          "TaSubmissionOriginal"
+        ],
+        "responses": [
+          "TaBridgeAcknowledgement"
+        ],
+        "views": [],
+        "callerContract": {
+          "idempotencyKey": "(orderId, taSubmissionId)",
+          "retryPolicy": "three-phase-reconcile; unknown timeout must NEVER trigger blind refund without taAbsenceConfirmed",
+          "forbiddenUntrustedFields": [
+            "fundCollectionAccountId",
+            "investorAccountId"
           ]
         },
         "parameters": []
@@ -1939,6 +2070,600 @@
       "schemaVersion": "co-arising.ears-ir/v2",
       "kind": "slice",
       "layer": "domain",
+      "target": "CreditBalance.ReserveFunds",
+      "sourceFile": "credit-balance-reserve.ears",
+      "hitPolicy": "FIRST",
+      "theory": {
+        "tier": "L1",
+        "logic": "QF_AUFLIA",
+        "codegenChannel": "deterministic",
+        "hasNonlinearMul": false,
+        "hasMultiStepBmc": false,
+        "externCount": 0
+      },
+      "verification": {
+        "solver": "z3",
+        "passed": true,
+        "bmcSteps": 4,
+        "canonicalSha256": "dbeb1abcc51decfdbbad0ade44354ba8bda2a0a89b7a0657e289acd7aa689454"
+      },
+      "axioms": [
+        {
+          "id": "AX-BAL-1",
+          "kind": "invariant",
+          "expr": {
+            "kind": "compare",
+            "op": ">=",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "var",
+                "name": "ledger"
+              },
+              "field": "availableAmount"
+            },
+            "right": {
+              "kind": "number",
+              "value": "0.00",
+              "scale": 2
+            }
+          }
+        },
+        {
+          "id": "AX-BAL-2",
+          "kind": "invariant",
+          "expr": {
+            "kind": "compare",
+            "op": ">=",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "var",
+                "name": "ledger"
+              },
+              "field": "reservedTotal"
+            },
+            "right": {
+              "kind": "number",
+              "value": "0.00",
+              "scale": 2
+            }
+          }
+        }
+      ],
+      "externs": [],
+      "where": [
+        {
+          "name": "positiveAmount",
+          "gloss": null
+        },
+        {
+          "name": "sufficientFunds",
+          "gloss": null
+        },
+        {
+          "name": "txNotReserved",
+          "gloss": null
+        }
+      ],
+      "rules": [
+        {
+          "id": "BAL_NON_POSITIVE_AMOUNT",
+          "firstHitOrder": 0,
+          "pattern": "unwanted",
+          "command": "ReserveFunds",
+          "guard": {
+            "kind": "not",
+            "argument": {
+              "kind": "compare",
+              "op": ">",
+              "left": {
+                "kind": "var",
+                "name": "amount"
+              },
+              "right": {
+                "kind": "number",
+                "value": "0.00",
+                "scale": 2
+              }
+            }
+          },
+          "actions": [
+            {
+              "kind": "reject",
+              "modality": "SHALL",
+              "code": "BAL_NON_POSITIVE_AMOUNT"
+            }
+          ],
+          "post": []
+        },
+        {
+          "id": "BAL_TX_ALREADY_RESERVED",
+          "firstHitOrder": 1,
+          "pattern": "unwanted",
+          "command": "ReserveFunds",
+          "guard": {
+            "kind": "in",
+            "element": {
+              "kind": "var",
+              "name": "txId"
+            },
+            "target": {
+              "kind": "member",
+              "object": {
+                "kind": "var",
+                "name": "ledger"
+              },
+              "field": "reservedByTx"
+            }
+          },
+          "actions": [
+            {
+              "kind": "reject",
+              "modality": "SHALL",
+              "code": "BAL_TX_ALREADY_RESERVED"
+            }
+          ],
+          "post": []
+        },
+        {
+          "id": "BAL_INSUFFICIENT_FUNDS",
+          "firstHitOrder": 2,
+          "pattern": "unwanted",
+          "command": "ReserveFunds",
+          "guard": {
+            "kind": "not",
+            "argument": {
+              "kind": "compare",
+              "op": ">=",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "var",
+                  "name": "ledger"
+                },
+                "field": "availableAmount"
+              },
+              "right": {
+                "kind": "var",
+                "name": "amount"
+              }
+            }
+          },
+          "actions": [
+            {
+              "kind": "reject",
+              "modality": "SHALL",
+              "code": "BAL_INSUFFICIENT_FUNDS"
+            }
+          ],
+          "post": []
+        },
+        {
+          "id": "BAL_FUNDS_RESERVED",
+          "firstHitOrder": 3,
+          "pattern": "complex",
+          "command": "ReserveFunds",
+          "guard": {
+            "kind": "binary",
+            "op": "and",
+            "left": {
+              "kind": "binary",
+              "op": "and",
+              "left": {
+                "kind": "compare",
+                "op": ">",
+                "left": {
+                  "kind": "var",
+                  "name": "amount"
+                },
+                "right": {
+                  "kind": "number",
+                  "value": "0.00",
+                  "scale": 2
+                }
+              },
+              "right": {
+                "kind": "compare",
+                "op": ">=",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "var",
+                    "name": "ledger"
+                  },
+                  "field": "availableAmount"
+                },
+                "right": {
+                  "kind": "var",
+                  "name": "amount"
+                }
+              }
+            },
+            "right": {
+              "kind": "not",
+              "argument": {
+                "kind": "in",
+                "element": {
+                  "kind": "var",
+                  "name": "txId"
+                },
+                "target": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "var",
+                    "name": "ledger"
+                  },
+                  "field": "reservedByTx"
+                }
+              }
+            }
+          },
+          "actions": [
+            {
+              "kind": "emit",
+              "modality": "SHALL",
+              "event": "FundsReserved"
+            }
+          ],
+          "post": [
+            {
+              "target": {
+                "segments": [
+                  "ledger",
+                  "availableAmount"
+                ],
+                "index": null
+              },
+              "value": {
+                "kind": "arith",
+                "op": "-",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "var",
+                    "name": "ledger"
+                  },
+                  "field": "availableAmount"
+                },
+                "right": {
+                  "kind": "var",
+                  "name": "amount"
+                }
+              },
+              "source": "post"
+            },
+            {
+              "target": {
+                "segments": [
+                  "ledger",
+                  "reservedTotal"
+                ],
+                "index": null
+              },
+              "value": {
+                "kind": "arith",
+                "op": "+",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "var",
+                    "name": "ledger"
+                  },
+                  "field": "reservedTotal"
+                },
+                "right": {
+                  "kind": "var",
+                  "name": "amount"
+                }
+              },
+              "source": "post"
+            },
+            {
+              "target": {
+                "segments": [
+                  "ledger",
+                  "reservedByTx"
+                ],
+                "index": {
+                  "kind": "var",
+                  "name": "txId"
+                }
+              },
+              "value": {
+                "kind": "var",
+                "name": "amount"
+              },
+              "source": "post"
+            }
+          ]
+        }
+      ],
+      "eventPropagations": [
+        {
+          "ruleId": "BAL_FUNDS_RESERVED",
+          "command": "ReserveFunds",
+          "event": "FundsReserved",
+          "bindings": [
+            {
+              "eventField": "txId",
+              "source": "@PROPAGATED",
+              "paramName": "txId",
+              "type": "TxId"
+            },
+            {
+              "eventField": "amount",
+              "source": "@PROPAGATED",
+              "paramName": "amount",
+              "type": "AmountDecimal"
+            }
+          ]
+        }
+      ],
+      "testIr": {
+        "schemaVersion": "co-arising.test-ir/v2",
+        "meta": {
+          "sourceFile": "credit-balance-reserve.ears",
+          "sourceSha256": "4a27de06154edb214dccdb4c71cf2c9d0bbd37b1639f267417d115fa23d29987",
+          "canonicalSha256": "dbeb1abcc51decfdbbad0ade44354ba8bda2a0a89b7a0657e289acd7aa689454",
+          "kind": "slice",
+          "layer": "domain",
+          "target": "CreditBalance.ReserveFunds",
+          "aggregate": "CreditBalance",
+          "slice": "ReserveFunds",
+          "story": null,
+          "solver": "z3",
+          "logic": "QF_AUFLIA",
+          "verified": true
+        },
+        "scenarios": [
+          {
+            "id": "reserve-funds-oracle",
+            "kind": "outline",
+            "command": "ReserveFunds",
+            "title": "CreditBalance.ReserveFunds — ReserveFunds First-Hit executable oracle",
+            "ruleIds": [
+              "BAL_NON_POSITIVE_AMOUNT",
+              "BAL_TX_ALREADY_RESERVED",
+              "BAL_INSUFFICIENT_FUNDS",
+              "BAL_FUNDS_RESERVED"
+            ],
+            "tags": [
+              "@spec:BAL_NON_POSITIVE_AMOUNT",
+              "@spec:BAL_TX_ALREADY_RESERVED",
+              "@spec:BAL_INSUFFICIENT_FUNDS",
+              "@spec:BAL_FUNDS_RESERVED",
+              "@z3-witness"
+            ],
+            "examples": [
+              {
+                "ruleId": "BAL_NON_POSITIVE_AMOUNT",
+                "firstHitOrder": 0,
+                "pattern": "unwanted",
+                "witness": {
+                  "scalars": {
+                    "ledger.availableAmount": "0.00",
+                    "ledger.reservedTotal": "0.00",
+                    "amount": "0.00",
+                    "txId": ""
+                  },
+                  "mapEntries": {},
+                  "externs": {}
+                },
+                "secondaryWitness": {
+                  "scalars": {
+                    "ledger.availableAmount": "0.01",
+                    "ledger.reservedTotal": "0.01",
+                    "amount": "0.00",
+                    "txId": ""
+                  },
+                  "mapEntries": {},
+                  "externs": {}
+                },
+                "boundaryWitnesses": [],
+                "outcome": "reject BAL_NON_POSITIVE_AMOUNT",
+                "actions": [
+                  {
+                    "kind": "reject",
+                    "modality": "SHALL",
+                    "code": "BAL_NON_POSITIVE_AMOUNT"
+                  }
+                ],
+                "post": []
+              },
+              {
+                "ruleId": "BAL_TX_ALREADY_RESERVED",
+                "firstHitOrder": 1,
+                "pattern": "unwanted",
+                "witness": {
+                  "scalars": {
+                    "ledger.availableAmount": "0.00",
+                    "ledger.reservedTotal": "0.00",
+                    "amount": "0.01",
+                    "txId": ""
+                  },
+                  "mapEntries": {
+                    "ledger.reservedByTx": {
+                      "txId": "0.00"
+                    }
+                  },
+                  "externs": {}
+                },
+                "secondaryWitness": {
+                  "scalars": {
+                    "ledger.availableAmount": "0.01",
+                    "ledger.reservedTotal": "0.01",
+                    "amount": "0.02",
+                    "txId": ""
+                  },
+                  "mapEntries": {
+                    "ledger.reservedByTx": {
+                      "txId": "0.00"
+                    }
+                  },
+                  "externs": {}
+                },
+                "boundaryWitnesses": [],
+                "outcome": "reject BAL_TX_ALREADY_RESERVED",
+                "actions": [
+                  {
+                    "kind": "reject",
+                    "modality": "SHALL",
+                    "code": "BAL_TX_ALREADY_RESERVED"
+                  }
+                ],
+                "post": []
+              },
+              {
+                "ruleId": "BAL_INSUFFICIENT_FUNDS",
+                "firstHitOrder": 2,
+                "pattern": "unwanted",
+                "witness": {
+                  "scalars": {
+                    "ledger.availableAmount": "0.00",
+                    "ledger.reservedTotal": "0.00",
+                    "amount": "0.01",
+                    "txId": ""
+                  },
+                  "mapEntries": {},
+                  "externs": {}
+                },
+                "secondaryWitness": {
+                  "scalars": {
+                    "ledger.availableAmount": "0.01",
+                    "ledger.reservedTotal": "0.01",
+                    "amount": "0.02",
+                    "txId": ""
+                  },
+                  "mapEntries": {},
+                  "externs": {}
+                },
+                "boundaryWitnesses": [],
+                "outcome": "reject BAL_INSUFFICIENT_FUNDS",
+                "actions": [
+                  {
+                    "kind": "reject",
+                    "modality": "SHALL",
+                    "code": "BAL_INSUFFICIENT_FUNDS"
+                  }
+                ],
+                "post": []
+              },
+              {
+                "ruleId": "BAL_FUNDS_RESERVED",
+                "firstHitOrder": 3,
+                "pattern": "complex",
+                "witness": {
+                  "scalars": {
+                    "ledger.availableAmount": "0.01",
+                    "ledger.reservedTotal": "0.00",
+                    "amount": "0.01",
+                    "txId": ""
+                  },
+                  "mapEntries": {},
+                  "externs": {}
+                },
+                "secondaryWitness": {
+                  "scalars": {
+                    "ledger.availableAmount": "0.02",
+                    "ledger.reservedTotal": "0.01",
+                    "amount": "0.02",
+                    "txId": ""
+                  },
+                  "mapEntries": {},
+                  "externs": {}
+                },
+                "boundaryWitnesses": [],
+                "outcome": "emit FundsReserved",
+                "actions": [
+                  {
+                    "kind": "emit",
+                    "modality": "SHALL",
+                    "event": "FundsReserved"
+                  }
+                ],
+                "post": [
+                  {
+                    "target": {
+                      "segments": [
+                        "ledger",
+                        "availableAmount"
+                      ],
+                      "index": null
+                    },
+                    "value": {
+                      "kind": "arith",
+                      "op": "-",
+                      "left": {
+                        "kind": "member",
+                        "object": {
+                          "kind": "var",
+                          "name": "ledger"
+                        },
+                        "field": "availableAmount"
+                      },
+                      "right": {
+                        "kind": "var",
+                        "name": "amount"
+                      }
+                    },
+                    "source": "post"
+                  },
+                  {
+                    "target": {
+                      "segments": [
+                        "ledger",
+                        "reservedTotal"
+                      ],
+                      "index": null
+                    },
+                    "value": {
+                      "kind": "arith",
+                      "op": "+",
+                      "left": {
+                        "kind": "member",
+                        "object": {
+                          "kind": "var",
+                          "name": "ledger"
+                        },
+                        "field": "reservedTotal"
+                      },
+                      "right": {
+                        "kind": "var",
+                        "name": "amount"
+                      }
+                    },
+                    "source": "post"
+                  },
+                  {
+                    "target": {
+                      "segments": [
+                        "ledger",
+                        "reservedByTx"
+                      ],
+                      "index": {
+                        "kind": "var",
+                        "name": "txId"
+                      }
+                    },
+                    "value": {
+                      "kind": "var",
+                      "name": "amount"
+                    },
+                    "source": "post"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "sha256": "beb6512067cb7482a46a831b02bf338099806d1b272f06bfac2d99a0c0649d8a"
+      }
+    },
+    {
+      "schemaVersion": "co-arising.ears-ir/v2",
+      "kind": "slice",
+      "layer": "domain",
       "target": "FundOrder.ConfirmTAShares",
       "sourceFile": "fund-order-confirm-ta-shares.ears",
       "hitPolicy": "FIRST",
@@ -3422,9 +4147,869 @@
         ],
         "sha256": "54f1b020c3b4d34915b30552b8e92fba9eb876c220755bece38a74ba70e82db3"
       }
+    },
+    {
+      "schemaVersion": "co-arising.ears-ir/v2",
+      "kind": "story",
+      "layer": "application",
+      "target": "TaBridgeSettlement",
+      "sourceFile": "ta-bridge-settlement.ears",
+      "hitPolicy": "FIRST",
+      "theory": {
+        "tier": "L3",
+        "logic": "QF_AUFLIA",
+        "codegenChannel": "cloze-tdd",
+        "hasNonlinearMul": false,
+        "hasMultiStepBmc": false,
+        "externCount": 5
+      },
+      "verification": {
+        "solver": "z3",
+        "passed": true,
+        "bmcSteps": 4,
+        "canonicalSha256": "540b6e0b1a46a2eae5cccc248cb29039ef60b9fd7eafa8b1e93cb8dab9900453"
+      },
+      "axioms": [
+        {
+          "id": "AX-TA-1",
+          "kind": "action",
+          "actions": [
+            {
+              "kind": "supply",
+              "modality": "SHALL_NOT",
+              "subject": "TaBridgeSubmission",
+              "fields": [
+                "investorAccountId",
+                "fundCollectionAccountId"
+              ]
+            }
+          ]
+        }
+      ],
+      "externs": [
+        {
+          "index": 0,
+          "name": "submissionPinned",
+          "params": [
+            "orderId"
+          ],
+          "gloss": null
+        },
+        {
+          "index": 1,
+          "name": "taReceiptAuthentic",
+          "params": [
+            "orderId"
+          ],
+          "gloss": null
+        },
+        {
+          "index": 2,
+          "name": "taOutcomeConfirmed",
+          "params": [
+            "orderId"
+          ],
+          "gloss": null
+        },
+        {
+          "index": 3,
+          "name": "taOutcomeRejected",
+          "params": [
+            "orderId"
+          ],
+          "gloss": null
+        },
+        {
+          "index": 4,
+          "name": "taAbsenceConfirmed",
+          "params": [
+            "orderId"
+          ],
+          "gloss": null
+        }
+      ],
+      "where": [],
+      "rules": [
+        {
+          "id": "TA-BR-01",
+          "firstHitOrder": 0,
+          "pattern": "complex",
+          "command": "BankTaBridgePort.ingestOutcome",
+          "guard": {
+            "kind": "not",
+            "argument": {
+              "kind": "extern-ref",
+              "index": 0,
+              "args": [
+                {
+                  "kind": "var",
+                  "name": "orderId"
+                }
+              ]
+            }
+          },
+          "actions": [
+            {
+              "kind": "reject",
+              "modality": "SHALL",
+              "code": "TA_UNKNOWN_ORIGINAL"
+            }
+          ],
+          "post": []
+        },
+        {
+          "id": "TA-BR-02",
+          "firstHitOrder": 1,
+          "pattern": "complex",
+          "command": "BankTaBridgePort.ingestOutcome",
+          "guard": {
+            "kind": "binary",
+            "op": "and",
+            "left": {
+              "kind": "extern-ref",
+              "index": 0,
+              "args": [
+                {
+                  "kind": "var",
+                  "name": "orderId"
+                }
+              ]
+            },
+            "right": {
+              "kind": "not",
+              "argument": {
+                "kind": "extern-ref",
+                "index": 1,
+                "args": [
+                  {
+                    "kind": "var",
+                    "name": "orderId"
+                  }
+                ]
+              }
+            }
+          },
+          "actions": [
+            {
+              "kind": "reject",
+              "modality": "SHALL",
+              "code": "TA_INVALID_RECEIPT"
+            }
+          ],
+          "post": []
+        },
+        {
+          "id": "TA-BR-03",
+          "firstHitOrder": 2,
+          "pattern": "complex",
+          "command": "BankTaBridgePort.ingestOutcome",
+          "guard": {
+            "kind": "binary",
+            "op": "and",
+            "left": {
+              "kind": "binary",
+              "op": "and",
+              "left": {
+                "kind": "extern-ref",
+                "index": 0,
+                "args": [
+                  {
+                    "kind": "var",
+                    "name": "orderId"
+                  }
+                ]
+              },
+              "right": {
+                "kind": "extern-ref",
+                "index": 1,
+                "args": [
+                  {
+                    "kind": "var",
+                    "name": "orderId"
+                  }
+                ]
+              }
+            },
+            "right": {
+              "kind": "extern-ref",
+              "index": 2,
+              "args": [
+                {
+                  "kind": "var",
+                  "name": "orderId"
+                }
+              ]
+            }
+          },
+          "actions": [
+            {
+              "kind": "dispatch",
+              "modality": "SHALL",
+              "target": "FundOrder.RecordFundTAConfirmed"
+            },
+            {
+              "kind": "dispatch",
+              "modality": "SHALL_NOT",
+              "target": "FundOrder.RequestIndependentRefund"
+            },
+            {
+              "kind": "respond",
+              "modality": "SHALL",
+              "response": "TaBridgeAcknowledgement",
+              "constraint": {
+                "kind": "compare",
+                "op": "==",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "var",
+                    "name": "ack"
+                  },
+                  "field": "state"
+                },
+                "right": {
+                  "kind": "string",
+                  "value": "confirmed"
+                }
+              }
+            }
+          ],
+          "post": []
+        },
+        {
+          "id": "TA-BR-04",
+          "firstHitOrder": 3,
+          "pattern": "complex",
+          "command": "BankTaBridgePort.ingestOutcome",
+          "guard": {
+            "kind": "binary",
+            "op": "and",
+            "left": {
+              "kind": "binary",
+              "op": "and",
+              "left": {
+                "kind": "binary",
+                "op": "and",
+                "left": {
+                  "kind": "binary",
+                  "op": "or",
+                  "left": {
+                    "kind": "extern-ref",
+                    "index": 3,
+                    "args": [
+                      {
+                        "kind": "var",
+                        "name": "orderId"
+                      }
+                    ]
+                  },
+                  "right": {
+                    "kind": "extern-ref",
+                    "index": 4,
+                    "args": [
+                      {
+                        "kind": "var",
+                        "name": "orderId"
+                      }
+                    ]
+                  }
+                },
+                "right": {
+                  "kind": "extern-ref",
+                  "index": 0,
+                  "args": [
+                    {
+                      "kind": "var",
+                      "name": "orderId"
+                    }
+                  ]
+                }
+              },
+              "right": {
+                "kind": "extern-ref",
+                "index": 1,
+                "args": [
+                  {
+                    "kind": "var",
+                    "name": "orderId"
+                  }
+                ]
+              }
+            },
+            "right": {
+              "kind": "not",
+              "argument": {
+                "kind": "extern-ref",
+                "index": 2,
+                "args": [
+                  {
+                    "kind": "var",
+                    "name": "orderId"
+                  }
+                ]
+              }
+            }
+          },
+          "actions": [
+            {
+              "kind": "dispatch",
+              "modality": "SHALL",
+              "target": "FundOrder.RequestIndependentRefund"
+            },
+            {
+              "kind": "dispatch",
+              "modality": "SHALL_NOT",
+              "target": "FundOrder.RecordFundTAConfirmed"
+            },
+            {
+              "kind": "respond",
+              "modality": "SHALL",
+              "response": "TaBridgeAcknowledgement",
+              "constraint": {
+                "kind": "compare",
+                "op": "==",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "var",
+                    "name": "ack"
+                  },
+                  "field": "state"
+                },
+                "right": {
+                  "kind": "string",
+                  "value": "refund_dispatched"
+                }
+              }
+            }
+          ],
+          "post": []
+        },
+        {
+          "id": "TA-BR-05",
+          "firstHitOrder": 4,
+          "pattern": "complex",
+          "command": "BankTaBridgePort.ingestOutcome",
+          "guard": {
+            "kind": "binary",
+            "op": "and",
+            "left": {
+              "kind": "binary",
+              "op": "and",
+              "left": {
+                "kind": "binary",
+                "op": "and",
+                "left": {
+                  "kind": "binary",
+                  "op": "and",
+                  "left": {
+                    "kind": "extern-ref",
+                    "index": 0,
+                    "args": [
+                      {
+                        "kind": "var",
+                        "name": "orderId"
+                      }
+                    ]
+                  },
+                  "right": {
+                    "kind": "extern-ref",
+                    "index": 1,
+                    "args": [
+                      {
+                        "kind": "var",
+                        "name": "orderId"
+                      }
+                    ]
+                  }
+                },
+                "right": {
+                  "kind": "not",
+                  "argument": {
+                    "kind": "extern-ref",
+                    "index": 2,
+                    "args": [
+                      {
+                        "kind": "var",
+                        "name": "orderId"
+                      }
+                    ]
+                  }
+                }
+              },
+              "right": {
+                "kind": "not",
+                "argument": {
+                  "kind": "extern-ref",
+                  "index": 3,
+                  "args": [
+                    {
+                      "kind": "var",
+                      "name": "orderId"
+                    }
+                  ]
+                }
+              }
+            },
+            "right": {
+              "kind": "not",
+              "argument": {
+                "kind": "extern-ref",
+                "index": 4,
+                "args": [
+                  {
+                    "kind": "var",
+                    "name": "orderId"
+                  }
+                ]
+              }
+            }
+          },
+          "actions": [
+            {
+              "kind": "respond",
+              "modality": "SHALL",
+              "response": "TaBridgeAcknowledgement",
+              "constraint": {
+                "kind": "compare",
+                "op": "==",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "var",
+                    "name": "ack"
+                  },
+                  "field": "state"
+                },
+                "right": {
+                  "kind": "string",
+                  "value": "pending_reconcile"
+                }
+              }
+            },
+            {
+              "kind": "dispatch",
+              "modality": "SHALL_NOT",
+              "target": "FundOrder.RequestIndependentRefund"
+            },
+            {
+              "kind": "dispatch",
+              "modality": "SHALL_NOT",
+              "target": "FundOrder.RecordFundTAConfirmed"
+            }
+          ],
+          "post": []
+        }
+      ],
+      "eventPropagations": [],
+      "testIr": {
+        "schemaVersion": "co-arising.test-ir/v2",
+        "meta": {
+          "sourceFile": "ta-bridge-settlement.ears",
+          "sourceSha256": "cc348b961d4970a106bf7af29984ea1b43246e79d5bbdb59085b10247f3571cc",
+          "canonicalSha256": "540b6e0b1a46a2eae5cccc248cb29039ef60b9fd7eafa8b1e93cb8dab9900453",
+          "kind": "story",
+          "layer": "application",
+          "target": "TaBridgeSettlement",
+          "aggregate": null,
+          "slice": null,
+          "story": "ta-bridge-settlement",
+          "solver": "z3",
+          "logic": "QF_AUFLIA",
+          "verified": true
+        },
+        "scenarios": [
+          {
+            "id": "bank-ta-bridge-port-ingest-outcome-oracle",
+            "kind": "application",
+            "command": "BankTaBridgePort.ingestOutcome",
+            "title": "TaBridgeSettlement — BankTaBridgePort.ingestOutcome First-Hit executable oracle",
+            "ruleIds": [
+              "TA-BR-01",
+              "TA-BR-02",
+              "TA-BR-03",
+              "TA-BR-04",
+              "TA-BR-05"
+            ],
+            "tags": [
+              "@spec:TA-BR-01",
+              "@spec:TA-BR-02",
+              "@spec:TA-BR-03",
+              "@spec:TA-BR-04",
+              "@spec:TA-BR-05",
+              "@z3-witness"
+            ],
+            "examples": [
+              {
+                "ruleId": "TA-BR-01",
+                "firstHitOrder": 0,
+                "pattern": "complex",
+                "witness": {
+                  "scalars": {
+                    "orderId": 0
+                  },
+                  "mapEntries": {},
+                  "externs": {
+                    "submissionPinned": false,
+                    "taReceiptAuthentic": false,
+                    "taOutcomeConfirmed": false,
+                    "taOutcomeRejected": false,
+                    "taAbsenceConfirmed": false
+                  }
+                },
+                "secondaryWitness": {
+                  "scalars": {
+                    "orderId": 1
+                  },
+                  "mapEntries": {},
+                  "externs": {
+                    "submissionPinned": false,
+                    "taReceiptAuthentic": false,
+                    "taOutcomeConfirmed": false,
+                    "taOutcomeRejected": false,
+                    "taAbsenceConfirmed": false
+                  }
+                },
+                "boundaryWitnesses": [],
+                "outcome": "reject TA_UNKNOWN_ORIGINAL",
+                "actions": [
+                  {
+                    "kind": "reject",
+                    "modality": "SHALL",
+                    "code": "TA_UNKNOWN_ORIGINAL"
+                  }
+                ],
+                "post": []
+              },
+              {
+                "ruleId": "TA-BR-02",
+                "firstHitOrder": 1,
+                "pattern": "complex",
+                "witness": {
+                  "scalars": {
+                    "orderId": 0
+                  },
+                  "mapEntries": {},
+                  "externs": {
+                    "submissionPinned": true,
+                    "taReceiptAuthentic": false,
+                    "taOutcomeConfirmed": false,
+                    "taOutcomeRejected": false,
+                    "taAbsenceConfirmed": false
+                  }
+                },
+                "secondaryWitness": {
+                  "scalars": {
+                    "orderId": 1
+                  },
+                  "mapEntries": {},
+                  "externs": {
+                    "submissionPinned": true,
+                    "taReceiptAuthentic": false,
+                    "taOutcomeConfirmed": false,
+                    "taOutcomeRejected": false,
+                    "taAbsenceConfirmed": false
+                  }
+                },
+                "boundaryWitnesses": [],
+                "outcome": "reject TA_INVALID_RECEIPT",
+                "actions": [
+                  {
+                    "kind": "reject",
+                    "modality": "SHALL",
+                    "code": "TA_INVALID_RECEIPT"
+                  }
+                ],
+                "post": []
+              },
+              {
+                "ruleId": "TA-BR-03",
+                "firstHitOrder": 2,
+                "pattern": "complex",
+                "witness": {
+                  "scalars": {
+                    "orderId": 0
+                  },
+                  "mapEntries": {},
+                  "externs": {
+                    "submissionPinned": true,
+                    "taReceiptAuthentic": true,
+                    "taOutcomeConfirmed": true,
+                    "taOutcomeRejected": false,
+                    "taAbsenceConfirmed": false
+                  }
+                },
+                "secondaryWitness": {
+                  "scalars": {
+                    "orderId": 1
+                  },
+                  "mapEntries": {},
+                  "externs": {
+                    "submissionPinned": true,
+                    "taReceiptAuthentic": true,
+                    "taOutcomeConfirmed": true,
+                    "taOutcomeRejected": false,
+                    "taAbsenceConfirmed": false
+                  }
+                },
+                "boundaryWitnesses": [],
+                "outcome": "dispatch FundOrder.RecordFundTAConfirmed and forbid dispatch FundOrder.RequestIndependentRefund and respond TaBridgeAcknowledgement",
+                "actions": [
+                  {
+                    "kind": "dispatch",
+                    "modality": "SHALL",
+                    "target": "FundOrder.RecordFundTAConfirmed"
+                  },
+                  {
+                    "kind": "dispatch",
+                    "modality": "SHALL_NOT",
+                    "target": "FundOrder.RequestIndependentRefund"
+                  },
+                  {
+                    "kind": "respond",
+                    "modality": "SHALL",
+                    "response": "TaBridgeAcknowledgement",
+                    "constraint": {
+                      "kind": "compare",
+                      "op": "==",
+                      "left": {
+                        "kind": "member",
+                        "object": {
+                          "kind": "var",
+                          "name": "ack"
+                        },
+                        "field": "state"
+                      },
+                      "right": {
+                        "kind": "string",
+                        "value": "confirmed"
+                      }
+                    }
+                  }
+                ],
+                "post": []
+              },
+              {
+                "ruleId": "TA-BR-04",
+                "firstHitOrder": 3,
+                "pattern": "complex",
+                "witness": {
+                  "scalars": {
+                    "orderId": 0
+                  },
+                  "mapEntries": {},
+                  "externs": {
+                    "submissionPinned": true,
+                    "taReceiptAuthentic": true,
+                    "taOutcomeConfirmed": false,
+                    "taOutcomeRejected": true,
+                    "taAbsenceConfirmed": false
+                  }
+                },
+                "secondaryWitness": {
+                  "scalars": {
+                    "orderId": 1
+                  },
+                  "mapEntries": {},
+                  "externs": {
+                    "submissionPinned": true,
+                    "taReceiptAuthentic": true,
+                    "taOutcomeConfirmed": false,
+                    "taOutcomeRejected": true,
+                    "taAbsenceConfirmed": false
+                  }
+                },
+                "boundaryWitnesses": [],
+                "outcome": "dispatch FundOrder.RequestIndependentRefund and forbid dispatch FundOrder.RecordFundTAConfirmed and respond TaBridgeAcknowledgement",
+                "actions": [
+                  {
+                    "kind": "dispatch",
+                    "modality": "SHALL",
+                    "target": "FundOrder.RequestIndependentRefund"
+                  },
+                  {
+                    "kind": "dispatch",
+                    "modality": "SHALL_NOT",
+                    "target": "FundOrder.RecordFundTAConfirmed"
+                  },
+                  {
+                    "kind": "respond",
+                    "modality": "SHALL",
+                    "response": "TaBridgeAcknowledgement",
+                    "constraint": {
+                      "kind": "compare",
+                      "op": "==",
+                      "left": {
+                        "kind": "member",
+                        "object": {
+                          "kind": "var",
+                          "name": "ack"
+                        },
+                        "field": "state"
+                      },
+                      "right": {
+                        "kind": "string",
+                        "value": "refund_dispatched"
+                      }
+                    }
+                  }
+                ],
+                "post": []
+              },
+              {
+                "ruleId": "TA-BR-05",
+                "firstHitOrder": 4,
+                "pattern": "complex",
+                "witness": {
+                  "scalars": {
+                    "orderId": 0
+                  },
+                  "mapEntries": {},
+                  "externs": {
+                    "submissionPinned": true,
+                    "taReceiptAuthentic": true,
+                    "taOutcomeConfirmed": false,
+                    "taOutcomeRejected": false,
+                    "taAbsenceConfirmed": false
+                  }
+                },
+                "secondaryWitness": {
+                  "scalars": {
+                    "orderId": 1
+                  },
+                  "mapEntries": {},
+                  "externs": {
+                    "submissionPinned": true,
+                    "taReceiptAuthentic": true,
+                    "taOutcomeConfirmed": false,
+                    "taOutcomeRejected": false,
+                    "taAbsenceConfirmed": false
+                  }
+                },
+                "boundaryWitnesses": [],
+                "outcome": "respond TaBridgeAcknowledgement and forbid dispatch FundOrder.RequestIndependentRefund and forbid dispatch FundOrder.RecordFundTAConfirmed",
+                "actions": [
+                  {
+                    "kind": "respond",
+                    "modality": "SHALL",
+                    "response": "TaBridgeAcknowledgement",
+                    "constraint": {
+                      "kind": "compare",
+                      "op": "==",
+                      "left": {
+                        "kind": "member",
+                        "object": {
+                          "kind": "var",
+                          "name": "ack"
+                        },
+                        "field": "state"
+                      },
+                      "right": {
+                        "kind": "string",
+                        "value": "pending_reconcile"
+                      }
+                    }
+                  },
+                  {
+                    "kind": "dispatch",
+                    "modality": "SHALL_NOT",
+                    "target": "FundOrder.RequestIndependentRefund"
+                  },
+                  {
+                    "kind": "dispatch",
+                    "modality": "SHALL_NOT",
+                    "target": "FundOrder.RecordFundTAConfirmed"
+                  }
+                ],
+                "post": []
+              }
+            ]
+          }
+        ],
+        "sha256": "d649bbc8fa2a8b4c201bb304113401cbfb8d2515cb30bb614b158abd0b9193c0"
+      }
     }
   ],
   "eventFolds": [
+    {
+      "aggregate": "CreditBalance",
+      "event": "FundsReserved",
+      "assignments": [
+        {
+          "target": {
+            "segments": [
+              "state",
+              "availableAmount"
+            ],
+            "index": null
+          },
+          "value": {
+            "kind": "arith",
+            "op": "-",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "var",
+                "name": "ledger"
+              },
+              "field": "availableAmount"
+            },
+            "right": {
+              "kind": "var",
+              "name": "amount"
+            }
+          },
+          "source": "post"
+        },
+        {
+          "target": {
+            "segments": [
+              "state",
+              "reservedTotal"
+            ],
+            "index": null
+          },
+          "value": {
+            "kind": "arith",
+            "op": "+",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "var",
+                "name": "ledger"
+              },
+              "field": "reservedTotal"
+            },
+            "right": {
+              "kind": "var",
+              "name": "amount"
+            }
+          },
+          "source": "post"
+        },
+        {
+          "target": {
+            "segments": [
+              "state",
+              "reservedByTx"
+            ],
+            "index": {
+              "kind": "var",
+              "name": "txId"
+            }
+          },
+          "value": {
+            "kind": "var",
+            "name": "amount"
+          },
+          "source": "post"
+        }
+      ],
+      "foldSha256": "cc3433da3feb55decad1368e063f7cd69088e1635d5329dbf43059d573328389",
+      "sourceRuleIds": [
+        "BAL_FUNDS_RESERVED"
+      ]
+    },
     {
       "aggregate": "FundOrder",
       "event": "FundTASharesConfirmed",
@@ -3553,13 +5138,27 @@
         "TA_ALREADY_CONFIRMED",
         "TA_CONFIRMED"
       ]
+    },
+    {
+      "slotId": "ta-bridge-settlement",
+      "target": "TaBridgeSettlement",
+      "kind": "story",
+      "layer": "application",
+      "tier": "L3",
+      "ruleIds": [
+        "TA-BR-01",
+        "TA-BR-02",
+        "TA-BR-03",
+        "TA-BR-04",
+        "TA-BR-05"
+      ]
     }
   ],
   "verificationSummary": {
     "solver": "z3",
     "passed": true,
-    "behaviorCount": 3,
-    "deterministicCount": 1,
-    "clozeCount": 2
+    "behaviorCount": 5,
+    "deterministicCount": 2,
+    "clozeCount": 3
   }
 }

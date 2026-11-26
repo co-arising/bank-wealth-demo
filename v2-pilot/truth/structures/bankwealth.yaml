@@ -70,6 +70,28 @@ aggregates:
       TA_PAYMENT_NOT_SUCCEEDED: "TA confirmation requires succeeded payment"
       TA_ALREADY_CONFIRMED: "TA confirmation is single-shot and cannot repeat"
 
+  - name: CreditBalance
+    aliases: [ledger, state, creditbalance]
+    stateFields:
+      - availableAmount: AmountDecimal = "0.00"
+      - reservedTotal: AmountDecimal = "0.00"
+      - reservedByTx: Map[TxId, AmountDecimal] = []
+    commands:
+      - name: ReserveFunds
+        parameters:
+          - txId: TxId
+          - amount: AmountDecimal
+        produces: [FundsReserved]
+    events:
+      - name: FundsReserved
+        fields:
+          - txId: TxId
+          - amount: AmountDecimal
+    ruleRefs:
+      BAL_NON_POSITIVE_AMOUNT: "Reserve amount must be strictly positive"
+      BAL_INSUFFICIENT_FUNDS: "Available balance must cover reserve amount"
+      BAL_TX_ALREADY_RESERVED: "Transaction reservation must not double-reserve"
+
 stories:
   - name: CashFundPurchase
     description: "Trusted cash fund purchase intake with idempotent replay, conflict rejection, and order status projection"
@@ -86,3 +108,17 @@ stories:
       idempotencyKey: "(principal, clientRequestId)"
       retryPolicy: "at-least-once safe; replayed identical payload must never re-dispatch settlement"
       forbiddenUntrustedFields: [operationId, investorAccountId, fundCollectionAccountId]
+
+  - name: TaBridgeSettlement
+    description: "Assume-Guarantee external TA receipt ingestion and absence-proof-gated independent refund bridge"
+    entryPort: BankTaBridgePort
+    entryOperation: ingestOutcome
+    pins: [TaSubmissionOriginal]
+    dispatches:
+      - FundOrder.RecordFundTAConfirmed
+      - FundOrder.RequestIndependentRefund
+    responses: [TaBridgeAcknowledgement]
+    callerContract:
+      idempotencyKey: "(orderId, taSubmissionId)"
+      retryPolicy: "three-phase-reconcile; unknown timeout must NEVER trigger blind refund without taAbsenceConfirmed"
+      forbiddenUntrustedFields: [fundCollectionAccountId, investorAccountId]

@@ -1,0 +1,357 @@
+{
+  "schemaVersion": "co-arising.context-pack/v2",
+  "canonicalSha256": "bd771c3c94c5356f44d0ea02e5ccc764d99dc5e889d82413b9a2d464d9815339",
+  "slotId": "ta-bridge-settlement",
+  "topBread": {
+    "exactTypes": [
+      {
+        "name": "AmountDecimal",
+        "form": "decimal",
+        "scale": 2
+      },
+      {
+        "name": "NavDecimal",
+        "form": "decimal",
+        "scale": 4
+      },
+      {
+        "name": "Money",
+        "form": "unit-decimal",
+        "scale": 2,
+        "amountField": "amount",
+        "unitField": "currency",
+        "units": [
+          "CNY"
+        ]
+      }
+    ],
+    "valueObjects": [],
+    "aggregate": null,
+    "story": {
+      "name": "TaBridgeSettlement",
+      "description": "Assume-Guarantee external TA receipt ingestion and absence-proof-gated independent refund bridge",
+      "entryPort": "BankTaBridgePort",
+      "entryOperation": "ingestOutcome",
+      "queryPort": null,
+      "dispatches": [
+        "FundOrder.RecordFundTAConfirmed",
+        "FundOrder.RequestIndependentRefund"
+      ],
+      "pins": [
+        "TaSubmissionOriginal"
+      ],
+      "responses": [
+        "TaBridgeAcknowledgement"
+      ],
+      "views": [],
+      "callerContract": {
+        "idempotencyKey": "(orderId, taSubmissionId)",
+        "retryPolicy": "three-phase-reconcile; unknown timeout must NEVER trigger blind refund without taAbsenceConfirmed",
+        "forbiddenUntrustedFields": [
+          "fundCollectionAccountId",
+          "investorAccountId"
+        ]
+      },
+      "parameters": []
+    },
+    "relatedGraphNodes": [
+      {
+        "id": "agg:FundOrder",
+        "kind": "aggregate",
+        "name": "FundOrder"
+      },
+      {
+        "id": "rule:TaBridgeSettlement#TA-BR-01",
+        "kind": "rule",
+        "name": "TA-BR-01"
+      },
+      {
+        "id": "rule:TaBridgeSettlement#TA-BR-02",
+        "kind": "rule",
+        "name": "TA-BR-02"
+      },
+      {
+        "id": "rule:TaBridgeSettlement#TA-BR-03",
+        "kind": "rule",
+        "name": "TA-BR-03"
+      },
+      {
+        "id": "rule:TaBridgeSettlement#TA-BR-04",
+        "kind": "rule",
+        "name": "TA-BR-04"
+      },
+      {
+        "id": "rule:TaBridgeSettlement#TA-BR-05",
+        "kind": "rule",
+        "name": "TA-BR-05"
+      },
+      {
+        "id": "cloze:ta-bridge-settlement",
+        "kind": "cloze-slot",
+        "name": "ta-bridge-settlement"
+      }
+    ]
+  },
+  "middle": {
+    "slotId": "ta-bridge-settlement",
+    "target": "TaBridgeSettlement",
+    "layer": "application",
+    "tier": "L3",
+    "logic": "QF_AUFLIA",
+    "hitPolicy": "FIRST",
+    "callerContract": {
+      "idempotencyKey": "(orderId, taSubmissionId)",
+      "retryPolicy": "three-phase-reconcile; unknown timeout must NEVER trigger blind refund without taAbsenceConfirmed",
+      "forbiddenUntrustedFields": [
+        "fundCollectionAccountId",
+        "investorAccountId"
+      ]
+    },
+    "externs": [
+      {
+        "index": 0,
+        "name": "submissionPinned",
+        "params": [
+          "orderId"
+        ],
+        "gloss": null
+      },
+      {
+        "index": 1,
+        "name": "taReceiptAuthentic",
+        "params": [
+          "orderId"
+        ],
+        "gloss": null
+      },
+      {
+        "index": 2,
+        "name": "taOutcomeConfirmed",
+        "params": [
+          "orderId"
+        ],
+        "gloss": null
+      },
+      {
+        "index": 3,
+        "name": "taOutcomeRejected",
+        "params": [
+          "orderId"
+        ],
+        "gloss": null
+      },
+      {
+        "index": 4,
+        "name": "taAbsenceConfirmed",
+        "params": [
+          "orderId"
+        ],
+        "gloss": null
+      }
+    ],
+    "axioms": [
+      {
+        "id": "AX-TA-1",
+        "kind": "action",
+        "actions": [
+          {
+            "kind": "supply",
+            "modality": "SHALL_NOT",
+            "subject": "TaBridgeSubmission",
+            "fields": [
+              "investorAccountId",
+              "fundCollectionAccountId"
+            ]
+          }
+        ]
+      }
+    ],
+    "rules": [
+      {
+        "id": "TA-BR-01",
+        "firstHitOrder": 0,
+        "command": "BankTaBridgePort.ingestOutcome",
+        "actions": [
+          {
+            "kind": "reject",
+            "modality": "SHALL",
+            "code": "TA_UNKNOWN_ORIGINAL"
+          }
+        ],
+        "postCount": 0
+      },
+      {
+        "id": "TA-BR-02",
+        "firstHitOrder": 1,
+        "command": "BankTaBridgePort.ingestOutcome",
+        "actions": [
+          {
+            "kind": "reject",
+            "modality": "SHALL",
+            "code": "TA_INVALID_RECEIPT"
+          }
+        ],
+        "postCount": 0
+      },
+      {
+        "id": "TA-BR-03",
+        "firstHitOrder": 2,
+        "command": "BankTaBridgePort.ingestOutcome",
+        "actions": [
+          {
+            "kind": "dispatch",
+            "modality": "SHALL",
+            "target": "FundOrder.RecordFundTAConfirmed"
+          },
+          {
+            "kind": "dispatch",
+            "modality": "SHALL_NOT",
+            "target": "FundOrder.RequestIndependentRefund"
+          },
+          {
+            "kind": "respond",
+            "modality": "SHALL",
+            "response": "TaBridgeAcknowledgement",
+            "constraint": {
+              "kind": "compare",
+              "op": "==",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "var",
+                  "name": "ack"
+                },
+                "field": "state"
+              },
+              "right": {
+                "kind": "string",
+                "value": "confirmed"
+              }
+            }
+          }
+        ],
+        "postCount": 0
+      },
+      {
+        "id": "TA-BR-04",
+        "firstHitOrder": 3,
+        "command": "BankTaBridgePort.ingestOutcome",
+        "actions": [
+          {
+            "kind": "dispatch",
+            "modality": "SHALL",
+            "target": "FundOrder.RequestIndependentRefund"
+          },
+          {
+            "kind": "dispatch",
+            "modality": "SHALL_NOT",
+            "target": "FundOrder.RecordFundTAConfirmed"
+          },
+          {
+            "kind": "respond",
+            "modality": "SHALL",
+            "response": "TaBridgeAcknowledgement",
+            "constraint": {
+              "kind": "compare",
+              "op": "==",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "var",
+                  "name": "ack"
+                },
+                "field": "state"
+              },
+              "right": {
+                "kind": "string",
+                "value": "refund_dispatched"
+              }
+            }
+          }
+        ],
+        "postCount": 0
+      },
+      {
+        "id": "TA-BR-05",
+        "firstHitOrder": 4,
+        "command": "BankTaBridgePort.ingestOutcome",
+        "actions": [
+          {
+            "kind": "respond",
+            "modality": "SHALL",
+            "response": "TaBridgeAcknowledgement",
+            "constraint": {
+              "kind": "compare",
+              "op": "==",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "var",
+                  "name": "ack"
+                },
+                "field": "state"
+              },
+              "right": {
+                "kind": "string",
+                "value": "pending_reconcile"
+              }
+            }
+          },
+          {
+            "kind": "dispatch",
+            "modality": "SHALL_NOT",
+            "target": "FundOrder.RequestIndependentRefund"
+          },
+          {
+            "kind": "dispatch",
+            "modality": "SHALL_NOT",
+            "target": "FundOrder.RecordFundTAConfirmed"
+          }
+        ],
+        "postCount": 0
+      }
+    ],
+    "clozeBounds": {
+      "file": "/Users/zhongdj/Workspaces/mad-polaris/bank-wealth-demo/v2-pilot/handwritten/ta-bridge-settlement.cloze.ts",
+      "startLine": 10,
+      "endLine": 49,
+      "editableStart": 11,
+      "editableEnd": 48
+    }
+  },
+  "bottomBread": {
+    "testIrSha256": "d649bbc8fa2a8b4c201bb304113401cbfb8d2515cb30bb614b158abd0b9193c0",
+    "lockedOracles": [
+      {
+        "specId": "TA-BR-01",
+        "command": "BankTaBridgePort.ingestOutcome",
+        "outcome": "reject TA_UNKNOWN_ORIGINAL",
+        "hasSecondaryWitness": true
+      },
+      {
+        "specId": "TA-BR-02",
+        "command": "BankTaBridgePort.ingestOutcome",
+        "outcome": "reject TA_INVALID_RECEIPT",
+        "hasSecondaryWitness": true
+      },
+      {
+        "specId": "TA-BR-03",
+        "command": "BankTaBridgePort.ingestOutcome",
+        "outcome": "dispatch FundOrder.RecordFundTAConfirmed and forbid dispatch FundOrder.RequestIndependentRefund and respond TaBridgeAcknowledgement",
+        "hasSecondaryWitness": true
+      },
+      {
+        "specId": "TA-BR-04",
+        "command": "BankTaBridgePort.ingestOutcome",
+        "outcome": "dispatch FundOrder.RequestIndependentRefund and forbid dispatch FundOrder.RecordFundTAConfirmed and respond TaBridgeAcknowledgement",
+        "hasSecondaryWitness": true
+      },
+      {
+        "specId": "TA-BR-05",
+        "command": "BankTaBridgePort.ingestOutcome",
+        "outcome": "respond TaBridgeAcknowledgement and forbid dispatch FundOrder.RequestIndependentRefund and forbid dispatch FundOrder.RecordFundTAConfirmed",
+        "hasSecondaryWitness": true
+      }
+    ]
+  }
+}

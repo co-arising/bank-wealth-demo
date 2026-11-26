@@ -9,6 +9,12 @@
       "sourceSha256": "b5628bbaabd7037df8435d400c454b1ce8f007af14956b2ee46c562919d7cc41"
     },
     {
+      "path": "features/creditbalance-reservefunds.feature",
+      "sha256": "6d2f6eb995ce8adc70a01618a204b1f5e22fe25eae8adef3afe8428577274de2",
+      "sourceFile": "credit-balance-reserve.ears",
+      "sourceSha256": "4a27de06154edb214dccdb4c71cf2c9d0bbd37b1639f267417d115fa23d29987"
+    },
+    {
       "path": "features/fundorder-confirmtashares.feature",
       "sha256": "7108d054690c94f74cabad80f704bc38dce84acee497d52d946db2f3e28563b3",
       "sourceFile": "fund-order-confirm-ta-shares.ears",
@@ -19,6 +25,18 @@
       "sha256": "c7eb7a23209282dc5b3061e405ac8bd4b08c26941a4b6fb249bc36e3968b4210",
       "sourceFile": "fund-quota-reserve.ears",
       "sourceSha256": "61537682db1ba6f366b990ce0f5b318be3dab788013c007d2f11dbf1d9539198"
+    },
+    {
+      "path": "features/tabridgesettlement.feature",
+      "sha256": "798693c879da128b683196202cb348d6e44e10d4f2d7de07863f49a753ababe9",
+      "sourceFile": "ta-bridge-settlement.ears",
+      "sourceSha256": "cc348b961d4970a106bf7af29984ea1b43246e79d5bbdb59085b10247f3571cc"
+    },
+    {
+      "path": "scala/example/bankwealth/v2/CreditBalanceReserveFundsEarsSpec.scala",
+      "sha256": "e99c26e383322ac3e305734c26e3466fa2c346d09ee21504f464a759e4411070",
+      "sourceFile": "credit-balance-reserve.ears",
+      "sourceSha256": "4a27de06154edb214dccdb4c71cf2c9d0bbd37b1639f267417d115fa23d29987"
     },
     {
       "path": "scala/example/bankwealth/v2/FundOrderConfirmTASharesEarsSpec.scala",
@@ -39,6 +57,12 @@
       "sourceSha256": "b5628bbaabd7037df8435d400c454b1ce8f007af14956b2ee46c562919d7cc41"
     },
     {
+      "path": "ts/credit-balance-reserve-funds.ears.spec.ts",
+      "sha256": "053607e52d970fa94273b6cdb85ff1f4aaf0abc009b58c7dbd02d774ad254e22",
+      "sourceFile": "credit-balance-reserve.ears",
+      "sourceSha256": "4a27de06154edb214dccdb4c71cf2c9d0bbd37b1639f267417d115fa23d29987"
+    },
+    {
       "path": "ts/fund-order-confirm-tashares.ears.spec.ts",
       "sha256": "c23cea49513453a3ca61d84f12fc79d82175cf7e9e635cab5226a332d0abc6c7",
       "sourceFile": "fund-order-confirm-ta-shares.ears",
@@ -49,6 +73,12 @@
       "sha256": "4e636e7e9f75a4667b0af44de14190be2051fb66d78164062c1bf8cd5aaee5a8",
       "sourceFile": "fund-quota-reserve.ears",
       "sourceSha256": "61537682db1ba6f366b990ce0f5b318be3dab788013c007d2f11dbf1d9539198"
+    },
+    {
+      "path": "ts/ta-bridge-settlement.ears.spec.ts",
+      "sha256": "2d57c8cb7f6af7db9ec7b62e60f641fb6bb1cad8040b182c5031ead1b8011f2f",
+      "sourceFile": "ta-bridge-settlement.ears",
+      "sourceSha256": "cc348b961d4970a106bf7af29984ea1b43246e79d5bbdb59085b10247f3571cc"
     }
   ]
 }
