@@ -2,7 +2,7 @@
   "schemaVersion": "co-arising.canonical/v2",
   "system": "bank-wealth",
   "context": "bankwealth",
-  "canonicalSha256": "8cb30df89124c2b7d2377fadeb6e845eb5eb0427231bc4de99f215bb546e181b",
+  "canonicalSha256": "6be5b8d95df10b1856beaa5c528c6e0c59a04c1a8e28e75d3b22cf99d974de39",
   "structures": {
     "exactTypes": [
       {
@@ -26,7 +26,52 @@
         ]
       }
     ],
-    "valueObjects": [],
+    "valueObjects": [
+      {
+        "name": "BankCashAcknowledgement",
+        "fields": [
+          {
+            "name": "replayed",
+            "type": "Bool",
+            "resolvedType": {
+              "kind": "bool",
+              "typeName": "Bool"
+            }
+          },
+          {
+            "name": "accepted",
+            "type": "Bool",
+            "resolvedType": {
+              "kind": "bool",
+              "typeName": "Bool"
+            }
+          }
+        ]
+      },
+      {
+        "name": "TaBridgeAcknowledgement",
+        "fields": [
+          {
+            "name": "state",
+            "type": "String",
+            "enumValues": [
+              "confirmed",
+              "refund_dispatched",
+              "pending_reconcile"
+            ],
+            "resolvedType": {
+              "kind": "string",
+              "typeName": "String",
+              "enumValues": [
+                "confirmed",
+                "refund_dispatched",
+                "pending_reconcile"
+              ]
+            }
+          }
+        ]
+      }
+    ],
     "aggregates": [
       {
         "name": "FundQuota",
@@ -185,22 +230,148 @@
             "name": "paymentOutcome",
             "type": "String",
             "defaultValue": "pending",
+            "enumValues": [
+              "pending",
+              "succeeded",
+              "failed"
+            ],
             "resolvedType": {
               "kind": "string",
-              "typeName": "String"
+              "typeName": "String",
+              "enumValues": [
+                "pending",
+                "succeeded",
+                "failed"
+              ]
             }
           },
           {
             "name": "taStatus",
             "type": "String",
             "defaultValue": "pending",
+            "enumValues": [
+              "pending",
+              "confirmed",
+              "rejected"
+            ],
             "resolvedType": {
               "kind": "string",
-              "typeName": "String"
+              "typeName": "String",
+              "enumValues": [
+                "pending",
+                "confirmed",
+                "rejected"
+              ]
             }
           }
         ],
         "commands": [
+          {
+            "name": "RecordCashRequestSource",
+            "parameters": [
+              {
+                "name": "principal",
+                "type": "PrincipalId",
+                "resolvedType": {
+                  "kind": "string",
+                  "typeName": "PrincipalId"
+                }
+              },
+              {
+                "name": "clientRequestId",
+                "type": "ClientRequestId",
+                "resolvedType": {
+                  "kind": "string",
+                  "typeName": "ClientRequestId"
+                }
+              },
+              {
+                "name": "fundCode",
+                "type": "FundCode",
+                "resolvedType": {
+                  "kind": "string",
+                  "typeName": "FundCode"
+                }
+              },
+              {
+                "name": "amount",
+                "type": "Money",
+                "resolvedType": {
+                  "kind": "record",
+                  "typeName": "Money",
+                  "exactForm": "unit-decimal",
+                  "fields": {
+                    "amount": {
+                      "kind": "decimal",
+                      "scale": 2
+                    },
+                    "currency": {
+                      "kind": "string",
+                      "units": [
+                        "CNY"
+                      ]
+                    }
+                  }
+                }
+              }
+            ],
+            "produces": [
+              "CashRequestSourceRecorded"
+            ]
+          },
+          {
+            "name": "RequestFundPurchaseSettlement",
+            "parameters": [
+              {
+                "name": "principal",
+                "type": "PrincipalId",
+                "resolvedType": {
+                  "kind": "string",
+                  "typeName": "PrincipalId"
+                }
+              },
+              {
+                "name": "clientRequestId",
+                "type": "ClientRequestId",
+                "resolvedType": {
+                  "kind": "string",
+                  "typeName": "ClientRequestId"
+                }
+              },
+              {
+                "name": "fundCode",
+                "type": "FundCode",
+                "resolvedType": {
+                  "kind": "string",
+                  "typeName": "FundCode"
+                }
+              },
+              {
+                "name": "amount",
+                "type": "Money",
+                "resolvedType": {
+                  "kind": "record",
+                  "typeName": "Money",
+                  "exactForm": "unit-decimal",
+                  "fields": {
+                    "amount": {
+                      "kind": "decimal",
+                      "scale": 2
+                    },
+                    "currency": {
+                      "kind": "string",
+                      "units": [
+                        "CNY"
+                      ]
+                    }
+                  }
+                }
+              }
+            ],
+            "produces": [
+              "FundPurchaseSettlementRequested"
+            ]
+          },
           {
             "name": "RecordFundTAConfirmed",
             "parameters": [
@@ -225,9 +396,67 @@
             "produces": [
               "FundTASharesConfirmed"
             ]
+          },
+          {
+            "name": "RequestIndependentRefund",
+            "parameters": [
+              {
+                "name": "orderId",
+                "type": "OrderId",
+                "resolvedType": {
+                  "kind": "string",
+                  "typeName": "OrderId"
+                }
+              }
+            ],
+            "produces": [
+              "IndependentRefundRequested"
+            ]
           }
         ],
         "events": [
+          {
+            "name": "CashRequestSourceRecorded",
+            "fields": [
+              {
+                "name": "principal",
+                "type": "PrincipalId",
+                "resolvedType": {
+                  "kind": "string",
+                  "typeName": "PrincipalId"
+                }
+              },
+              {
+                "name": "clientRequestId",
+                "type": "ClientRequestId",
+                "resolvedType": {
+                  "kind": "string",
+                  "typeName": "ClientRequestId"
+                }
+              }
+            ]
+          },
+          {
+            "name": "FundPurchaseSettlementRequested",
+            "fields": [
+              {
+                "name": "principal",
+                "type": "PrincipalId",
+                "resolvedType": {
+                  "kind": "string",
+                  "typeName": "PrincipalId"
+                }
+              },
+              {
+                "name": "clientRequestId",
+                "type": "ClientRequestId",
+                "resolvedType": {
+                  "kind": "string",
+                  "typeName": "ClientRequestId"
+                }
+              }
+            ]
+          },
           {
             "name": "FundTASharesConfirmed",
             "fields": [
@@ -246,6 +475,19 @@
                   "kind": "decimal",
                   "typeName": "NavDecimal",
                   "scale": 4
+                }
+              }
+            ]
+          },
+          {
+            "name": "IndependentRefundRequested",
+            "fields": [
+              {
+                "name": "orderId",
+                "type": "OrderId",
+                "resolvedType": {
+                  "kind": "string",
+                  "typeName": "OrderId"
                 }
               }
             ]
@@ -387,7 +629,105 @@
         ]
       }
     ],
-    "ports": [],
+    "ports": [
+      {
+        "name": "BankCashSubmitPort",
+        "operations": [
+          {
+            "name": "submit",
+            "parameters": [
+              {
+                "name": "principal",
+                "type": "PrincipalId",
+                "resolvedType": {
+                  "kind": "string",
+                  "typeName": "PrincipalId"
+                }
+              },
+              {
+                "name": "clientRequestId",
+                "type": "ClientRequestId",
+                "resolvedType": {
+                  "kind": "string",
+                  "typeName": "ClientRequestId"
+                }
+              },
+              {
+                "name": "fundCode",
+                "type": "FundCode",
+                "resolvedType": {
+                  "kind": "string",
+                  "typeName": "FundCode"
+                }
+              },
+              {
+                "name": "amount",
+                "type": "Money",
+                "resolvedType": {
+                  "kind": "record",
+                  "typeName": "Money",
+                  "exactForm": "unit-decimal",
+                  "fields": {
+                    "amount": {
+                      "kind": "decimal",
+                      "scale": 2
+                    },
+                    "currency": {
+                      "kind": "string",
+                      "units": [
+                        "CNY"
+                      ]
+                    }
+                  }
+                }
+              }
+            ],
+            "returns": "BankCashAcknowledgement"
+          }
+        ],
+        "callerContract": null
+      },
+      {
+        "name": "BankOrderQuery",
+        "operations": [
+          {
+            "name": "get",
+            "parameters": [
+              {
+                "name": "orderId",
+                "type": "OrderId",
+                "resolvedType": {
+                  "kind": "string",
+                  "typeName": "OrderId"
+                }
+              }
+            ],
+            "returns": "bank-order-view"
+          }
+        ],
+        "callerContract": null
+      },
+      {
+        "name": "BankTaBridgePort",
+        "operations": [
+          {
+            "name": "ingestOutcome",
+            "parameters": [
+              {
+                "name": "orderId",
+                "type": "OrderId",
+                "resolvedType": {
+                  "kind": "string",
+                  "typeName": "OrderId"
+                }
+              }
+            ],
+            "returns": "TaBridgeAcknowledgement"
+          }
+        ],
+        "callerContract": null
+      }
+    ],
     "stories": [
       {
         "name": "CashFundPurchase",
@@ -445,6 +785,194 @@
           ]
         },
         "parameters": []
+      }
+    ],
+    "externContracts": [
+      {
+        "name": "sessionAuthenticated",
+        "params": [
+          {
+            "name": "principal",
+            "type": "PrincipalId",
+            "resolvedType": {
+              "kind": "string",
+              "typeName": "PrincipalId"
+            }
+          }
+        ],
+        "returns": "Bool",
+        "ownerPort": "BankCashSubmitPort"
+      },
+      {
+        "name": "originAndCsrfValid",
+        "params": [],
+        "returns": "Bool",
+        "ownerPort": "BankCashSubmitPort"
+      },
+      {
+        "name": "fundCodeActive",
+        "params": [
+          {
+            "name": "fundCode",
+            "type": "FundCode",
+            "resolvedType": {
+              "kind": "string",
+              "typeName": "FundCode"
+            }
+          }
+        ],
+        "returns": "Bool",
+        "ownerPort": "BankCashSubmitPort"
+      },
+      {
+        "name": "requestExists",
+        "params": [
+          {
+            "name": "principal",
+            "type": "PrincipalId",
+            "resolvedType": {
+              "kind": "string",
+              "typeName": "PrincipalId"
+            }
+          },
+          {
+            "name": "clientRequestId",
+            "type": "ClientRequestId",
+            "resolvedType": {
+              "kind": "string",
+              "typeName": "ClientRequestId"
+            }
+          }
+        ],
+        "returns": "Bool",
+        "ownerPort": "BankCashSubmitPort"
+      },
+      {
+        "name": "payloadMatchesOriginal",
+        "params": [
+          {
+            "name": "principal",
+            "type": "PrincipalId",
+            "resolvedType": {
+              "kind": "string",
+              "typeName": "PrincipalId"
+            }
+          },
+          {
+            "name": "clientRequestId",
+            "type": "ClientRequestId",
+            "resolvedType": {
+              "kind": "string",
+              "typeName": "ClientRequestId"
+            }
+          },
+          {
+            "name": "fundCode",
+            "type": "FundCode",
+            "resolvedType": {
+              "kind": "string",
+              "typeName": "FundCode"
+            }
+          },
+          {
+            "name": "amount",
+            "type": "Money",
+            "resolvedType": {
+              "kind": "record",
+              "typeName": "Money",
+              "exactForm": "unit-decimal",
+              "fields": {
+                "amount": {
+                  "kind": "decimal",
+                  "scale": 2
+                },
+                "currency": {
+                  "kind": "string",
+                  "units": [
+                    "CNY"
+                  ]
+                }
+              }
+            }
+          }
+        ],
+        "returns": "Bool",
+        "ownerPort": "BankCashSubmitPort"
+      },
+      {
+        "name": "submissionPinned",
+        "params": [
+          {
+            "name": "orderId",
+            "type": "OrderId",
+            "resolvedType": {
+              "kind": "string",
+              "typeName": "OrderId"
+            }
+          }
+        ],
+        "returns": "Bool",
+        "ownerPort": "BankTaBridgePort"
+      },
+      {
+        "name": "taReceiptAuthentic",
+        "params": [
+          {
+            "name": "orderId",
+            "type": "OrderId",
+            "resolvedType": {
+              "kind": "string",
+              "typeName": "OrderId"
+            }
+          }
+        ],
+        "returns": "Bool",
+        "ownerPort": "BankTaBridgePort"
+      },
+      {
+        "name": "taOutcomeConfirmed",
+        "params": [
+          {
+            "name": "orderId",
+            "type": "OrderId",
+            "resolvedType": {
+              "kind": "string",
+              "typeName": "OrderId"
+            }
+          }
+        ],
+        "returns": "Bool",
+        "ownerPort": "BankTaBridgePort"
+      },
+      {
+        "name": "taOutcomeRejected",
+        "params": [
+          {
+            "name": "orderId",
+            "type": "OrderId",
+            "resolvedType": {
+              "kind": "string",
+              "typeName": "OrderId"
+            }
+          }
+        ],
+        "returns": "Bool",
+        "ownerPort": "BankTaBridgePort"
+      },
+      {
+        "name": "taAbsenceConfirmed",
+        "params": [
+          {
+            "name": "orderId",
+            "type": "OrderId",
+            "resolvedType": {
+              "kind": "string",
+              "typeName": "OrderId"
+            }
+          }
+        ],
+        "returns": "Bool",
+        "ownerPort": "BankTaBridgePort"
       }
     ]
   },
@@ -1389,10 +1917,10 @@
                     "amount.amount": "0.00",
                     "order.paymentOutcome": "",
                     "order.taStatus": "",
-                    "principal": 0,
-                    "fundCode": 0,
+                    "principal": "",
+                    "fundCode": "",
                     "amount": 0,
-                    "clientRequestId": 0,
+                    "clientRequestId": "",
                     "order": 0
                   },
                   "mapEntries": {},
@@ -1410,10 +1938,10 @@
                     "amount.amount": "0.01",
                     "order.paymentOutcome": "",
                     "order.taStatus": "",
-                    "principal": 1,
-                    "fundCode": 1,
+                    "principal": "",
+                    "fundCode": "",
                     "amount": 1,
-                    "clientRequestId": 1,
+                    "clientRequestId": "",
                     "order": 1
                   },
                   "mapEntries": {},
@@ -1446,10 +1974,10 @@
                     "amount.amount": "0.00",
                     "order.paymentOutcome": "",
                     "order.taStatus": "",
-                    "principal": 0,
-                    "fundCode": 2437,
+                    "principal": "",
+                    "fundCode": "CNY",
                     "amount": 0,
-                    "clientRequestId": 0,
+                    "clientRequestId": "",
                     "order": 0
                   },
                   "mapEntries": {},
@@ -1463,14 +1991,14 @@
                 },
                 "secondaryWitness": {
                   "scalars": {
-                    "amount.currency": "succeeded",
+                    "amount.currency": "",
                     "amount.amount": "0.01",
                     "order.paymentOutcome": "",
                     "order.taStatus": "",
-                    "principal": 1,
-                    "fundCode": 0,
+                    "principal": "",
+                    "fundCode": "CNY",
                     "amount": 1,
-                    "clientRequestId": 1,
+                    "clientRequestId": "",
                     "order": 1
                   },
                   "mapEntries": {},
@@ -1489,10 +2017,10 @@
                       "amount.amount": "0.00",
                       "order.paymentOutcome": "",
                       "order.taStatus": "",
-                      "principal": 0,
-                      "fundCode": 0,
+                      "principal": "",
+                      "fundCode": "",
                       "amount": 0,
-                      "clientRequestId": 0,
+                      "clientRequestId": "",
                       "order": 0
                     },
                     "mapEntries": {},
@@ -1525,10 +2053,10 @@
                     "amount.amount": "0.01",
                     "order.paymentOutcome": "",
                     "order.taStatus": "",
-                    "principal": 0,
-                    "fundCode": 21238,
+                    "principal": "",
+                    "fundCode": "id_5",
                     "amount": 0,
-                    "clientRequestId": 2437,
+                    "clientRequestId": "CNY",
                     "order": 0
                   },
                   "mapEntries": {},
@@ -1546,10 +2074,10 @@
                     "amount.amount": "0.02",
                     "order.paymentOutcome": "",
                     "order.taStatus": "",
-                    "principal": 1,
-                    "fundCode": 0,
+                    "principal": "",
+                    "fundCode": "CNY",
                     "amount": 1,
-                    "clientRequestId": 32285,
+                    "clientRequestId": "id_6",
                     "order": 1
                   },
                   "mapEntries": {},
@@ -1637,10 +2165,10 @@
                     "amount.amount": "0.01",
                     "order.paymentOutcome": "",
                     "order.taStatus": "",
-                    "principal": 0,
-                    "fundCode": 21238,
+                    "principal": "",
+                    "fundCode": "id_5",
                     "amount": 2437,
-                    "clientRequestId": 8855,
+                    "clientRequestId": "id_6",
                     "order": 0
                   },
                   "mapEntries": {},
@@ -1658,10 +2186,10 @@
                     "amount.amount": "0.02",
                     "order.paymentOutcome": "",
                     "order.taStatus": "",
-                    "principal": 1,
-                    "fundCode": 0,
+                    "principal": "",
+                    "fundCode": "CNY",
                     "amount": 8365,
-                    "clientRequestId": 32285,
+                    "clientRequestId": "id_6",
                     "order": 1
                   },
                   "mapEntries": {},
@@ -1715,10 +2243,10 @@
                     "amount.amount": "0.01",
                     "order.paymentOutcome": "",
                     "order.taStatus": "",
-                    "principal": 0,
-                    "fundCode": 21238,
+                    "principal": "",
+                    "fundCode": "id_5",
                     "amount": 2437,
-                    "clientRequestId": 8855,
+                    "clientRequestId": "id_6",
                     "order": 0
                   },
                   "mapEntries": {},
@@ -1736,10 +2264,10 @@
                     "amount.amount": "0.02",
                     "order.paymentOutcome": "",
                     "order.taStatus": "",
-                    "principal": 1,
-                    "fundCode": 0,
+                    "principal": "",
+                    "fundCode": "CNY",
                     "amount": 8365,
-                    "clientRequestId": 32285,
+                    "clientRequestId": "id_6",
                     "order": 1
                   },
                   "mapEntries": {},
@@ -1791,10 +2319,10 @@
                     "amount.amount": "0.00",
                     "order.paymentOutcome": "succeeded",
                     "order.taStatus": "id_5",
-                    "principal": 0,
-                    "fundCode": 0,
+                    "principal": "",
+                    "fundCode": "",
                     "amount": 0,
-                    "clientRequestId": 0,
+                    "clientRequestId": "",
                     "order": 0
                   },
                   "mapEntries": {},
@@ -1812,10 +2340,10 @@
                     "amount.amount": "0.01",
                     "order.paymentOutcome": "succeeded",
                     "order.taStatus": "id_5",
-                    "principal": 1,
-                    "fundCode": 1,
+                    "principal": "",
+                    "fundCode": "",
                     "amount": 1,
-                    "clientRequestId": 1,
+                    "clientRequestId": "",
                     "order": 1
                   },
                   "mapEntries": {},
@@ -1884,10 +2412,10 @@
                     "amount.amount": "0.00",
                     "order.paymentOutcome": "succeeded",
                     "order.taStatus": "confirmed",
-                    "principal": 0,
-                    "fundCode": 0,
+                    "principal": "",
+                    "fundCode": "",
                     "amount": 0,
-                    "clientRequestId": 0,
+                    "clientRequestId": "",
                     "order": 0
                   },
                   "mapEntries": {},
@@ -1905,10 +2433,10 @@
                     "amount.amount": "0.01",
                     "order.paymentOutcome": "succeeded",
                     "order.taStatus": "confirmed",
-                    "principal": 1,
-                    "fundCode": 1,
+                    "principal": "",
+                    "fundCode": "",
                     "amount": 1,
-                    "clientRequestId": 1,
+                    "clientRequestId": "",
                     "order": 1
                   },
                   "mapEntries": {},
@@ -1977,10 +2505,10 @@
                     "amount.amount": "0.00",
                     "order.paymentOutcome": "confirmed",
                     "order.taStatus": "",
-                    "principal": 0,
-                    "fundCode": 0,
+                    "principal": "",
+                    "fundCode": "",
                     "amount": 0,
-                    "clientRequestId": 0,
+                    "clientRequestId": "",
                     "order": 0
                   },
                   "mapEntries": {},
@@ -1998,10 +2526,10 @@
                     "amount.amount": "0.01",
                     "order.paymentOutcome": "confirmed",
                     "order.taStatus": "",
-                    "principal": 1,
-                    "fundCode": 1,
+                    "principal": "",
+                    "fundCode": "",
                     "amount": 1,
-                    "clientRequestId": 1,
+                    "clientRequestId": "",
                     "order": 1
                   },
                   "mapEntries": {},
@@ -2063,7 +2591,7 @@
             ]
           }
         ],
-        "sha256": "42f209521a89aaf5f9f8655156fa6386deb50dd0ea08e3af5929d9f0b43dd361"
+        "sha256": "599879736fd4c5ffbd25530a3e61b9e6441a5de4e07a9fc0670088a40d1ff4d7"
       }
     },
     {
@@ -4646,7 +5174,7 @@
                 "pattern": "complex",
                 "witness": {
                   "scalars": {
-                    "orderId": 0
+                    "orderId": ""
                   },
                   "mapEntries": {},
                   "externs": {
@@ -4657,19 +5185,7 @@
                     "taAbsenceConfirmed": false
                   }
                 },
-                "secondaryWitness": {
-                  "scalars": {
-                    "orderId": 1
-                  },
-                  "mapEntries": {},
-                  "externs": {
-                    "submissionPinned": false,
-                    "taReceiptAuthentic": false,
-                    "taOutcomeConfirmed": false,
-                    "taOutcomeRejected": false,
-                    "taAbsenceConfirmed": false
-                  }
-                },
+                "secondaryWitness": null,
                 "boundaryWitnesses": [],
                 "outcome": "reject TA_UNKNOWN_ORIGINAL",
                 "actions": [
@@ -4687,7 +5203,7 @@
                 "pattern": "complex",
                 "witness": {
                   "scalars": {
-                    "orderId": 0
+                    "orderId": ""
                   },
                   "mapEntries": {},
                   "externs": {
@@ -4698,19 +5214,7 @@
                     "taAbsenceConfirmed": false
                   }
                 },
-                "secondaryWitness": {
-                  "scalars": {
-                    "orderId": 1
-                  },
-                  "mapEntries": {},
-                  "externs": {
-                    "submissionPinned": true,
-                    "taReceiptAuthentic": false,
-                    "taOutcomeConfirmed": false,
-                    "taOutcomeRejected": false,
-                    "taAbsenceConfirmed": false
-                  }
-                },
+                "secondaryWitness": null,
                 "boundaryWitnesses": [],
                 "outcome": "reject TA_INVALID_RECEIPT",
                 "actions": [
@@ -4728,7 +5232,7 @@
                 "pattern": "complex",
                 "witness": {
                   "scalars": {
-                    "orderId": 0
+                    "orderId": ""
                   },
                   "mapEntries": {},
                   "externs": {
@@ -4739,19 +5243,7 @@
                     "taAbsenceConfirmed": false
                   }
                 },
-                "secondaryWitness": {
-                  "scalars": {
-                    "orderId": 1
-                  },
-                  "mapEntries": {},
-                  "externs": {
-                    "submissionPinned": true,
-                    "taReceiptAuthentic": true,
-                    "taOutcomeConfirmed": true,
-                    "taOutcomeRejected": false,
-                    "taAbsenceConfirmed": false
-                  }
-                },
+                "secondaryWitness": null,
                 "boundaryWitnesses": [],
                 "outcome": "dispatch FundOrder.RecordFundTAConfirmed and forbid dispatch FundOrder.RequestIndependentRefund and respond TaBridgeAcknowledgement",
                 "actions": [
@@ -4795,7 +5287,7 @@
                 "pattern": "complex",
                 "witness": {
                   "scalars": {
-                    "orderId": 0
+                    "orderId": ""
                   },
                   "mapEntries": {},
                   "externs": {
@@ -4806,19 +5298,7 @@
                     "taAbsenceConfirmed": false
                   }
                 },
-                "secondaryWitness": {
-                  "scalars": {
-                    "orderId": 1
-                  },
-                  "mapEntries": {},
-                  "externs": {
-                    "submissionPinned": true,
-                    "taReceiptAuthentic": true,
-                    "taOutcomeConfirmed": false,
-                    "taOutcomeRejected": true,
-                    "taAbsenceConfirmed": false
-                  }
-                },
+                "secondaryWitness": null,
                 "boundaryWitnesses": [],
                 "outcome": "dispatch FundOrder.RequestIndependentRefund and forbid dispatch FundOrder.RecordFundTAConfirmed and respond TaBridgeAcknowledgement",
                 "actions": [
@@ -4862,7 +5342,7 @@
                 "pattern": "complex",
                 "witness": {
                   "scalars": {
-                    "orderId": 0
+                    "orderId": ""
                   },
                   "mapEntries": {},
                   "externs": {
@@ -4873,19 +5353,7 @@
                     "taAbsenceConfirmed": false
                   }
                 },
-                "secondaryWitness": {
-                  "scalars": {
-                    "orderId": 1
-                  },
-                  "mapEntries": {},
-                  "externs": {
-                    "submissionPinned": true,
-                    "taReceiptAuthentic": true,
-                    "taOutcomeConfirmed": false,
-                    "taOutcomeRejected": false,
-                    "taAbsenceConfirmed": false
-                  }
-                },
+                "secondaryWitness": null,
                 "boundaryWitnesses": [],
                 "outcome": "respond TaBridgeAcknowledgement and forbid dispatch FundOrder.RequestIndependentRefund and forbid dispatch FundOrder.RecordFundTAConfirmed",
                 "actions": [
@@ -4926,7 +5394,7 @@
             ]
           }
         ],
-        "sha256": "d649bbc8fa2a8b4c201bb304113401cbfb8d2515cb30bb614b158abd0b9193c0"
+        "sha256": "76c94b5ebe3ba30053a7ae70d6921d496688def1a3b65219c2899f7566731ae7"
       }
     }
   ],

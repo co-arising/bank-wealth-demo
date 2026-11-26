@@ -1,12 +1,12 @@
 {
   "schemaVersion": "co-arising.verify-v2/v1",
   "passed": true,
-  "canonicalSha256": "8cb30df89124c2b7d2377fadeb6e845eb5eb0427231bc4de99f215bb546e181b",
+  "canonicalSha256": "6be5b8d95df10b1856beaa5c528c6e0c59a04c1a8e28e75d3b22cf99d974de39",
   "manifestCheck": {
     "passed": true,
     "errors": [],
     "verifiedFiles": 13,
-    "manifestSha256": "c43d30ba46820e0fcdf4c1a625e66e078b3f6f3b2398206caf73a000943d7f68"
+    "manifestSha256": "630e7ff469396aa79cfd4698ca443e4b46286570b7153d675f9a91bbf3158885"
   },
   "tsCheck": {
     "skipped": false,
@@ -36,7 +36,7 @@
   "provenanceCheck": {
     "passed": true,
     "errors": [],
-    "provenanceIdCount": 21,
+    "provenanceIdCount": 23,
     "specAnchorCount": 28,
     "clozeSlots": [
       {
@@ -66,5 +66,5 @@
       }
     ]
   },
-  "verifiedAt": "2026-11-26T05:50:03.028Z"
+  "verifiedAt": "2026-11-26T06:48:20.491Z"
 }

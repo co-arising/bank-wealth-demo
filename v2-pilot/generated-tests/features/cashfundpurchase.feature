@@ -12,11 +12,11 @@ Feature: CashFundPurchase (application)
 
     Examples:
       | ruleId | amount | amount.amount | amount.currency | clientRequestId | fundCode | order | outcome |
-      | US-CFP-01 | 0 | "0.00" | "" | 0 | 0 | 0 | reject UNAUTHORIZED_OR_CSRF |
-      | US-CFP-02 | 0 | "0.00" | "succeeded" | 0 | 2437 | 0 | reject INVALID_CASH_SUBMIT |
-      | US-CFP-03 | 0 | "0.01" | "CNY" | 2437 | 21238 | 0 | pin BankCashOriginal and dispatch FundOrder.RecordCashRequestSource and dispatch FundOrder.RequestFundPurchaseSettlement and respond BankCashAcknowledgement |
-      | US-CFP-04 | 2437 | "0.01" | "CNY" | 8855 | 21238 | 0 | respond BankCashAcknowledgement and forbid dispatch FundOrder.RequestFundPurchaseSettlement |
-      | US-CFP-05 | 2437 | "0.01" | "CNY" | 8855 | 21238 | 0 | reject CASH_SOURCE_CONFLICT |
+      | US-CFP-01 | 0 | "0.00" | "" | "" | "" | 0 | reject UNAUTHORIZED_OR_CSRF |
+      | US-CFP-02 | 0 | "0.00" | "succeeded" | "" | "CNY" | 0 | reject INVALID_CASH_SUBMIT |
+      | US-CFP-03 | 0 | "0.01" | "CNY" | "CNY" | "id_5" | 0 | pin BankCashOriginal and dispatch FundOrder.RecordCashRequestSource and dispatch FundOrder.RequestFundPurchaseSettlement and respond BankCashAcknowledgement |
+      | US-CFP-04 | 2437 | "0.01" | "CNY" | "id_6" | "id_5" | 0 | respond BankCashAcknowledgement and forbid dispatch FundOrder.RequestFundPurchaseSettlement |
+      | US-CFP-05 | 2437 | "0.01" | "CNY" | "id_6" | "id_5" | 0 | reject CASH_SOURCE_CONFLICT |
 
   @spec:US-CFP-06 @spec:US-CFP-07 @spec:US-CFP-08 @z3-witness
   Scenario Outline: CashFundPurchase — BankOrderQuery.get First-Hit executable oracle
@@ -26,6 +26,6 @@ Feature: CashFundPurchase (application)
 
     Examples:
       | ruleId | amount | amount.amount | amount.currency | clientRequestId | fundCode | order | outcome |
-      | US-CFP-06 | 0 | "0.00" | "" | 0 | 0 | 0 | expose bank-order-view |
-      | US-CFP-07 | 0 | "0.00" | "" | 0 | 0 | 0 | expose bank-order-view |
-      | US-CFP-08 | 0 | "0.00" | "" | 0 | 0 | 0 | expose bank-order-view |
+      | US-CFP-06 | 0 | "0.00" | "" | "" | "" | 0 | expose bank-order-view |
+      | US-CFP-07 | 0 | "0.00" | "" | "" | "" | 0 | expose bank-order-view |
+      | US-CFP-08 | 0 | "0.00" | "" | "" | "" | 0 | expose bank-order-view |

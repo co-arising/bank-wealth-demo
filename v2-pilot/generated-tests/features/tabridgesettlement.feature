@@ -12,8 +12,8 @@ Feature: TaBridgeSettlement (application)
 
     Examples:
       | ruleId | orderId | outcome |
-      | TA-BR-01 | 0 | reject TA_UNKNOWN_ORIGINAL |
-      | TA-BR-02 | 0 | reject TA_INVALID_RECEIPT |
-      | TA-BR-03 | 0 | dispatch FundOrder.RecordFundTAConfirmed and forbid dispatch FundOrder.RequestIndependentRefund and respond TaBridgeAcknowledgement |
-      | TA-BR-04 | 0 | dispatch FundOrder.RequestIndependentRefund and forbid dispatch FundOrder.RecordFundTAConfirmed and respond TaBridgeAcknowledgement |
-      | TA-BR-05 | 0 | respond TaBridgeAcknowledgement and forbid dispatch FundOrder.RequestIndependentRefund and forbid dispatch FundOrder.RecordFundTAConfirmed |
+      | TA-BR-01 | "" | reject TA_UNKNOWN_ORIGINAL |
+      | TA-BR-02 | "" | reject TA_INVALID_RECEIPT |
+      | TA-BR-03 | "" | dispatch FundOrder.RecordFundTAConfirmed and forbid dispatch FundOrder.RequestIndependentRefund and respond TaBridgeAcknowledgement |
+      | TA-BR-04 | "" | dispatch FundOrder.RequestIndependentRefund and forbid dispatch FundOrder.RecordFundTAConfirmed and respond TaBridgeAcknowledgement |
+      | TA-BR-05 | "" | respond TaBridgeAcknowledgement and forbid dispatch FundOrder.RequestIndependentRefund and forbid dispatch FundOrder.RecordFundTAConfirmed |

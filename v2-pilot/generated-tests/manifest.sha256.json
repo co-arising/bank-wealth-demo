@@ -4,7 +4,7 @@
   "files": [
     {
       "path": "features/cashfundpurchase.feature",
-      "sha256": "9923f83cb3d2f4c792d1104c16f73af9c52f54ff905a5cf7bcc0a7de41013132",
+      "sha256": "cbe4dfa3641f45ec6318bf29a730604ed38f1b23faa75eb62d6b1178f5d013e3",
       "sourceFile": "cash-fund-purchase.story.ears",
       "sourceSha256": "b5628bbaabd7037df8435d400c454b1ce8f007af14956b2ee46c562919d7cc41"
     },
@@ -28,7 +28,7 @@
     },
     {
       "path": "features/tabridgesettlement.feature",
-      "sha256": "798693c879da128b683196202cb348d6e44e10d4f2d7de07863f49a753ababe9",
+      "sha256": "0b355e2a349172a0a32515ec842cdb5860774077d4c5334bc07977597958e5b0",
       "sourceFile": "ta-bridge-settlement.ears",
       "sourceSha256": "cc348b961d4970a106bf7af29984ea1b43246e79d5bbdb59085b10247f3571cc"
     },
@@ -52,7 +52,7 @@
     },
     {
       "path": "ts/cash-fund-purchase.ears.spec.ts",
-      "sha256": "3f256836ab1b2f05eba9738f616e17e3cd80eb4a0e30249cd1ccdd8102fafe96",
+      "sha256": "5da18b615f1bf500fe24e0e447977fc9b7c352f881ae9177c87974733d166241",
       "sourceFile": "cash-fund-purchase.story.ears",
       "sourceSha256": "b5628bbaabd7037df8435d400c454b1ce8f007af14956b2ee46c562919d7cc41"
     },
@@ -76,7 +76,7 @@
     },
     {
       "path": "ts/ta-bridge-settlement.ears.spec.ts",
-      "sha256": "2d57c8cb7f6af7db9ec7b62e60f641fb6bb1cad8040b182c5031ead1b8011f2f",
+      "sha256": "da35f982fde5d4006d4a1adafb0b7f7c57bece49a5aeb2aff05b9bcacce08751",
       "sourceFile": "ta-bridge-settlement.ears",
       "sourceSha256": "cc348b961d4970a106bf7af29984ea1b43246e79d5bbdb59085b10247f3571cc"
     }

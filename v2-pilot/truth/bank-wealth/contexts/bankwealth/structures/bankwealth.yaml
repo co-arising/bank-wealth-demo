@@ -15,11 +15,90 @@ exactTypes:
     unitField: currency
     units: ["CNY"]
 
+valueObjects:
+  - name: BankCashAcknowledgement
+    fields:
+      - replayed: Bool
+      - accepted: Bool
+  - name: TaBridgeAcknowledgement
+    fields:
+      - name: state
+        type: String
+        enum: ["confirmed", "refund_dispatched", "pending_reconcile"]
+
 readModels:
   - name: bank-order-view
     fields:
       - paymentCompleted: Bool
       - taFinalized: Bool
+
+ports:
+  - name: BankCashSubmitPort
+    operations:
+      - name: submit
+        parameters:
+          - principal: PrincipalId
+          - clientRequestId: ClientRequestId
+          - fundCode: FundCode
+          - amount: Money
+        returns: BankCashAcknowledgement
+  - name: BankOrderQuery
+    operations:
+      - name: get
+        parameters:
+          - orderId: OrderId
+        returns: bank-order-view
+  - name: BankTaBridgePort
+    operations:
+      - name: ingestOutcome
+        parameters:
+          - orderId: OrderId
+        returns: TaBridgeAcknowledgement
+
+externContracts:
+  - name: sessionAuthenticated
+    ownerPort: BankCashSubmitPort
+    params:
+      - principal: PrincipalId
+  - name: originAndCsrfValid
+    ownerPort: BankCashSubmitPort
+    params: []
+  - name: fundCodeActive
+    ownerPort: BankCashSubmitPort
+    params:
+      - fundCode: FundCode
+  - name: requestExists
+    ownerPort: BankCashSubmitPort
+    params:
+      - principal: PrincipalId
+      - clientRequestId: ClientRequestId
+  - name: payloadMatchesOriginal
+    ownerPort: BankCashSubmitPort
+    params:
+      - principal: PrincipalId
+      - clientRequestId: ClientRequestId
+      - fundCode: FundCode
+      - amount: Money
+  - name: submissionPinned
+    ownerPort: BankTaBridgePort
+    params:
+      - orderId: OrderId
+  - name: taReceiptAuthentic
+    ownerPort: BankTaBridgePort
+    params:
+      - orderId: OrderId
+  - name: taOutcomeConfirmed
+    ownerPort: BankTaBridgePort
+    params:
+      - orderId: OrderId
+  - name: taOutcomeRejected
+    ownerPort: BankTaBridgePort
+    params:
+      - orderId: OrderId
+  - name: taAbsenceConfirmed
+    ownerPort: BankTaBridgePort
+    params:
+      - orderId: OrderId
 
 aggregates:
   - name: FundQuota
@@ -51,19 +130,54 @@ aggregates:
     aliases: [order, state, fundorder]
     stateFields:
       - netAmount: AmountDecimal = "0.00"
-      - paymentOutcome: String = "pending"
-      - taStatus: String = "pending"
+      - name: paymentOutcome
+        type: String
+        default: "pending"
+        enum: ["pending", "succeeded", "failed"]
+      - name: taStatus
+        type: String
+        default: "pending"
+        enum: ["pending", "confirmed", "rejected"]
     commands:
+      - name: RecordCashRequestSource
+        parameters:
+          - principal: PrincipalId
+          - clientRequestId: ClientRequestId
+          - fundCode: FundCode
+          - amount: Money
+        produces: [CashRequestSourceRecorded]
+      - name: RequestFundPurchaseSettlement
+        parameters:
+          - principal: PrincipalId
+          - clientRequestId: ClientRequestId
+          - fundCode: FundCode
+          - amount: Money
+        produces: [FundPurchaseSettlementRequested]
       - name: RecordFundTAConfirmed
         parameters:
           - shares: Int
           - nav: NavDecimal
         produces: [FundTASharesConfirmed]
+      - name: RequestIndependentRefund
+        parameters:
+          - orderId: OrderId
+        produces: [IndependentRefundRequested]
     events:
+      - name: CashRequestSourceRecorded
+        fields:
+          - principal: PrincipalId
+          - clientRequestId: ClientRequestId
+      - name: FundPurchaseSettlementRequested
+        fields:
+          - principal: PrincipalId
+          - clientRequestId: ClientRequestId
       - name: FundTASharesConfirmed
         fields:
           - shares: Int
           - nav: NavDecimal
+      - name: IndependentRefundRequested
+        fields:
+          - orderId: OrderId
     ruleRefs:
       TA_INVALID_NAV: "Fund NAV must be strictly positive"
       TA_SHARES_MISMATCH: "Confirmed shares must equal floor(netAmount / nav)"

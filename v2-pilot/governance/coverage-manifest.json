@@ -2,7 +2,7 @@
   "schemaVersion": "co-arising.coverage-manifest/v2",
   "system": "bank-wealth",
   "context": "bankwealth",
-  "effectBindingFile": "v2-pilot/truth/bindings/bankwealth-effects.yaml",
+  "effectBindingFile": "v2-pilot/truth/bank-wealth/contexts/bankwealth/bindings/bankwealth-effects.yaml",
   "governedRoots": [
     { "root": "handwritten/scala", "extensions": [".scala"] },
     { "root": "v2-pilot/generated-scaffold", "extensions": [".ts", ".scala"] },
