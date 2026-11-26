@@ -63,7 +63,7 @@ test('rejected configuration neither reads nor reports an unused synthetic crede
 test('source contract confines listeners, Docker exec targets and termination to local owned resources', () => {
   // Lexical checks only; successful startup and stream behavior are opt-in below.
   const source = readFileSync(new URL('../tools/truthsrc-runtime-db-relay.mjs', import.meta.url), 'utf8');
-  assert.deepEqual([...source.matchAll(/\bfrom '([^']+)'/g)].map(match => match[1]), ['node:assert/strict', 'node:child_process', 'node:net', './truthsrc-runtime-db-exec.mjs']);
+  assert.deepEqual([...source.matchAll(/\bfrom '([^']+)'/g)].map(match => match[1]), ['node:assert/strict', 'node:child_process', 'node:net', 'node:worker_threads', './truthsrc-runtime-db-exec.mjs']);
   for (const contract of [
     'Number.isSafeInteger(hostPort)',
     '![9000, 2551, 3306, 27017].includes(hostPort)',
@@ -72,6 +72,11 @@ test('source contract confines listeners, Docker exec targets and termination to
     "'exec 3<>/dev/tcp/127.0.0.1/' + containerPort",
     "['--host', 'unix:///var/run/docker.sock', 'exec', '-i', containerId, 'bash', '-c', script]",
     'active.set(child, { socket, stop, record })',
+    'new Worker(new URL(import.meta.url)',
+    'execArgv: []',
+    'transportClosed: exited',
+    "worker.once('exit'",
+    'creationTransportClosed = dockerExecTransportClosed(error)',
     "child?.kill('SIGTERM')",
     "for (const child of active.keys()) child.kill('SIGKILL')",
   ]) assert.ok(source.includes(contract), `Missing local/owned relay contract: ${contract}`);

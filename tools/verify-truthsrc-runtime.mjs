@@ -427,7 +427,8 @@ export async function verifyRuntime(options, { admitBuild = admitRuntimeBuild, a
       result.cancelled = cancelled.signal.aborted;
       if (lease) {
         try {
-          assert.ok(processesStopped && activeProcesses === 0 && (!databaseDispatched || result.database?.cleanup?.stopped === true),
+          assert.ok(processesStopped && activeProcesses === 0 &&
+            (!databaseDispatched || (result.database?.cleanup?.resourcesExited ?? result.database?.cleanup?.stopped) === true),
             'resource exit unverified; lease retained for acquiring owner investigation');
           result.leaseRelease = lease.release(result.owner);
         } catch (error) { result.leaseRelease = { owner: result.owner, released: false }; result.errors.push(error.message); }

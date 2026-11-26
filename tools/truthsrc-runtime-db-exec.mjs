@@ -4,23 +4,59 @@ import { PassThrough } from 'node:stream';
 
 const SOCKET = '/var/run/docker.sock';
 const pause = ms => new Promise(done => setTimeout(done, ms));
+const diagnosticErrors = new WeakMap(), closedErrorTransports = new WeakSet();
+const fail = (code, phase, details = {}) => {
+  const error = new Error('Owned Docker exec operation failed.');
+  diagnosticErrors.set(error, Object.freeze({ code, phase, ...details }));
+  return error;
+};
 
-export function dockerJson(method, path, body) {
+// Only locally constructed classifications reach receipts; never daemon bodies,
+// exception messages, stream bytes, command arguments or environment values.
+export function dockerExecDiagnostic(error) {
+  return diagnosticErrors.get(error) ?? { code: 'DOCKER_EXEC_UNKNOWN', phase: 'unknown' };
+}
+
+export function dockerExecTransportClosed(error) { return closedErrorTransports.has(error); }
+
+export function dockerJson(method, path, body, timeoutMs = 10_000) {
   assert.ok(/^\/v1\.41\/(?:containers\/[0-9a-f]{64}\/exec|exec\/[0-9a-f]{64}\/json)$/.test(path));
+  assert.ok(Number.isFinite(timeoutMs) && timeoutMs > 0 && timeoutMs <= 10_000);
+  const phase = path.endsWith('/json') ? 'exec-inspect' : 'exec-create';
   return new Promise((done, reject) => {
+    const deadline = Date.now() + timeoutMs;
+    let settled = false, response, responseExit, requestExit, timer;
+    const finish = (error, value) => {
+      if (settled) return; settled = true; clearTimeout(timer);
+      if (error) {
+        response?.destroy(); req.destroy();
+        void (async () => { await requestExit; await responseExit; closedErrorTransports.add(error); reject(error); })();
+      } else done(value);
+    };
     const data = body === undefined ? null : Buffer.from(JSON.stringify(body));
     const req = request({ socketPath: SOCKET, method, path, headers: { Connection: 'close',
       ...(data ? { 'Content-Type': 'application/json', 'Content-Length': data.length } : {}) } }, res => {
+      response = res; responseExit = new Promise(resolve => res.once('close', resolve));
+      if (settled) { res.destroy(); return; }
       let size = 0; const chunks = [];
-      res.on('data', bytes => { size += bytes.length; if (size > 65536) res.destroy(new Error('bounded Docker control response')); else chunks.push(bytes); });
-      res.on('error', () => reject(new Error('Docker control response failed')));
+      res.on('error', () => finish(fail('DOCKER_CONTROL_RESPONSE', phase)));
+      res.on('aborted', () => finish(fail('DOCKER_CONTROL_ABORTED', phase)));
+      res.on('data', bytes => {
+        size += bytes.length;
+        if (size > 65536) finish(fail('DOCKER_CONTROL_LIMIT', phase)); else chunks.push(bytes);
+      });
       res.on('end', () => {
-        try { assert.ok(res.statusCode >= 200 && res.statusCode < 300); done(JSON.parse(Buffer.concat(chunks).toString('utf8'))); }
-        catch { reject(new Error('Docker control request failed')); }
+        if (Date.now() >= deadline) { finish(fail('DOCKER_CONTROL_DEADLINE', phase)); return; }
+        if (res.statusCode < 200 || res.statusCode >= 300) {
+          finish(fail('DOCKER_CONTROL_HTTP', phase, { httpStatus: res.statusCode })); return;
+        }
+        try { finish(null, JSON.parse(Buffer.concat(chunks).toString('utf8'))); }
+        catch { finish(fail('DOCKER_CONTROL_JSON', phase)); }
       });
     });
-    req.setTimeout(10_000, () => req.destroy(new Error('Docker control deadline')));
-    req.once('error', () => reject(new Error('Docker control connection failed')));
+    requestExit = new Promise(resolve => req.once('close', resolve));
+    timer = setTimeout(() => finish(fail('DOCKER_CONTROL_DEADLINE', phase)), timeoutMs);
+    req.once('error', () => finish(fail('DOCKER_CONTROL_CONNECTION', phase)));
     req.end(data);
   });
 }
@@ -54,25 +90,42 @@ export async function openDatabaseExec(containerId, containerPort) {
   });
   assert.match(created.Id, /^[0-9a-f]{64}$/);
   const execId = created.Id, output = new PassThrough();
-  let socket, ended = false, failure = false, stderrBytes = 0;
+  let socket, transportExit, ended = false, failure = false, streamDiagnostic = null, stderrBytes = 0, closing;
+  const streamFailure = code => { failure = true; streamDiagnostic ??= { code, phase: 'exec-stream' }; };
   const frames = dockerFrameReader(bytes => {
-    if (!output.write(bytes)) { socket.pause(); output.once('drain', () => socket.resume()); }
+    if (!output.write(bytes)) { socket.pause(); output.once('drain', () => { if (!socket.destroyed) socket.resume(); }); }
   }, count => { stderrBytes += count; });
-  const finish = () => { if (!ended) { ended = true; if (!frames.end()) failure = true; output.end(); } };
+  const finish = () => { if (!ended) { ended = true; if (!frames.end()) streamFailure('DOCKER_STREAM_TRUNCATED'); output.end(); } };
   await new Promise((done, reject) => {
-    const data = Buffer.from('{"Detach":false,"Tty":false}');
+    const data = Buffer.from('{"Detach":false,"Tty":false}'), deadline = Date.now() + 10_000;
+    let settled = false, timer, requestExit, rejectedStreamExit;
+    const rejectUpgrade = code => {
+      if (settled) return; settled = true; clearTimeout(timer);
+      const error = fail(code, 'exec-start');
+      req.destroy(); output.destroy();
+      void (async () => { await requestExit; await rejectedStreamExit; closedErrorTransports.add(error); reject(error); })();
+    };
     const req = request({ socketPath: SOCKET, method: 'POST', path: '/v1.41/exec/' + execId + '/start',
       headers: { Connection: 'Upgrade', Upgrade: 'tcp', 'Content-Type': 'application/json', 'Content-Length': data.length } });
-    req.setTimeout(10_000, () => req.destroy(new Error('Docker exec upgrade deadline')));
-    req.once('error', () => reject(new Error('Docker exec upgrade failed')));
-    req.once('response', res => { res.resume(); reject(new Error('Docker exec did not upgrade its stream')); });
+    requestExit = new Promise(resolve => req.once('close', resolve));
+    timer = setTimeout(() => rejectUpgrade('DOCKER_EXEC_START_DEADLINE'), 10_000);
+    req.once('error', () => rejectUpgrade('DOCKER_EXEC_START_CONNECTION'));
+    req.once('response', res => {
+      rejectedStreamExit = new Promise(resolve => res.once('close', resolve));
+      res.destroy(); rejectUpgrade('DOCKER_EXEC_START_NO_UPGRADE');
+    });
     req.once('upgrade', (res, stream, head) => {
-      socket = stream;
+      if (settled || Date.now() >= deadline) {
+        rejectedStreamExit = new Promise(resolve => stream.once('close', resolve));
+        stream.destroy(); rejectUpgrade('DOCKER_EXEC_START_DEADLINE'); return;
+      }
+      settled = true; clearTimeout(timer); socket = stream;
+      transportExit = new Promise(resolve => socket.once('close', resolve));
       const consume = bytes => {
-        if (!frames.write(bytes)) { failure = true; socket.destroy(); finish(); }
+        if (!frames.write(bytes)) { streamFailure('DOCKER_STREAM_FRAME'); socket.destroy(); finish(); }
       };
       socket.on('data', consume);
-      socket.on('error', () => { failure = true; finish(); });
+      socket.on('error', () => { streamFailure('DOCKER_STREAM_CONNECTION'); finish(); });
       socket.on('end', finish); socket.on('close', finish);
       if (head.length) consume(head);
       done();
@@ -81,18 +134,35 @@ export async function openDatabaseExec(containerId, containerPort) {
   });
   return {
     execId, output, input: socket,
-    async close() {
-      socket.end();
-      const until = Date.now() + 10_000;
-      let status;
-      do {
-        status = await dockerJson('GET', '/v1.41/exec/' + execId + '/json');
-        assert.equal(status.ContainerID, containerId);
-        if (!status.Running) break;
-        await pause(50);
-      } while (Date.now() < until);
-      socket.destroy(); finish();
-      return { execId, closed: status.Running === false, code: status.ExitCode, failure, stderrBytes };
+    close() {
+      return closing ??= (async () => {
+        const started = Date.now(), until = started + 10_000;
+        let status, diagnostic = null, observations = 0;
+        try {
+          socket.end();
+          do {
+            const remaining = until - Date.now();
+            if (remaining <= 0) throw fail('DOCKER_EXEC_CLOSE_DEADLINE', 'exec-close');
+            status = await dockerJson('GET', '/v1.41/exec/' + execId + '/json', undefined, remaining);
+            observations++;
+            if (status?.ID !== execId || status?.ContainerID !== containerId) throw fail('DOCKER_EXEC_IDENTITY', 'exec-inspect');
+            if (typeof status.Running !== 'boolean' || !status.Running && !Number.isInteger(status.ExitCode)) {
+              throw fail('DOCKER_EXEC_STATUS', 'exec-inspect', { running: typeof status.Running === 'boolean' ? status.Running : null,
+                exitCodeType: status.ExitCode === null ? 'null' : typeof status.ExitCode === 'number' ? 'number' : 'other' });
+            }
+            if (Date.now() >= until) throw fail('DOCKER_EXEC_CLOSE_DEADLINE', 'exec-close');
+            if (!status.Running) break;
+            await pause(Math.min(50, until - Date.now()));
+          } while (true);
+        } catch (error) {
+          failure = true; diagnostic = dockerExecDiagnostic(error);
+        } finally {
+          socket.destroy(); await transportExit; finish();
+        }
+        return { execId, closed: diagnostic === null && status?.Running === false,
+          code: diagnostic === null ? status.ExitCode : null, failure, stderrBytes, transportClosed: socket.destroyed, streamDiagnostic,
+          closeObservation: { observations, elapsedMs: Date.now() - started, deadlineMs: 10_000, diagnostic } };
+      })();
     },
   };
 }

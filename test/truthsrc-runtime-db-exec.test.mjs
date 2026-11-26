@@ -44,6 +44,9 @@ test('exec streams are binary non-TTY and preserve unlogged opaque database data
   assert.ok(source.includes("const SOCKET = '/var/run/docker.sock'"));
   assert.ok(source.includes("AttachStdin: true, AttachStdout: true, AttachStderr: true, Tty: false"));
   assert.ok(source.includes("length > 1024 * 1024"));
-  assert.ok(source.includes("assert.equal(status.ContainerID, containerId)"));
+  assert.ok(source.includes('status?.ID !== execId || status?.ContainerID !== containerId'));
+  assert.ok(source.includes('socket.destroy(); await transportExit; finish();'));
+  assert.ok(source.includes("fail('DOCKER_CONTROL_HTTP', phase, { httpStatus: res.statusCode })"));
+  assert.ok(source.includes("fail('DOCKER_EXEC_CLOSE_DEADLINE', 'exec-close')"));
   assert.ok(!/console\.|writeFile|JSON.stringify\(pending\)|JSON.stringify\(bytes\)/.test(source));
 });

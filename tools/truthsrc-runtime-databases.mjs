@@ -2,7 +2,7 @@ import { spawn } from 'node:child_process';
 import { createHash, randomBytes } from 'node:crypto';
 import { chmodSync, closeSync, fstatSync, fsyncSync, lstatSync, mkdirSync, openSync, readFileSync, readdirSync, realpathSync, writeFileSync } from 'node:fs';
 import { isAbsolute, join, resolve } from 'node:path';
-import { startDatabaseRelay } from './truthsrc-runtime-db-relay.mjs';
+import { failedDatabaseRelay, startDatabaseRelay } from './truthsrc-runtime-db-relay.mjs';
 
 const IMAGES = Object.freeze({ mysql: 'sha256:8eccfc5e5aebbf3a49375b13956a88cd244d13ac6b25b52dec792b7526363b19',
   mongo: 'sha256:0010f63d26952bd3960fac5513c64a1cf7d6299f31fa7b54ac1b36633ee04333' });
@@ -210,9 +210,15 @@ export class OwnedRuntimeDatabases {
           await this.#sql("CREATE USER 'root'@'%' IDENTIFIED BY '" + c.rootPassword + "';\nGRANT ALL PRIVILEGES ON *.* TO 'root'@'%' WITH GRANT OPTION;\nCREATE USER '" + c.username + "'@'%' IDENTIFIED BY '" + c.password + "';\n");
         } else require(await this.#mongo({ kind: 'initialize' }) === '{"ok":1}');
         o.signal?.throwIfAborted();
-        const relay = await o.relayFactory({ docker: o.docker, containerId: await this.#owned(kind), hostPort: o[kind + 'Port'],
-          containerPort: kind === 'mysql' ? 3306 : 27017, env: { PATH: '/usr/bin:/bin:/usr/sbin:/sbin', DOCKER_CONFIG: join(this.#private, 'docker-config') } });
-        this.#relays.push(relay);
+        try {
+          const relay = await o.relayFactory({ docker: o.docker, containerId: await this.#owned(kind), hostPort: o[kind + 'Port'],
+            containerPort: kind === 'mysql' ? 3306 : 27017, env: { PATH: '/usr/bin:/bin:/usr/sbin:/sbin', DOCKER_CONFIG: join(this.#private, 'docker-config') } });
+          this.#relays.push(relay);
+        } catch (error) {
+          const relay = failedDatabaseRelay(error);
+          if (relay) this.#relays.push(relay);
+          throw error;
+        }
       }
       this.#captureControls();
       this.#state = 'ready';
@@ -269,9 +275,12 @@ export class OwnedRuntimeDatabases {
       }
       let controlsUnchanged = true;
       try { this.assertControlsUnchanged(); } catch { controlsUnchanged = false; }
+      const resourcesExited = containers.every(c => c.stopped) && this.#unresolved.size === 0 && controlsUnchanged &&
+        relays.every(r => r.transportClosed === true || r.transportClosed === undefined && r.closed === true);
       const receipt = { schemaVersion: 'bank.truthsrc-runtime-databases/v1', owner: this.#options.owner,
         containers, relays, networks: [...this.#networks], commands: this.#commands, unresolvedCreations: [...this.#unresolved], controlsUnchanged,
-        preserved: true, stopped: containers.every(c => c.stopped) && relays.every(r => r.closed) && this.#unresolved.size === 0 && controlsUnchanged };
+        resourcesExited, preserved: true,
+        stopped: containers.every(c => c.stopped) && relays.every(r => r.closed && !r.failed) && this.#unresolved.size === 0 && controlsUnchanged };
       this.#state = 'stopped';
       if (this.#receiptFd !== undefined) {
         const fd = this.#receiptFd; this.#receiptFd = undefined;

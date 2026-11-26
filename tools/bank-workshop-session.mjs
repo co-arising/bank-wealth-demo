@@ -450,7 +450,16 @@ export async function sessionStart({ buildEvidence, acceptedReceipt, session, le
       classpathSha256: hash([...admitted.classpath, launcher.classes].join(':')), launcherSha256: hash(JSON.stringify(launcher)) };
     save(join(session, 'session.json'), record);
     save(join(session, 'run/identity.json'), instanceValue(record));
-    const checkInputs = async () => { held.assertHeld(); await admitted.assertUnchanged(); ops.seal(seal, session); };
+    mkdir(join(session, 'input-checks'));
+    let inputCheckSequence = 0;
+    const checkInputs = async checkPhase => {
+      const startedAt = now(), started = Date.now();
+      held.assertHeld(); await admitted.assertUnchanged(); ops.seal(seal, session);
+      const file = join(session, 'input-checks', String(inputCheckSequence++).padStart(6, '0') + '.json');
+      save(file, { schemaVersion: 'bank.workshop-input-check/v1', owner: record.owner, identity: record.identity,
+        phase: checkPhase, startedAt, completedAt: now(), elapsedMs: Date.now() - started, passed: true });
+      write(file + '.ready', '');
+    };
     const credentials = issueRuntimeCredentials(), playSecret = randomBytes(32).toString('hex'), machineToken = randomBytes(32).toString('hex');
     databases = ops.databases({ evidence: join(session, 'databases'), owner: record.owner,
       mysqlPort: record.ports.mysql, mongoPort: record.ports.mongo, signal: cancellation.signal });
@@ -474,7 +483,7 @@ export async function sessionStart({ buildEvidence, acceptedReceipt, session, le
     phase = 'sandbox';
     const immutable = [join(session, 'private'), join(session, 'build'), join(session, 'run/identity.json'), taConfig, ...databases.readOnlyPaths];
     const sandbox = await interruptible(() => ops.boundary({ session, round, ports: record.ports, immutable, env, signal: cancellation.signal, runProcess: runHelper }));
-    await checkInputs(); cancellation.signal.throwIfAborted();
+    await checkInputs('sandbox'); cancellation.signal.throwIfAborted();
     if (checkRequest()) { cancel(); cancellation.signal.throwIfAborted(); }
     const childEnv = { ...env, BANK_RUNTIME_TA_CONFIG: taConfig, BANK_RUNTIME_TA_CONFIG_SHA256: capture(taConfig).sha256 };
     phase = 'server-start';
@@ -493,7 +502,7 @@ export async function sessionStart({ buildEvidence, acceptedReceipt, session, le
     save(join(session, 'process.json'), { owner: record.owner, identity: record.identity, process: birth, classpathSha256: record.classpathSha256 });
     phase = 'readiness'; await ops.listener(child.pid, record.ports.http);
     await interruptible(() => ops.http({ origin: record.origin, credentials, signal: cancellation.signal, exited: child.exited }));
-    await checkInputs(); cancellation.signal.throwIfAborted();
+    await checkInputs('ready'); cancellation.signal.throwIfAborted();
     const state = { schemaVersion: SCHEMA, status: 'ready', owner: record.owner, session, identity: record.identity, executionKind,
       pid: child.pid, url: record.origin + '/bank/v1', loginFile: record.loginFile, readyAt: now(),
       launcherPreviouslyServiceTested: false, fullPipelinePassed: false,
@@ -506,7 +515,7 @@ export async function sessionStart({ buildEvidence, acceptedReceipt, session, le
       assert.equal(existsSync(join(session, 'run/failure.json')), false, 'JVM failure marker present');
       assert.equal(child.exited(), false, 'session JVM exited unexpectedly');
       held.assertHeld();
-      if (Date.now() >= nextCheck) { await checkInputs(); nextCheck = Date.now() + 60_000; }
+      if (Date.now() >= nextCheck) { await checkInputs('foreground'); nextCheck = Date.now() + 60_000; }
       await delay(250);
     }
   } catch (error) {
@@ -552,9 +561,10 @@ export async function sessionStart({ buildEvidence, acceptedReceipt, session, le
     } catch { failure ??= { code: 'SESSION_CLOSE_FAILED', phase: 'server-close', message: 'JVM or TA closure was not verified. Retain the owner lease and data; do not stop unrelated processes.' }; }
     try {
       if (databases) { databaseReceipt = await databases.stop(); assert.equal(databaseReceipt.stopped, true); }
-    } catch { failure ??= { code: 'SESSION_DATABASE_CLOSE_FAILED', phase: 'database-close', message: 'Owned database closure was not verified. Retain the owner lease and data.' }; }
+    } catch { failure ??= { code: 'SESSION_DATABASE_CLOSE_FAILED', phase: 'database-close', message: 'Owned database closure was not verified. Retain failure evidence and data; leases require independent resource-exit verification.' }; }
     checks.resourcesExited = helperProcessesExited && activeHelpers === 0 &&
-      (!child || processReceipt?.exited === true && checks.workerClosed) && (!databases || databaseReceipt?.stopped === true);
+      (!child || processReceipt?.exited === true && checks.workerClosed) &&
+      (!databases || (databaseReceipt?.resourcesExited ?? databaseReceipt?.stopped) === true);
     try {
       if (recheckBuild) await recheckBuild();
       if (seal) ops.seal(seal, session);
