@@ -33,6 +33,12 @@
       "sourceSha256": "cc348b961d4970a106bf7af29984ea1b43246e79d5bbdb59085b10247f3571cc"
     },
     {
+      "path": "scala/example/bankwealth/v2/CashFundPurchaseEarsSpec.scala",
+      "sha256": "16e38251be3c61d08679860be86577290aff0f6d4a1cc9cbda9e337507cc6cd9",
+      "sourceFile": "cash-fund-purchase.story.ears",
+      "sourceSha256": "b5628bbaabd7037df8435d400c454b1ce8f007af14956b2ee46c562919d7cc41"
+    },
+    {
       "path": "scala/example/bankwealth/v2/CreditBalanceReserveFundsEarsSpec.scala",
       "sha256": "e99c26e383322ac3e305734c26e3466fa2c346d09ee21504f464a759e4411070",
       "sourceFile": "credit-balance-reserve.ears",
@@ -49,6 +55,12 @@
       "sha256": "ea08093c08ad48c2f04ede1e3f03017f593c76d19eabd81e33a3fd24392024c9",
       "sourceFile": "fund-quota-reserve.ears",
       "sourceSha256": "61537682db1ba6f366b990ce0f5b318be3dab788013c007d2f11dbf1d9539198"
+    },
+    {
+      "path": "scala/example/bankwealth/v2/TaBridgeSettlementEarsSpec.scala",
+      "sha256": "c108a634ef1575f30ccb51fdb32627c13c94cf66d7b89e0fe51d7f5c62780d3a",
+      "sourceFile": "ta-bridge-settlement.integration.ears",
+      "sourceSha256": "cc348b961d4970a106bf7af29984ea1b43246e79d5bbdb59085b10247f3571cc"
     },
     {
       "path": "ts/cash-fund-purchase.ears.spec.ts",

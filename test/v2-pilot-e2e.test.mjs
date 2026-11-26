@@ -19,21 +19,22 @@ const CANONICAL_FILE = join(PILOT_DIR, '.truthsrc/canonical-v2.json');
 const DB_FILE = join(PILOT_DIR, '.truthsrc/knowledge.sqlite');
 const COVERAGE_MANIFEST = join(PILOT_DIR, 'governance/coverage-manifest.json');
 
-test('v2 pilot passes full Stop Hook triple gate across TypeScript (5 suites) + Scala (3 suites) and records SQLite provenance', () => {
+test('v2 pilot passes full Stop Hook triple gate across TypeScript (5 suites) + Scala (5 suites) and records SQLite provenance', () => {
   const gate = runV2VerifyGate({
     rootDir: PILOT_DIR,
     targets: ['typescript', 'scala'],
     canonicalFile: CANONICAL_FILE,
     dbFile: DB_FILE,
+    strict: true,
   });
 
   assert.equal(gate.passed, true, JSON.stringify(gate, null, 2));
   assert.equal(gate.manifestCheck.passed, true);
-  assert.equal(gate.manifestCheck.verifiedFiles, 13);
+  assert.equal(gate.manifestCheck.verifiedFiles, 15);
   assert.equal(gate.tsCheck.passed, true);
   assert.equal(gate.tsCheck.specFiles.length, 5);
   assert.equal(gate.scalaCheck.passed, true);
-  assert.equal(gate.scalaCheck.suiteClasses.length, 3);
+  assert.equal(gate.scalaCheck.suiteClasses.length, 5);
   assert.equal(gate.provenanceCheck.passed, true);
   assert.equal(gate.provenanceCheck.clozeSlots.every(s => !s.unimplemented), true);
 
@@ -51,7 +52,7 @@ test('v2 pilot passes full Stop Hook triple gate across TypeScript (5 suites) + 
   }
 });
 
-test('full-coverage governance audit achieves 100% classification across all 52 files (36 legacy handwritten + 16 v2-pilot) with 0 arch violations', () => {
+test('full-coverage governance audit achieves 100% classification across all 56 files (36 legacy handwritten + 20 v2-pilot) with 0 arch violations', () => {
   const audit = auditFullCoverageV2({
     rootDir: ROOT,
     manifestFile: COVERAGE_MANIFEST,
@@ -59,17 +60,17 @@ test('full-coverage governance audit achieves 100% classification across all 52 
   });
 
   assert.equal(audit.passed, true, JSON.stringify(audit.diagnostics, null, 2));
-  assert.equal(audit.totalGovernedFiles, 52);
-  assert.equal(audit.classifiedFiles, 52);
+  assert.equal(audit.totalGovernedFiles, 56);
+  assert.equal(audit.classifiedFiles, 56);
   assert.equal(audit.coverageRatio, 1);
   assert.equal(audit.effectBindingSummary.importViolations, 0);
   assert.equal(audit.countsByEvidence.E4, 2);
-  assert.equal(audit.dbRecord.count, 52);
+  assert.equal(audit.dbRecord.count, 56);
 
   const db = new DatabaseSync(DB_FILE, { readOnly: true });
   try {
     const rows = db.prepare('SELECT COUNT(*) AS n FROM file_coverage').get();
-    assert.equal(rows.n, 52);
+    assert.equal(rows.n, 56);
   } finally {
     db.close();
   }

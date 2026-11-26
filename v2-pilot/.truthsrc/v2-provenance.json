@@ -1,12 +1,13 @@
 {
   "schemaVersion": "co-arising.verify-v2/v1",
   "passed": true,
+  "strict": true,
   "canonicalSha256": "3200fefc1ddd939f4795fbd025fa3ef1c2729e81995111709029813480a7c8b3",
   "manifestCheck": {
     "passed": true,
     "errors": [],
-    "verifiedFiles": 13,
-    "manifestSha256": "89e9f8c423ec47c075e9cc34b3d0b34a8ad5a8c654c05ad97f78485ecaea73b1"
+    "verifiedFiles": 15,
+    "manifestSha256": "102cb21352a867afad974e1d868b887f796538ac679d5b586dbc7f1e607f7847"
   },
   "tsCheck": {
     "skipped": false,
@@ -25,11 +26,16 @@
     "skipped": false,
     "passed": true,
     "stage": "scalatest",
+    "reason": null,
+    "guidance": null,
+    "classpathSource": "cache:/Users/zhongdj/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2",
     "exitCode": 0,
     "suiteClasses": [
+      "example.bankwealth.v2.CashFundPurchaseEarsSpec",
       "example.bankwealth.v2.CreditBalanceReserveFundsEarsSpec",
       "example.bankwealth.v2.FundOrderConfirmTASharesEarsSpec",
-      "example.bankwealth.v2.FundQuotaReserveSubscriptionQuotaEarsSpec"
+      "example.bankwealth.v2.FundQuotaReserveSubscriptionQuotaEarsSpec",
+      "example.bankwealth.v2.TaBridgeSettlementEarsSpec"
     ],
     "failedSpecIds": []
   },
@@ -60,11 +66,21 @@
         "unimplemented": false
       },
       {
+        "slotId": "cash-fund-purchase",
+        "file": "handwritten/scala/example/bankwealth/v2/CashFundPurchaseCloze.scala",
+        "unimplemented": false
+      },
+      {
         "slotId": "fund-order-confirm-tashares",
         "file": "handwritten/scala/example/bankwealth/v2/FundOrderConfirmTASharesCloze.scala",
+        "unimplemented": false
+      },
+      {
+        "slotId": "ta-bridge-settlement",
+        "file": "handwritten/scala/example/bankwealth/v2/TaBridgeSettlementCloze.scala",
         "unimplemented": false
       }
     ]
   },
-  "verifiedAt": "2026-11-26T07:13:14.688Z"
+  "verifiedAt": "2026-11-26T07:28:03.312Z"
 }
