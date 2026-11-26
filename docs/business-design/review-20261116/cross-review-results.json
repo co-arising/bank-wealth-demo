@@ -1,0 +1,149 @@
+{
+  "schemaVersion": "bank-simulated-design-cross-review/v1",
+  "date": "2026-11-16",
+  "workflowRunId": "wf_9c3b36c7-c3b",
+  "sourceResultSha256": "7871ffb60eaa3250c4faa5927a254a5ead63e035eb39801eeb0f2c6de82c337e",
+  "agentCount": 9,
+  "status": "simulated-source-review-not-approval",
+  "roles": [
+    {
+      "draft": {
+        "role": "虚拟银行财富业务负责人＋客户/渠道挑战者",
+        "file": "/Users/zhongdj/Workspaces/mad-polaris/bank-wealth-demo/docs/business-design/review-20261116/bank-product-channel.md",
+        "summary": "已新建248行中文用例提案，包含3个有界用例、14项来源事实、13组Given/When/Then及独立预期、8项未决问题、32份源文件SHA-256。明确区分声明、实现、模拟假设和提案；仅保存文档，未执行编译、生成、测试或业务运行，没有现实机构审批。",
+        "explicitRules": [
+          "现金accepted须先留存原请求并核对匹配的耐久启动，不代表付款或投资完成。来源 /Users/zhongdj/Workspaces/mad-polaris/bank-wealth-demo/handwritten/scala/example/bankwealth/integration/BankCashRequests.scala:22–35,72–87；SHA-256 21cf50e66468caec589e83a20f5fa92806eb2c52913cfc7016df68f460e0b1d9。",
+          "付款成功不等于投资成功；独立退款不是补偿已Commit付款；有限定投不引入三败自动暂停。来源 /Users/zhongdj/Workspaces/mad-polaris/bank-wealth-demo/TRUTH.md:24–30；SHA-256 22ff12d956f30fb46abc5d919255b58f1f1cf3c9be338b4d045e466a1b522520。",
+          "新定投revision生效slot须严格晚于currentTick和latestEffectiveSlot，同revision异配置拒绝。来源 /Users/zhongdj/Workspaces/mad-polaris/bank-wealth-demo/truth/bank-wealth/contexts/bankwealth/aggregates/sip-plan/slices/revise-sip-plan.slice.yaml:13–21；SHA-256 7e1714c020b34d9b9adb8daf93ed91aad9cf953606c6c47c2ad8a8de09d884d8。"
+        ],
+        "proposals": [
+          "现金申购按受理、预留、付款、TA确认和独立退款分别交付客户承诺，查询故障不冒充业务失败。",
+          "明确区分查原单、原样重试和另下一单；建议仅允许未发送草稿放弃，不直接暴露事务补偿作为客户撤单。",
+          "有限定投提供未来修订及暂停/恢复影响说明；每类行为分别列出确定性生成、手写实现和独立预期职责。"
+        ],
+        "openDecisions": [
+          "演示准入范围与真实资格核验的明确排除项。",
+          "是否接受本有界版本不提供客户现金撤单或改单。",
+          "请求号跨刷新、标签页和会话的保留方式，以及新增交易确认。",
+          "authorityVersion变化后原请求如何继续核验与服务。",
+          "等待、运营介入和客户更新承诺；不凭技术超时推导业务时限。",
+          "首tick前暂停、日程耗尽但仍在途、恢复backlog的客户解释。",
+          "金额输入展示及不同文本表示是否属于相同原请求。",
+          "模拟TA确认文本与计价关系的边界；不能从样本差额推导费用。"
+        ]
+      },
+      "review": {
+        "role": "模拟资金守恒、运营与独立验收反方。仅静态阅读及SHA-256核对；未写文件，未执行编译、测试或业务交易；无真实机构、专家或监管者参与。",
+        "issues": [
+          "高｜B09的余额oracle不能覆盖unknown。审阅位置 /Users/zhongdj/Workspaces/mad-polaris/bank-wealth-demo/docs/business-design/review-20261116/bank-product-channel.md:171–174（SHA-256 fac7f0318f027e64a9e6c6c2cc5c992fbc66c8f9fe4710957d6df00ba2fd5ce8）。900.00/100.00只对应所引取消/补偿样本，不能套给退款unknown。来源事实：/Users/zhongdj/Workspaces/mad-polaris/bank-wealth-demo/test/scala/BankRefundApplicationSpec.scala:72–92,122–145（SHA-256 6beead5ecfad21293d77022d754734b27720774f94a653d1d817a29b3a737acf）明确覆盖退款预留已持久、扣减尚未发生却结果未知；/Users/zhongdj/Workspaces/mad-polaris/bank-wealth-demo/handwritten/scala/example/bankwealth/bindings/BankBalanceComputations.scala:10–19（SHA-256 ceb8afd93202ceb3da389e3e4edc7f612a5512894a9b2af7c55e622874732b3e）在预留时减少可用额。角色建议：Given付款后客户900、募集户100；When退款预留100后丢失回执；Then独立预期为募集户可用0、预留100、退款扣减0，而非募集户可用100。区分可用、预留与提交资金，不以unknown推导余额。G负责声明的状态演进，H负责计算及证据丢失/核实路径，I预先固定各阶段金额和次数；不修改固定测试。",
+          "中｜F11把暂停后的分类时点误当成跳期依据，B12缺少相应反例。审阅位置 /Users/zhongdj/Workspaces/mad-polaris/bank-wealth-demo/docs/business-design/review-20261116/bank-product-channel.md:31,186–189（SHA-256 fac7f0318f027e64a9e6c6c2cc5c992fbc66c8f9fe4710957d6df00ba2fd5ce8）。来源事实：/Users/zhongdj/Workspaces/mad-polaris/bank-wealth-demo/truth/bank-wealth/contexts/bankwealth/aggregates/sip-plan/slices/observe-sip-due-slot.slice.yaml:18–22,51–57（SHA-256 f43c9d499e333e3f2eba99fd405d64f8c10e9532b482323a3152144818ab2002）允许暂停时将dueSlot<pauseTick的未分类项记为backlog；/Users/zhongdj/Workspaces/mad-polaris/bank-wealth-demo/truth/bank-wealth/contexts/bankwealth/aggregates/sip-plan/slices/skip-paused-sip-due-slot.slice.yaml:18–22（SHA-256 9d42742cf36d69b9802b72879c93694012cd2a4da808a554c6411921dd6be019）仅允许dueSlot>=pauseTick跳期。因此不仅已有backlog会保留，暂停前已到期但尚未分类的项也可能恢复后扣款。角色建议：Given slots=[10,20,30]、tick20已持久但分类前中断；When先暂停于20再恢复；Then独立分类oracle为10=backlog、20=skipped、30尚未到期，不得把10也跳过。G负责两种分类guard/fold，H负责暂停/恢复顺序及影响展示，I固定上述集合；客户如何明确确认这部分恢复扣款仍unresolved。",
+          "高｜退款已终止但本金未退，没有独立的运营业务路线。审阅位置 /Users/zhongdj/Workspaces/mad-polaris/bank-wealth-demo/docs/business-design/review-20261116/bank-product-channel.md:67,80–81,174,204（SHA-256 fac7f0318f027e64a9e6c6c2cc5c992fbc66c8f9fe4710957d6df00ba2fd5ce8）。来源事实：/Users/zhongdj/Workspaces/mad-polaris/bank-wealth-demo/test/scala/BankRefundApplicationSpec.scala:175–215（SHA-256 6beead5ecfad21293d77022d754734b27720774f94a653d1d817a29b3a737acf）明确规定退款rejected-before-effects或compensated可已terminal；重复接续及重启后仍客户900/募集户100、原付款succeeded、退款成功事件0。故“银行查原退款”和等待时限Q5不足以交付该失败闭环，也不能暗示继续重试必能退款。角色建议：新增运营接管步骤，以原订单、付款、退款身份和双方资金证据受理异常，客户明确看到退款未完成；Given上述terminal失败，When重复查询/接续，Then原退款身份不变、900/100、成功事件0，不自动开第二退款。G保留已有终态与身份约束；H拟负责异常呈现/运营交接；I固定上述数据。谁可批准后续资金处置、依据什么对账证据、如何关闭客户资金责任，均unresolved，不能由Saga机制或本次虚拟评审代决。"
+        ],
+        "strongestNextStep": "交原文owner修正B09的阶段化资金oracle及F11的暂停边界，并把“退款terminal但未退本金”补成独立待裁决用例，明确运营责任、数据、决定与关闭条件。原文P/Q标签总体清楚，未发现伪造现实批准；以上建议也不构成政策批准、实施授权或验收通过。"
+      }
+    },
+    {
+      "draft": {
+        "role": "虚拟基金公司/TA对接负责人＋基金交易产品专家",
+        "file": "/Users/zhongdj/Workspaces/mad-polaris/bank-wealth-demo/docs/business-design/review-20261116/fund-company-ta.md",
+        "summary": "已独立保存190行中文候选设计：24份来源的路径、行号及SHA-256，5个有界用例，14组Given/When/Then及独立预期，7项未决问题。区分源事实、模拟假设、角色提案与未决决定，并逐行为划分生成、手写和独立预期责任。未执行测试、编译、生成或业务运行；未修改其他文件。",
+        "explicitRules": [
+          "付款成功不等投资成功，TA受理不等份额确认；独立退款不补偿已Commit付款，有限定投不引入三败自动暂停。来源 /Users/zhongdj/Workspaces/mad-polaris/bank-wealth-demo/TRUTH.md:26–30；SHA-256 22ff12d956f30fb46abc5d919255b58f1f1cf3c9be338b4d045e466a1b522520。",
+          "回执须关联原请求、账户、基金及精确本金，并经权威canonical回执核验后入单。来源 /Users/zhongdj/Workspaces/mad-polaris/bank-wealth-demo/handwritten/scala/example/bankwealth/bindings/BankTaBridge.scala:120–154；SHA-256 bf8efecf3f15aca841a6a6ef870de8b1bf7c12269a95c1ce66f2a7e9de1ac7de。",
+          "零费用、全本金退款是Mock配置限制，不是现实基金政策。来源 /Users/zhongdj/Workspaces/mad-polaris/bank-wealth-demo/simulator/contract.mjs:113–145；SHA-256 19d6fa131f05ca23ea01e916c6149f26cc3d78124f0bd555c094d9d4eeee456f。"
+        ],
+        "proposals": [
+          "按原单注册、提交与查询、回执入单、拒绝退款交接、定投旧期迟到结果五个用例组织交付。",
+          "客户分别观察付款、TA和退款状态；技术effect完成不作为投资成功。",
+          "冲突回执不覆盖原终态，另行核实；区分bridge拒绝、聚合冲突和迟到进展空成功。",
+          "用14组独立场景验证固定身份、精确本金、原文份额、重复事件数及定投首终态计数。"
+        ],
+        "openDecisions": [
+          "未知结果的重试预算、期限及人工交接条件。",
+          "确认金额、费用、NAV、份额精度、舍入与尾差口径。",
+          "迟到更正、撤销及退款已发后的冲突处置。",
+          "申请、受理、交易和确认日期的提供方与含义。",
+          "报文等同性、原始字节留存与规范化边界。",
+          "客户状态承诺、冲突可见性及核实权限。",
+          "真实TA认证、幂等、查询一致性与更正协议；不得用模拟结果冒充机构批准。"
+        ]
+      },
+      "review": {
+        "role": "模拟资金守恒／运营与独立验收挑战者。仅静态阅读和SHA核对，未写文件、未运行业务或测试；没有真实机构、专家或监管人员参与。审阅文件为 /Users/zhongdj/Workspaces/mad-polaris/bank-wealth-demo/docs/business-design/review-20261116/fund-company-ta.md，SHA-256=5f57fa938b9784285e8dff502782bea9230d7ca6cb682395354dac236fb7725f。",
+        "issues": [
+          "[高优先级｜缺少退款失败出口和资金验收交接] /Users/zhongdj/Workspaces/mad-polaris/bank-wealth-demo/docs/business-design/review-20261116/fund-company-ta.md:120–131,163–169 主要覆盖退款意图、处理中和成功，虽诚实声明账务oracle另补，但没有承接退款自身拒绝、补偿结束、结果未知和需恢复的业务出口。【源事实】现役手写实现明确区分并投递这五种结果，包括succeeded，见 /Users/zhongdj/Workspaces/mad-polaris/bank-wealth-demo/handwritten/scala/example/bankwealth/bindings/BankRefundBindings.scala:151–179，SHA-256=db413dbdaa669ff9b99eb58af23a07c517a7374ada76dbfd4f2389d2a0c253eb；定投只有相关退款成功才进入该拒绝分支的失败终态，见 /Users/zhongdj/Workspaces/mad-polaris/bank-wealth-demo/handwritten/scala/example/bankwealth/bindings/BankSipTerminalBridge.scala:63–94，SHA-256=a1cdd34f40425aaa93cf95f86ad2fbaade5893e9d3cbae5263de188576865a6d。【角色提案】补充Given原付款成功10000分、TA拒绝、唯一退款已存在，When退款自身compensated或rejected-before-effects，Then不得显示本金退回，退款成功事件为0、该期failureTotal仍为0；分别覆盖unknown/recovery-required。G保留现有结果规则，H核实并交接异常，O独立核对实际账户及交易证据，不能只注入一个成功通知。【未决】钱未退而退款事务已终止时，谁接管、如何继续和凭什么结案尚无决定；不能用“恢复原parent”代替业务答案。这是尚未闭合的跨owner验收依赖，不是文档已谎称退款成功。",
+          "[中优先级｜K12混淆桥接拒绝与聚合错误码] /Users/zhongdj/Workspaces/mad-polaris/bank-wealth-demo/docs/business-design/review-20261116/fund-company-ta.md:164 将unknown下“请求退款”的预期写为REFUND_TA_REJECTED，却没有指定直接调用聚合。【源事实】BankTaBridge.requestRefund在查询或发送命令之前就以related TA rejection required拒绝非rejected状态，见 /Users/zhongdj/Workspaces/mad-polaris/bank-wealth-demo/handwritten/scala/example/bankwealth/bindings/BankTaBridge.scala:84–96，SHA-256=bf8efecf3f15aca841a6a6ef870de8b1bf7c12269a95c1ce66f2a7e9de1ac7de；REFUND_TA_REJECTED属于 /Users/zhongdj/Workspaces/mad-polaris/bank-wealth-demo/truth/bank-wealth/contexts/bankwealth/aggregates/fund-order/slices/request-fund-purchase-refund.slice.yaml:14–17，SHA-256=6977766c5484f0c003451f5df93102acd3efd6d3102d5d7c14960f66ed6fdfb8。【角色提案】拆为两个Given已付款、已注册、taStatus=unknown的案例：G直接执行RequestFundPurchaseRefund，独立预期REFUND_TA_REJECTED；H调用requestRefund，独立预期桥接拒绝、TA查询0次、领域命令0次。两者新增intent均为0。否则按现有K12实现验收会把正确桥接拒绝误判失败。",
+          "[中优先级｜丢应答与absence恢复没有独立验收闭环] /Users/zhongdj/Workspaces/mad-polaris/bank-wealth-demo/docs/business-design/review-20261116/fund-company-ta.md:95–104,155–157 提出了丢应答恢复，但K3–K5只检查重复提交和查询结果，未检验恢复是否获准、是否产生第二个业务申请。【源事实】现役重试授权要求可信授权、原操作关联、先前及当前均为absence，且整个JSON对象相等，见 /Users/zhongdj/Workspaces/mad-polaris/bank-wealth-demo/handwritten/scala/example/bankwealth/bindings/BankTaEffectBindings.scala:77–88，SHA-256=8e5fe053f57524b8ceda63248d5fafa708eb7ca00e010293f1173a5940959b2c。【既有模拟假设】查无结果包含当前businessTick，同ID同正文重交返回原申请，见 /Users/zhongdj/Workspaces/mad-polaris/bank-wealth-demo/simulator/mock-ta-core.mjs:144–173，SHA-256=a31b1fe4167a61390de36ff1a45e67da0695eaa40b42713c681155e13d71acda。【角色提案】补H授权边界的独立固定报文：Given先前absence.tick=10，When当前absence.tick=11，Then授权false；错误授权也false；完全相同且关联正确才true。另补已受理但submit应答丢失，按原ID查询后仅一个持久申请、零退款的案例。G沿既有观察协议，H负责恢复与查询，O固定报文和申请事件计数；不要把“无第二申请”写成“不得第二次调用submit”。【未决】被拒恢复后运营如何接管仍属Q1，不能为使案例通过而放宽证据或自行设定重试政策。"
+        ],
+        "strongestNextStep": "由TA对接、银行资金/运营和独立验收owner先闭合“TA拒绝但退款自身未成功”的有界交接：明确责任人、观察证据、允许动作及未决出口，补退款失败与资金到账oracle；随后拆分K12层级并补丢应答/absence恢复案例。未发现本次已核对内容把NAV、费用、日历或真实机构批准偷换为既定政策；Q1–Q7仍是未决事项。以上均为未执行的模拟设计建议，不构成实施授权或第二份当前真源。"
+      }
+    },
+    {
+      "draft": {
+        "role": "虚拟支付账务清算专家＋运营对账负责人（模拟角色，无真实机构审批）",
+        "file": "/Users/zhongdj/Workspaces/mad-polaris/bank-wealth-demo/docs/business-design/review-20261116/payment-operations.md",
+        "summary": "目标原先不存在，已创建231行中文用例设计；含27份来源的绝对路径、行号和SHA-256。区分源声明、手写实现、模拟假设、角色提议与未决事项。未运行服务、编译、测试或生成，未修改其他文件。",
+        "explicitRules": [
+          "付款Commit决定后只向前恢复，未知先核实，保持原operation身份。来源：/Users/zhongdj/Workspaces/mad-polaris/bank-wealth-demo/truth/bank-wealth/contexts/bankwealth/sagas/bank-cash-payment-v1.saga.yaml:280–288；SHA-256=9df6b256506669f8e0f40900bb37cb77696c9f1a17eaa13f229a054d43b2fb0d。",
+          "独立退款将原全本金从原募集户返回原投资人，不复用原付款预留或补偿；须关联可信TA拒绝和原付款成功。来源：/Users/zhongdj/Workspaces/mad-polaris/bank-wealth-demo/truth/bank-wealth/contexts/bankwealth/sagas/bank-independent-refund-v1.saga.yaml:11–20；SHA-256=dd30368acfe82d5124aeba4778a03a44a51d9ad35684e93584c39fce19542942。"
+        ],
+        "proposals": [
+          "P01原现金请求受理与付款、P02独立全本金退款、P03未知结果与运营恢复，逐步明确参与者、责任、决定、数据及结果。",
+          "提出分阶段本金核对表，区分可用余额、预留和已出未入解释量；不新增清算账户或账本。",
+          "提出10组Given/When/Then案例，分别标注确定性生成、手写实现和独立具体预期；保留有限定投支付接缝。"
+        ],
+        "openDecisions": [
+          "重试、退避、期限、跨重启预算及升级责任。",
+          "退款早拒绝或补偿终止后，原本金未退义务如何继续履行。",
+          "冲突TA终态及资金证据的业务裁决责任。",
+          "authorityVersion变更后的原交易恢复兼容。",
+          "双边资金证据的一致观察截面和完整性。",
+          "TA确认本金、份额、NAV及费用的显式模拟合同。"
+        ]
+      },
+      "review": {
+        "role": "模拟基金公司/TA受理与客户承诺挑战者；无真实机构、专家或监管者参与或批准。只读审阅 /Users/zhongdj/Workspaces/mad-polaris/bank-wealth-demo/docs/business-design/review-20261116/payment-operations.md，SHA-256=73d5d0464ecf23222b4a949f9cb843891848bdd780e60f3d648c013db3a8e94f；以下目标行号均指该文件。未写文件，未运行服务、编译、测试或生成。",
+        "issues": [
+          "【关键合同遗漏｜目标61–63、134–138、178–182】P02/K04/K10没有充分定义“可信TA拒绝”，仅关联订单、付款、产品及receipt并不足够。【源事实·手写】/Users/zhongdj/Workspaces/mad-polaris/bank-wealth-demo/handwritten/scala/example/bankwealth/bindings/BankTaBridge.scala:105–150（SHA-256=bf8efecf3f15aca841a6a6ef870de8b1bf7c12269a95c1ce66f2a7e9de1ac7de）还要求完整原请求匹配、双账户及本金匹配，并再次查询确认回执属于canonicalReceipts。【现有模拟假设】该mock权威查询不等于真实基金公司的批准或认证。【角色提议】补“正确订单/付款ID但错误本金、错误账户、非canonical回执”三个入站反例；银行入站负责拒绝，独立O固定TA终态事件增量0、退款intent增量0、资金事件增量0。G只能承接显式领域guards/fold，H必须承担上述解码及权威查询，不能以生成切片替代。真实/扩展权威契约仍未决。",
+          "【关键失败路径遗漏｜目标61–62、68–70】缺少“拒绝已入银行，但首次退款intent尚未保存时TA失联”的断点；不能把收到可信拒绝直接等同于退款已受理。【源事实·手写】/Users/zhongdj/Workspaces/mad-polaris/bank-wealth-demo/handwritten/scala/example/bankwealth/bindings/BankTaBridge.scala:84–100（SHA-256=bf8efecf3f15aca841a6a6ef870de8b1bf7c12269a95c1ce66f2a7e9de1ac7de）在无intent时重新查询并要求唯一权威拒绝；已有intent则直接复用原单，不再依赖该查询。【角色提议】Given拒绝已保存但intent为空，When查询失败，Then保留拒绝、intent增量0、退款资金事件增量0，客户只能看到“退款尚未发起”；另设已有intent后失联的同身份恢复对照。G负责唯一intent，H负责查询及恢复，O分别固定两种断点的身份和事件增量。【未决】是否允许仅凭已保存拒绝首次启动退款，需要业务owner明确决定；现有Q02并未回答这个前置断点。",
+          "【客户承诺oracle不足｜目标134–138】K04只有未知后拒绝，没有“晚到合法确认，而提交效果ACK/父流程checkpoint仍未完成”的反向案例，无法充分证明客户不会被错误引导退款或重新购买。【现有固定测试文本，非本轮通过】/Users/zhongdj/Workspaces/mad-polaris/bank-wealth-demo/test/scala/BankTaApplicationSpec.scala:207–220,405–427（SHA-256=bdea46506c840bcc079afcdaf06293122ab500034a0fff49986ca29256355c9f）明确存在订单已confirmed但StageDone仍为0的场景，随后恢复保持原TA身份和一次提交。【角色提议】Given付款成功且TA提交回复丢失，When原请求的合法确认到达，Then独立O固定投资人/募集户900.00/100.00、付款仍成功、退款intent为0、提交数1、恢复身份不变；不能用技术流程未完成否定投资确认。G承接显式确认规则，H负责TA核实及原图续接，O不得从候选生成结果反算。该模拟案例不解决Q06的计价、NAV或费用合同，后者仍未决。"
+        ],
+        "strongestNextStep": "请付款设计owner与模拟TA owner先补清“权威回执→拒绝入账→首次退款intent”的责任和失联边界，再补上述三个有界案例及独立预期。已读范围未发现伪造现实批准；主要问题是漏掉现有手写契约及关键oracle。Q02未退本金后续履行、Q03矛盾终态裁决、Q06计价合同仍未决，不应据此宣称客户承诺已闭环。无需新增真源、公共schema或改动固定测试。"
+      }
+    },
+    {
+      "draft": {
+        "role": "虚拟技术架构师＋研发负责人＋验收测试负责人",
+        "file": "/Users/zhongdj/Workspaces/mad-polaris/bank-wealth-demo/docs/business-design/review-20261116/architecture-delivery.md",
+        "summary": "已创建中文有界用例设计，覆盖现金申购、TA确认、独立退款、有限定投，以及逐方法BDD、生成/手写/独立预期归属。40份来源按绝对路径、行号和SHA-256关联，明确区分源事实、模拟假设、角色提案和未决决定。未执行编译、测试、生成或服务；未修改受保护源码及固定预期。",
+        "explicitRules": [
+          "导航use-cases.yaml明确是描述性内容，不构成执行DSL或政策批准。来源 /Users/zhongdj/Workspaces/mad-polaris/bank-wealth-demo/truth/bank-wealth/contexts/bankwealth/use-cases.yaml:3–8；SHA-256 531663b9e938256b465d3b302a4d5e6798aacb689cd198a795668764aadb3b5e。",
+          "付款成功不等于投资成功；独立退款不补偿已commit付款；保留有限定投，不引入三败自动暂停。来源 /Users/zhongdj/Workspaces/mad-polaris/bank-wealth-demo/TRUTH.md:26–30；SHA-256 22ff12d956f30fb46abc5d919255b58f1f1cf3c9be338b4d045e466a1b522520。"
+        ],
+        "proposals": [
+          "四流逐步列明actor、责任、决定、数据、事件、状态、回复及失败路线，不新增第二套真源。",
+          "应用端口、七个查询方法、TA桥及effect实现分别设计BDD，避免用纯函数或聚合测试冒充完整行为覆盖。",
+          "保留明确guard/event/fold的确定性生成；可信准入、外部回执核实、精确日程前缀和终态关联仍明确由手写实现承担。"
+        ],
+        "openDecisions": [
+          "accepted与Unavailable的客户承诺边界，以及配置版本变化后的旧请求恢复策略。",
+          "模拟份额/NAV是否仅演示回执保真，还是需要另行批准计价及本金勾稽规则。",
+          "重试、退避、期限和人工处置标准；不以技术交互预算替代业务决定。",
+          "独立身份字节golden、Cash逐方法直接测试等验收缺口；slot日历语义仍未决定。"
+        ]
+      },
+      "review": {
+        "role": "Simulated funds-conservation, operations and independent-acceptance challenger. Read-only review of /Users/zhongdj/Workspaces/mad-polaris/bank-wealth-demo/docs/business-design/review-20261116/architecture-delivery.md (SHA-256 ad7da5b918caf7876f107ff7f54caab6ac2fe794450afecadbf1a3f0ba5e82fc). No writes, tests or application execution; no real institution/expert/regulator participated. No confirmed source-rule contradiction or fabricated policy approval found in the reviewed portions. The following are unresolved delivery and oracle gaps.",
+        "issues": [
+          "Missing operational failure route — target lines 119–124 and 174. F: first refund creation queries TA again after rejection is already retained (/Users/zhongdj/Workspaces/mad-polaris/bank-wealth-demo/handwritten/scala/example/bankwealth/bindings/BankTaBridge.scala:84–99; SHA-256 bf8efecf3f15aca841a6a6ef870de8b1bf7c12269a95c1ce66f2a7e9de1ac7de). F: for payment=succeeded/TA=rejected, the pending index removes payment and TA entries, but creates a refund entry only when refundOperationId exists (/Users/zhongdj/Workspaces/mad-polaris/bank-wealth-demo/handwritten/scala/example/bankwealth/readside/BankReadside.scala:117–130; SHA-256 2a51cfa366a21190b0b4d27ac9cc088199ea2804f0769cd4987cebbf9e378f27). Consequently, TA unavailability before refund-intent persistence can leave this outstanding refund absent from the operations queue. P: add Given retained paid/rejected order with no refund intent; When the authoritative query is unavailable; Then preserve original identities, create no refund intent or reverse-money effect, and do not claim completion. Q: how the operator discovers and owns this obligation before a refund operation exists is unresolved—not answered by generic retry or R4. G: existing intent guards/folds; H: TA query and operational discovery; O: independently specified intent/event counts and queue visibility, distinguishing current absence from any proposed new visibility policy.",
+          "Insufficient intermediate funds oracle — target lines 124–125 and 200–212. The warning against summing available balances is correct, but no concrete replacement oracle covers each refund uncertainty boundary. F: the fixed refund cases distinguish prepare, collection-commit and investor-commit by effect counts (/Users/zhongdj/Workspaces/mad-polaris/bank-wealth-demo/test/scala/BankRefundApplicationSpec.scala:122–169; SHA-256 6beead5ecfad21293d77022d754734b27720774f94a653d1d817a29b3a737acf). F: reserve subtracts available, incoming commit adds it, and outgoing commit clears the reservation without another subtraction (/Users/zhongdj/Workspaces/mad-polaris/bank-wealth-demo/handwritten/scala/example/bankwealth/bindings/BankBalanceComputations.scala:10–19; SHA-256 ceb8afd93202ceb3da389e3e4edc7f612a5512894a9b2af7c55e622874732b3e; /Users/zhongdj/Workspaces/mad-polaris/bank-wealth-demo/truth/bank-wealth/contexts/bankwealth/structures/outgoing-funds.structure.yaml:60–72; SHA-256 825c0141d95f6a02418424aa8e0d43dd30a5bbae607f6deb5a02efde3effa720). P: Given paid balances investor/collection=900/100 and refund=100; When real evidence is withheld at those three boundaries; Then independently expect available pairs 900/0, 900/0, 1000/0; collection reservations 100, 0, 0; refund debit/investor-credit counts (0,0), (1,0), (1,1). Correlate every item to the same original refund; balances alone must not certify its terminal result. These are proposed, unexecuted expectations, not a new suspense-account policy. G: guards/folds; H: computations and phase recovery; O: literal phase-by-phase account/effect tuples. Operational handling of a stalled committed debit remains unresolved.",
+          "Missing connected SIP→TA rejection→refund acceptance case — target lines 136, 160 and 204–210. O5 and O10 cannot jointly establish the promised cross-flow result: the refund suite checks an order-level terminal callback, while the SIP success example constructs TA facts through internal commands (/Users/zhongdj/Workspaces/mad-polaris/bank-wealth-demo/test/scala/BankRefundApplicationSpec.scala:25–68; SHA-256 6beead5ecfad21293d77022d754734b27720774f94a653d1d817a29b3a737acf; /Users/zhongdj/Workspaces/mad-polaris/bank-wealth-demo/test/scala/BankSipApplicationSpec.scala:262–300; SHA-256 3b403aba267229602262ea8cbec994d8f9462170602477b1e7bc59d47f3bd390). F: the terminal bridge requires correlated refund success before counting TA rejection as an installment failure; refund noncompletion is not that terminal (/Users/zhongdj/Workspaces/mad-polaris/bank-wealth-demo/handwritten/scala/example/bankwealth/bindings/BankSipTerminalBridge.scala:45–100; SHA-256 a1cdd34f40425aaa93cf95f86ad2fbaade5893e9d3cbae5263de188576865a6d). P: Given one 100.00 installment and initial balances 1000/0; When the mock TA rejects and the actual independent refund completes; Then expect balances 1000/0, original payment still succeeded, that occurrence's first terminal failed, successTotal=0/failureTotal=1. Replaying the same occurrence must add neither money effects nor terminal counts. Add the compensated-refund alternative: balances 900/100 and no installment terminal/count yet. G: existing terminal guards/folds; H: connected SIP/TA/refund applications and callback bridge; O: independent per-occurrence counters plus both account histories—not a fabricated successful callback. This connected acceptance evidence remains unresolved and unexecuted."
+        ],
+        "strongestNextStep": "The main integrator should first resolve ownership and discoverability of the paid/rejected-but-no-refund-intent window, explicitly separating current behavior from the proposed operational policy. Then the acceptance owner should specify the intermediate-funds and connected-SIP cases above with literal independent expectations before seeking a separately authorized implementation/execution window. Do not treat this review as approval, change fixed tests, or create another truth source."
+      }
+    }
+  ],
+  "providerNote": "One payment-operations provider attempt ended unexpected EOF; bounded retry returned saved draft and cross-review. Source documents, not failed attempt, establish saved work.",
+  "noCodeOrRuntime": true,
+  "institutionalApproval": false
+}

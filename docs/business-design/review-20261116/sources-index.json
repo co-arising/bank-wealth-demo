@@ -1,0 +1,638 @@
+{
+  "schemaVersion": "bank-simulated-design-sources/v1",
+  "date": "2026-11-16",
+  "scope": "Read-only comparison copies; not another current author tree, not runtime input or acceptance evidence",
+  "sourceRoot": "/Users/zhongdj/Workspaces/mad-polaris/bank-wealth-demo",
+  "files": [
+    {
+      "source": "AGENTS.md",
+      "snapshot": "sources/AGENTS.md",
+      "bytes": 10375,
+      "sha256": "d06ea3445bd1f2e3230c104fe140fb7379d31dd9af018fc03a069fda7731b26c",
+      "referencedBy": [
+        "bank-product-channel.md",
+        "fund-company-ta.md",
+        "payment-operations.md",
+        "architecture-delivery.md"
+      ]
+    },
+    {
+      "source": "TRUTH.md",
+      "snapshot": "sources/TRUTH.md",
+      "bytes": 2883,
+      "sha256": "22ff12d956f30fb46abc5d919255b58f1f1cf3c9be338b4d045e466a1b522520",
+      "referencedBy": [
+        "bank-product-channel.md",
+        "fund-company-ta.md",
+        "payment-operations.md",
+        "architecture-delivery.md"
+      ]
+    },
+    {
+      "source": "docs/FUND-PURCHASE-BUSINESS-DELIVERY-20261115.md",
+      "snapshot": "sources/docs/FUND-PURCHASE-BUSINESS-DELIVERY-20261115.md",
+      "bytes": 8405,
+      "sha256": "b02e381b853748507e2ea8c4e987fb6913123b57887a2818facb836e8e566ec4",
+      "referencedBy": [
+        "bank-product-channel.md",
+        "fund-company-ta.md",
+        "payment-operations.md",
+        "architecture-delivery.md"
+      ]
+    },
+    {
+      "source": "docs/TRUTHSRC-CONTINUATION.md",
+      "snapshot": "sources/docs/TRUTHSRC-CONTINUATION.md",
+      "bytes": 29138,
+      "sha256": "ca13ab984b796623b8e149577ee90c2ef3156f0fd13958ac2df3f15b8100d204",
+      "referencedBy": [
+        "payment-operations.md"
+      ]
+    },
+    {
+      "source": "docs/architecture/HANDWRITTEN-SOURCE-MAP.json",
+      "snapshot": "sources/docs/architecture/HANDWRITTEN-SOURCE-MAP.json",
+      "bytes": 52646,
+      "sha256": "d1617059b6fc52682d7662015dbdb83fcb4f5aed75d1ff196743cf9c6ec01031",
+      "referencedBy": [
+        "architecture-delivery.md"
+      ]
+    },
+    {
+      "source": "docs/architecture/README.md",
+      "snapshot": "sources/docs/architecture/README.md",
+      "bytes": 5158,
+      "sha256": "7dca12c81b97646be967d8c34fa88c25754351d2d787ebddc1949878e44b8074",
+      "referencedBy": [
+        "architecture-delivery.md"
+      ]
+    },
+    {
+      "source": "handwritten/scala/example/bankwealth/bindings/BankBalanceComputations.scala",
+      "snapshot": "sources/handwritten/scala/example/bankwealth/bindings/BankBalanceComputations.scala",
+      "bytes": 1109,
+      "sha256": "ceb8afd93202ceb3da389e3e4edc7f612a5512894a9b2af7c55e622874732b3e",
+      "referencedBy": [
+        "bank-product-channel.md",
+        "payment-operations.md",
+        "architecture-delivery.md"
+      ]
+    },
+    {
+      "source": "handwritten/scala/example/bankwealth/bindings/BankRefundBindings.scala",
+      "snapshot": "sources/handwritten/scala/example/bankwealth/bindings/BankRefundBindings.scala",
+      "bytes": 27500,
+      "sha256": "db413dbdaa669ff9b99eb58af23a07c517a7374ada76dbfd4f2389d2a0c253eb",
+      "referencedBy": [
+        "payment-operations.md"
+      ]
+    },
+    {
+      "source": "handwritten/scala/example/bankwealth/bindings/BankSipTerminalBridge.scala",
+      "snapshot": "sources/handwritten/scala/example/bankwealth/bindings/BankSipTerminalBridge.scala",
+      "bytes": 7772,
+      "sha256": "a1cdd34f40425aaa93cf95f86ad2fbaade5893e9d3cbae5263de188576865a6d",
+      "referencedBy": [
+        "bank-product-channel.md",
+        "fund-company-ta.md",
+        "architecture-delivery.md"
+      ]
+    },
+    {
+      "source": "handwritten/scala/example/bankwealth/bindings/BankTaBridge.scala",
+      "snapshot": "sources/handwritten/scala/example/bankwealth/bindings/BankTaBridge.scala",
+      "bytes": 11204,
+      "sha256": "bf8efecf3f15aca841a6a6ef870de8b1bf7c12269a95c1ce66f2a7e9de1ac7de",
+      "referencedBy": [
+        "bank-product-channel.md",
+        "fund-company-ta.md",
+        "architecture-delivery.md"
+      ]
+    },
+    {
+      "source": "handwritten/scala/example/bankwealth/bindings/BankTaEffectBindings.scala",
+      "snapshot": "sources/handwritten/scala/example/bankwealth/bindings/BankTaEffectBindings.scala",
+      "bytes": 6612,
+      "sha256": "8e5fe053f57524b8ceda63248d5fafa708eb7ca00e010293f1173a5940959b2c",
+      "referencedBy": [
+        "fund-company-ta.md",
+        "architecture-delivery.md"
+      ]
+    },
+    {
+      "source": "handwritten/scala/example/bankwealth/bindings/StableOrderIdentity.scala",
+      "snapshot": "sources/handwritten/scala/example/bankwealth/bindings/StableOrderIdentity.scala",
+      "bytes": 1168,
+      "sha256": "ec667552d797dacc85eb8890747b8ae9f08ba9ef3eb0738e815318ce04b5018c",
+      "referencedBy": [
+        "fund-company-ta.md",
+        "architecture-delivery.md"
+      ]
+    },
+    {
+      "source": "handwritten/scala/example/bankwealth/bindings/StableSipIdentity.scala",
+      "snapshot": "sources/handwritten/scala/example/bankwealth/bindings/StableSipIdentity.scala",
+      "bytes": 1169,
+      "sha256": "4a7f9b3a0360879b7ffa7734cb2612b51cfbc85a9a1dcf64441b78f3085a1f67",
+      "referencedBy": [
+        "architecture-delivery.md"
+      ]
+    },
+    {
+      "source": "handwritten/scala/example/bankwealth/integration/BankApplicationPorts.scala",
+      "snapshot": "sources/handwritten/scala/example/bankwealth/integration/BankApplicationPorts.scala",
+      "bytes": 2162,
+      "sha256": "42e4e0dec4be011379718b6942276b61a9cbb7e026b630071869ee045a3fe632",
+      "referencedBy": [
+        "architecture-delivery.md"
+      ]
+    },
+    {
+      "source": "handwritten/scala/example/bankwealth/integration/BankCashRequests.scala",
+      "snapshot": "sources/handwritten/scala/example/bankwealth/integration/BankCashRequests.scala",
+      "bytes": 5665,
+      "sha256": "21cf50e66468caec589e83a20f5fa92806eb2c52913cfc7016df68f460e0b1d9",
+      "referencedBy": [
+        "bank-product-channel.md",
+        "payment-operations.md",
+        "architecture-delivery.md"
+      ]
+    },
+    {
+      "source": "handwritten/scala/example/bankwealth/integration/BankRecovery.scala",
+      "snapshot": "sources/handwritten/scala/example/bankwealth/integration/BankRecovery.scala",
+      "bytes": 5392,
+      "sha256": "b9eecf80581d0a2d3877ff7426c23d37253e63bc46459f4308b91091b4402b2f",
+      "referencedBy": [
+        "payment-operations.md",
+        "architecture-delivery.md"
+      ]
+    },
+    {
+      "source": "handwritten/scala/example/bankwealth/integration/BankRecoveryLoop.scala",
+      "snapshot": "sources/handwritten/scala/example/bankwealth/integration/BankRecoveryLoop.scala",
+      "bytes": 4601,
+      "sha256": "006f4a72315b370f28ec3aa1db05552c50847f4ea3c407dd1f030e330806b15f",
+      "referencedBy": [
+        "payment-operations.md"
+      ]
+    },
+    {
+      "source": "handwritten/scala/example/bankwealth/integration/BankRequestIdentity.scala",
+      "snapshot": "sources/handwritten/scala/example/bankwealth/integration/BankRequestIdentity.scala",
+      "bytes": 2842,
+      "sha256": "41857ea44ad3ddd24b75f9d7199f5f5ae152b90e48840918c9b09130dec84c23",
+      "referencedBy": [
+        "bank-product-channel.md",
+        "architecture-delivery.md"
+      ]
+    },
+    {
+      "source": "handwritten/scala/example/bankwealth/integration/BankServiceEndpoints.scala",
+      "snapshot": "sources/handwritten/scala/example/bankwealth/integration/BankServiceEndpoints.scala",
+      "bytes": 3603,
+      "sha256": "872d814864d587fdf1d487296bb4e160b74e34236fee62a3b2a410eecf1ee5e2",
+      "referencedBy": [
+        "bank-product-channel.md"
+      ]
+    },
+    {
+      "source": "handwritten/scala/example/bankwealth/integration/BankServiceJson.scala",
+      "snapshot": "sources/handwritten/scala/example/bankwealth/integration/BankServiceJson.scala",
+      "bytes": 13415,
+      "sha256": "1c6963ad4264eca19c6e0041f7d107ddcefce921ddb5fe7d7c1485254fbf39c7",
+      "referencedBy": [
+        "bank-product-channel.md"
+      ]
+    },
+    {
+      "source": "handwritten/scala/example/bankwealth/integration/BankTrustedAdmission.scala",
+      "snapshot": "sources/handwritten/scala/example/bankwealth/integration/BankTrustedAdmission.scala",
+      "bytes": 4671,
+      "sha256": "6a861c4f8e6b3920a32136a324506a3b17b0a91a917eefdc48bd332550a4abef",
+      "referencedBy": [
+        "bank-product-channel.md",
+        "payment-operations.md",
+        "architecture-delivery.md"
+      ]
+    },
+    {
+      "source": "handwritten/scala/example/bankwealth/readside/BankReadside.scala",
+      "snapshot": "sources/handwritten/scala/example/bankwealth/readside/BankReadside.scala",
+      "bytes": 18081,
+      "sha256": "2a51cfa366a21190b0b4d27ac9cc088199ea2804f0769cd4987cebbf9e378f27",
+      "referencedBy": [
+        "architecture-delivery.md"
+      ]
+    },
+    {
+      "source": "handwritten/scala/example/bankwealth/sip/BankSipApplication.scala",
+      "snapshot": "sources/handwritten/scala/example/bankwealth/sip/BankSipApplication.scala",
+      "bytes": 17934,
+      "sha256": "fafc993a2854fc00da26b3ddf6171e1c60c256e03e552b9ca7463a20d488dbcf",
+      "referencedBy": [
+        "bank-product-channel.md",
+        "architecture-delivery.md"
+      ]
+    },
+    {
+      "source": "handwritten/scala/example/bankwealth/ta/BankTaRefundApplication.scala",
+      "snapshot": "sources/handwritten/scala/example/bankwealth/ta/BankTaRefundApplication.scala",
+      "bytes": 18861,
+      "sha256": "579a2d43451f9c7be63ffd6dbcc156813803664e903ef1b0c03c913648b3719f",
+      "referencedBy": [
+        "fund-company-ta.md",
+        "payment-operations.md",
+        "architecture-delivery.md"
+      ]
+    },
+    {
+      "source": "handwritten/scala/example/bankwealth/web/BankBrowserPages.scala",
+      "snapshot": "sources/handwritten/scala/example/bankwealth/web/BankBrowserPages.scala",
+      "bytes": 22218,
+      "sha256": "fac999de7cce279679612da8d29def2078c6d90f3bfb936c0738f3586aca7ab0",
+      "referencedBy": [
+        "bank-product-channel.md"
+      ]
+    },
+    {
+      "source": "simulator/contract.mjs",
+      "snapshot": "sources/simulator/contract.mjs",
+      "bytes": 10314,
+      "sha256": "19d6fa131f05ca23ea01e916c6149f26cc3d78124f0bd555c094d9d4eeee456f",
+      "referencedBy": [
+        "fund-company-ta.md",
+        "architecture-delivery.md"
+      ]
+    },
+    {
+      "source": "simulator/mock-ta-core.mjs",
+      "snapshot": "sources/simulator/mock-ta-core.mjs",
+      "bytes": 9740,
+      "sha256": "a31b1fe4167a61390de36ff1a45e67da0695eaa40b42713c681155e13d71acda",
+      "referencedBy": [
+        "fund-company-ta.md",
+        "architecture-delivery.md"
+      ]
+    },
+    {
+      "source": "test/scala/BankApplicationAssemblySpec.scala",
+      "snapshot": "sources/test/scala/BankApplicationAssemblySpec.scala",
+      "bytes": 6572,
+      "sha256": "e576ce17ef2f2ea4efac5d5aea9ccf0bfe801b108aabfcc3fe3b9a72ab5aaa3e",
+      "referencedBy": [
+        "architecture-delivery.md"
+      ]
+    },
+    {
+      "source": "test/scala/BankBalanceStateSpec.scala",
+      "snapshot": "sources/test/scala/BankBalanceStateSpec.scala",
+      "bytes": 6515,
+      "sha256": "7bf15205d745f7ee146127ef13961c503ad71262091a792ca4f61a1c4f4c568f",
+      "referencedBy": [
+        "payment-operations.md",
+        "architecture-delivery.md"
+      ]
+    },
+    {
+      "source": "test/scala/BankPaymentRecoverySpec.scala",
+      "snapshot": "sources/test/scala/BankPaymentRecoverySpec.scala",
+      "bytes": 4380,
+      "sha256": "9a70e7a02147c9e5995857b2f7dea7294c8df3ce31d1fd2bdbbcdb5f5f91fcc5",
+      "referencedBy": [
+        "payment-operations.md"
+      ]
+    },
+    {
+      "source": "test/scala/BankQueryAuthorizationSpec.scala",
+      "snapshot": "sources/test/scala/BankQueryAuthorizationSpec.scala",
+      "bytes": 10453,
+      "sha256": "43fb1290ee585bc6338390b46fa562bad37e0abb69698a3519c0330d025b8f82",
+      "referencedBy": [
+        "architecture-delivery.md"
+      ]
+    },
+    {
+      "source": "test/scala/BankRefundApplicationSpec.scala",
+      "snapshot": "sources/test/scala/BankRefundApplicationSpec.scala",
+      "bytes": 13745,
+      "sha256": "6beead5ecfad21293d77022d754734b27720774f94a653d1d817a29b3a737acf",
+      "referencedBy": [
+        "bank-product-channel.md",
+        "payment-operations.md",
+        "architecture-delivery.md"
+      ]
+    },
+    {
+      "source": "test/scala/BankRequestHttpSpec.scala",
+      "snapshot": "sources/test/scala/BankRequestHttpSpec.scala",
+      "bytes": 2652,
+      "sha256": "4070e5f01b080345ea9f9ffbd4c17365c958246bafec8a52767d4885bef12a72",
+      "referencedBy": [
+        "architecture-delivery.md"
+      ]
+    },
+    {
+      "source": "test/scala/BankSinglePaymentOracleSpec.scala",
+      "snapshot": "sources/test/scala/BankSinglePaymentOracleSpec.scala",
+      "bytes": 16598,
+      "sha256": "81873a3e8755adacf9a6538065924c4208cb2226dc4c7a5001e094481c6fcc23",
+      "referencedBy": [
+        "bank-product-channel.md",
+        "payment-operations.md",
+        "architecture-delivery.md"
+      ]
+    },
+    {
+      "source": "test/scala/BankSipApplicationSpec.scala",
+      "snapshot": "sources/test/scala/BankSipApplicationSpec.scala",
+      "bytes": 24498,
+      "sha256": "3b403aba267229602262ea8cbec994d8f9462170602477b1e7bc59d47f3bd390",
+      "referencedBy": [
+        "architecture-delivery.md"
+      ]
+    },
+    {
+      "source": "test/scala/BankSipRecoverySpec.scala",
+      "snapshot": "sources/test/scala/BankSipRecoverySpec.scala",
+      "bytes": 17280,
+      "sha256": "01b973ba201a47d60b3bcf6b7c9e22845371a736599513347d4b57fa305ee1f2",
+      "referencedBy": [
+        "architecture-delivery.md"
+      ]
+    },
+    {
+      "source": "test/scala/BankSipStateSpec.scala",
+      "snapshot": "sources/test/scala/BankSipStateSpec.scala",
+      "bytes": 8022,
+      "sha256": "b728b506b70d0bc24061997b45e853bb6be8fd5442be12e7321c4eaab7668076",
+      "referencedBy": [
+        "architecture-delivery.md"
+      ]
+    },
+    {
+      "source": "test/scala/BankTaApplicationSpec.scala",
+      "snapshot": "sources/test/scala/BankTaApplicationSpec.scala",
+      "bytes": 27148,
+      "sha256": "bdea46506c840bcc079afcdaf06293122ab500034a0fff49986ca29256355c9f",
+      "referencedBy": [
+        "bank-product-channel.md",
+        "architecture-delivery.md"
+      ]
+    },
+    {
+      "source": "truth/bank-wealth/contexts/bankwealth/aggregates/fund-order/slices/record-cash-request-source.slice.yaml",
+      "snapshot": "sources/truth/bank-wealth/contexts/bankwealth/aggregates/fund-order/slices/record-cash-request-source.slice.yaml",
+      "bytes": 2758,
+      "sha256": "55119a58a3440d079af5cc647202fef6e7b3951835a6097950dc34c07fdd3252",
+      "referencedBy": [
+        "bank-product-channel.md",
+        "fund-company-ta.md",
+        "payment-operations.md",
+        "architecture-delivery.md"
+      ]
+    },
+    {
+      "source": "truth/bank-wealth/contexts/bankwealth/aggregates/fund-order/slices/record-fund-ta-accepted.slice.yaml",
+      "snapshot": "sources/truth/bank-wealth/contexts/bankwealth/aggregates/fund-order/slices/record-fund-ta-accepted.slice.yaml",
+      "bytes": 3423,
+      "sha256": "2b83eb58116406a0e0c3a680a195cbb5722a35936eacb7292acfcea508cf82cf",
+      "referencedBy": [
+        "fund-company-ta.md"
+      ]
+    },
+    {
+      "source": "truth/bank-wealth/contexts/bankwealth/aggregates/fund-order/slices/record-fund-ta-confirmed.slice.yaml",
+      "snapshot": "sources/truth/bank-wealth/contexts/bankwealth/aggregates/fund-order/slices/record-fund-ta-confirmed.slice.yaml",
+      "bytes": 3796,
+      "sha256": "5f06801a987491448c7a79c92c314c00b3f71c90eac2425a679ce23276280793",
+      "referencedBy": [
+        "bank-product-channel.md",
+        "fund-company-ta.md",
+        "payment-operations.md",
+        "architecture-delivery.md"
+      ]
+    },
+    {
+      "source": "truth/bank-wealth/contexts/bankwealth/aggregates/fund-order/slices/record-fund-ta-rejected.slice.yaml",
+      "snapshot": "sources/truth/bank-wealth/contexts/bankwealth/aggregates/fund-order/slices/record-fund-ta-rejected.slice.yaml",
+      "bytes": 3682,
+      "sha256": "a0ae573010d324fe6920eb7f5884c67015c9eaa75f95e9be79e69cea490c97fe",
+      "referencedBy": [
+        "fund-company-ta.md",
+        "payment-operations.md"
+      ]
+    },
+    {
+      "source": "truth/bank-wealth/contexts/bankwealth/aggregates/fund-order/slices/record-fund-ta-unknown.slice.yaml",
+      "snapshot": "sources/truth/bank-wealth/contexts/bankwealth/aggregates/fund-order/slices/record-fund-ta-unknown.slice.yaml",
+      "bytes": 3416,
+      "sha256": "389ad3be310c9210f71d83c936aff00314b78e55ec0c96c2501b99b75458eeb2",
+      "referencedBy": [
+        "fund-company-ta.md"
+      ]
+    },
+    {
+      "source": "truth/bank-wealth/contexts/bankwealth/aggregates/fund-order/slices/register-fund-ta-submission.slice.yaml",
+      "snapshot": "sources/truth/bank-wealth/contexts/bankwealth/aggregates/fund-order/slices/register-fund-ta-submission.slice.yaml",
+      "bytes": 1577,
+      "sha256": "b87683b90216e1c3b45176f974513a9d481c442a325ae3d979e237410f932261",
+      "referencedBy": [
+        "fund-company-ta.md"
+      ]
+    },
+    {
+      "source": "truth/bank-wealth/contexts/bankwealth/aggregates/fund-order/slices/request-fund-purchase-refund.slice.yaml",
+      "snapshot": "sources/truth/bank-wealth/contexts/bankwealth/aggregates/fund-order/slices/request-fund-purchase-refund.slice.yaml",
+      "bytes": 2058,
+      "sha256": "6977766c5484f0c003451f5df93102acd3efd6d3102d5d7c14960f66ed6fdfb8",
+      "referencedBy": [
+        "bank-product-channel.md",
+        "fund-company-ta.md",
+        "payment-operations.md",
+        "architecture-delivery.md"
+      ]
+    },
+    {
+      "source": "truth/bank-wealth/contexts/bankwealth/aggregates/fund-order/slices/request-fund-purchase-settlement.slice.yaml",
+      "snapshot": "sources/truth/bank-wealth/contexts/bankwealth/aggregates/fund-order/slices/request-fund-purchase-settlement.slice.yaml",
+      "bytes": 3903,
+      "sha256": "c3dc1fabc62a3fd622933bf01a66859171b5e834319fe62cae7311dfd7dd3e2b",
+      "referencedBy": [
+        "bank-product-channel.md",
+        "architecture-delivery.md"
+      ]
+    },
+    {
+      "source": "truth/bank-wealth/contexts/bankwealth/aggregates/sip-plan/slices/observe-sip-due-slot.slice.yaml",
+      "snapshot": "sources/truth/bank-wealth/contexts/bankwealth/aggregates/sip-plan/slices/observe-sip-due-slot.slice.yaml",
+      "bytes": 2539,
+      "sha256": "f43c9d499e333e3f2eba99fd405d64f8c10e9532b482323a3152144818ab2002",
+      "referencedBy": []
+    },
+    {
+      "source": "truth/bank-wealth/contexts/bankwealth/aggregates/sip-plan/slices/pause-sip-plan.slice.yaml",
+      "snapshot": "sources/truth/bank-wealth/contexts/bankwealth/aggregates/sip-plan/slices/pause-sip-plan.slice.yaml",
+      "bytes": 1759,
+      "sha256": "b72efc7ff50d9e545847d7a0c419f7cb7d97437f2a4e580ee61175847f34f6b4",
+      "referencedBy": [
+        "bank-product-channel.md"
+      ]
+    },
+    {
+      "source": "truth/bank-wealth/contexts/bankwealth/aggregates/sip-plan/slices/record-sip-installment-failed.slice.yaml",
+      "snapshot": "sources/truth/bank-wealth/contexts/bankwealth/aggregates/sip-plan/slices/record-sip-installment-failed.slice.yaml",
+      "bytes": 3449,
+      "sha256": "373a09ee4da5648cfaf8b6a84fdb8ba9a3eee77a89c396eff5133830ff5ecc30",
+      "referencedBy": [
+        "bank-product-channel.md",
+        "fund-company-ta.md"
+      ]
+    },
+    {
+      "source": "truth/bank-wealth/contexts/bankwealth/aggregates/sip-plan/slices/record-sip-installment-succeeded.slice.yaml",
+      "snapshot": "sources/truth/bank-wealth/contexts/bankwealth/aggregates/sip-plan/slices/record-sip-installment-succeeded.slice.yaml",
+      "bytes": 3344,
+      "sha256": "3ad7d3e3feed55f65859a03accc077cf49514f95537dfcb3e015182e5fd621e4",
+      "referencedBy": [
+        "bank-product-channel.md",
+        "fund-company-ta.md"
+      ]
+    },
+    {
+      "source": "truth/bank-wealth/contexts/bankwealth/aggregates/sip-plan/slices/resume-sip-plan.slice.yaml",
+      "snapshot": "sources/truth/bank-wealth/contexts/bankwealth/aggregates/sip-plan/slices/resume-sip-plan.slice.yaml",
+      "bytes": 1825,
+      "sha256": "ccff6e66ff091535cd9cc92ee98a369616012d7f58643fb17dd00af674c86f10",
+      "referencedBy": [
+        "bank-product-channel.md"
+      ]
+    },
+    {
+      "source": "truth/bank-wealth/contexts/bankwealth/aggregates/sip-plan/slices/revise-sip-plan.slice.yaml",
+      "snapshot": "sources/truth/bank-wealth/contexts/bankwealth/aggregates/sip-plan/slices/revise-sip-plan.slice.yaml",
+      "bytes": 2799,
+      "sha256": "7e1714c020b34d9b9adb8daf93ed91aad9cf953606c6c47c2ad8a8de09d884d8",
+      "referencedBy": [
+        "bank-product-channel.md",
+        "fund-company-ta.md",
+        "payment-operations.md",
+        "architecture-delivery.md"
+      ]
+    },
+    {
+      "source": "truth/bank-wealth/contexts/bankwealth/aggregates/sip-plan/slices/skip-paused-sip-due-slot.slice.yaml",
+      "snapshot": "sources/truth/bank-wealth/contexts/bankwealth/aggregates/sip-plan/slices/skip-paused-sip-due-slot.slice.yaml",
+      "bytes": 2560,
+      "sha256": "9d42742cf36d69b9802b72879c93694012cd2a4da808a554c6411921dd6be019",
+      "referencedBy": [
+        "bank-product-channel.md"
+      ]
+    },
+    {
+      "source": "truth/bank-wealth/contexts/bankwealth/aggregates/sip-plan/slices/trigger-sip-installment.slice.yaml",
+      "snapshot": "sources/truth/bank-wealth/contexts/bankwealth/aggregates/sip-plan/slices/trigger-sip-installment.slice.yaml",
+      "bytes": 3319,
+      "sha256": "7499c577498e085c8ff8246c5d633ad1c9106df458e219553f5eb9f3000c5419",
+      "referencedBy": [
+        "bank-product-channel.md",
+        "fund-company-ta.md",
+        "payment-operations.md",
+        "architecture-delivery.md"
+      ]
+    },
+    {
+      "source": "truth/bank-wealth/contexts/bankwealth/pipelines/bank-ta-submission-v1.pipeline.yaml",
+      "snapshot": "sources/truth/bank-wealth/contexts/bankwealth/pipelines/bank-ta-submission-v1.pipeline.yaml",
+      "bytes": 2717,
+      "sha256": "46bad8ea8cde64686659b2e436a4714e5eb21814a1782940dd74ed92a1e03a20",
+      "referencedBy": [
+        "fund-company-ta.md"
+      ]
+    },
+    {
+      "source": "truth/bank-wealth/contexts/bankwealth/sagas/bank-cash-payment-v1.saga.yaml",
+      "snapshot": "sources/truth/bank-wealth/contexts/bankwealth/sagas/bank-cash-payment-v1.saga.yaml",
+      "bytes": 10872,
+      "sha256": "9df6b256506669f8e0f40900bb37cb77696c9f1a17eaa13f229a054d43b2fb0d",
+      "referencedBy": [
+        "bank-product-channel.md",
+        "payment-operations.md",
+        "architecture-delivery.md"
+      ]
+    },
+    {
+      "source": "truth/bank-wealth/contexts/bankwealth/sagas/bank-independent-refund-v1.saga.yaml",
+      "snapshot": "sources/truth/bank-wealth/contexts/bankwealth/sagas/bank-independent-refund-v1.saga.yaml",
+      "bytes": 8140,
+      "sha256": "dd30368acfe82d5124aeba4778a03a44a51d9ad35684e93584c39fce19542942",
+      "referencedBy": [
+        "payment-operations.md"
+      ]
+    },
+    {
+      "source": "truth/bank-wealth/contexts/bankwealth/structures/incoming-funds.structure.yaml",
+      "snapshot": "sources/truth/bank-wealth/contexts/bankwealth/structures/incoming-funds.structure.yaml",
+      "bytes": 7780,
+      "sha256": "1fad9443647ffe14ecce11b85382f27767b51e1098504d1c45c055ed8497efb0",
+      "referencedBy": [
+        "payment-operations.md"
+      ]
+    },
+    {
+      "source": "truth/bank-wealth/contexts/bankwealth/structures/order-payment.structure.yaml",
+      "snapshot": "sources/truth/bank-wealth/contexts/bankwealth/structures/order-payment.structure.yaml",
+      "bytes": 8557,
+      "sha256": "9f094ae69482180f427ca48fefea6ae6fe47400ff158370e15fd3aed55cea015",
+      "referencedBy": [
+        "bank-product-channel.md"
+      ]
+    },
+    {
+      "source": "truth/bank-wealth/contexts/bankwealth/structures/outgoing-funds.structure.yaml",
+      "snapshot": "sources/truth/bank-wealth/contexts/bankwealth/structures/outgoing-funds.structure.yaml",
+      "bytes": 8104,
+      "sha256": "825c0141d95f6a02418424aa8e0d43dd30a5bbae607f6deb5a02efde3effa720",
+      "referencedBy": [
+        "bank-product-channel.md",
+        "fund-company-ta.md",
+        "payment-operations.md",
+        "architecture-delivery.md"
+      ]
+    },
+    {
+      "source": "truth/bank-wealth/contexts/bankwealth/structures/payment-results.structure.yaml",
+      "snapshot": "sources/truth/bank-wealth/contexts/bankwealth/structures/payment-results.structure.yaml",
+      "bytes": 6466,
+      "sha256": "bb300b353ab14f030e231263acd584122fd0e75e3ea777ce45fc3f46fa46284a",
+      "referencedBy": [
+        "bank-product-channel.md"
+      ]
+    },
+    {
+      "source": "truth/bank-wealth/contexts/bankwealth/structures/refund-results.structure.yaml",
+      "snapshot": "sources/truth/bank-wealth/contexts/bankwealth/structures/refund-results.structure.yaml",
+      "bytes": 10949,
+      "sha256": "0ed5959fb8377c5af0918f841edead825d240011a802ed66ee2c5f3870acfe04",
+      "referencedBy": [
+        "payment-operations.md"
+      ]
+    },
+    {
+      "source": "truth/bank-wealth/contexts/bankwealth/use-cases.yaml",
+      "snapshot": "sources/truth/bank-wealth/contexts/bankwealth/use-cases.yaml",
+      "bytes": 63983,
+      "sha256": "531663b9e938256b465d3b302a4d5e6798aacb689cd198a795668764aadb3b5e",
+      "referencedBy": [
+        "bank-product-channel.md",
+        "fund-company-ta.md",
+        "payment-operations.md",
+        "architecture-delivery.md"
+      ]
+    }
+  ],
+  "copiedBytes": 616276,
+  "runtimeExecuted": false,
+  "authorTreeModified": false,
+  "fixedTestsModified": false
+}
