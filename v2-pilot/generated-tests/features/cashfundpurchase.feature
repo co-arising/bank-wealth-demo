@@ -29,3 +29,9 @@ Feature: CashFundPurchase (application)
       | US-CFP-06 | 0 | "0.00" | "" | "" | "" | 0 | expose bank-order-view |
       | US-CFP-07 | 0 | "0.00" | "" | "" | "" | 0 | expose bank-order-view |
       | US-CFP-08 | 0 | "0.00" | "" | "" | "" | 0 | expose bank-order-view |
+
+  @spec:US-CFP-03 @spec:US-CFP-04 @bmc:4-step
+  Scenario: Application pin "BankCashOriginal" guarantees at-most-once first-submission dispatch across 4-step replay sequences
+    Given CashFundPurchase satisfies all declared global axioms at step 0
+    When any valid 4-step sequence of declared commands executes
+    Then safety property "bmc-app-pin-once-bankcashoriginal-4step" holds (unsat)

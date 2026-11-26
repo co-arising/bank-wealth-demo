@@ -2,12 +2,12 @@
   "schemaVersion": "co-arising.verify-v2/v1",
   "passed": true,
   "strict": true,
-  "canonicalSha256": "3200fefc1ddd939f4795fbd025fa3ef1c2729e81995111709029813480a7c8b3",
+  "canonicalSha256": "d07707b84cc37fa766fa7715c962b0b4fbfdd0b5410d0fd638df99748eb1dd9d",
   "manifestCheck": {
     "passed": true,
     "errors": [],
-    "verifiedFiles": 15,
-    "manifestSha256": "102cb21352a867afad974e1d868b887f796538ac679d5b586dbc7f1e607f7847"
+    "verifiedFiles": 17,
+    "manifestSha256": "54bceab4f333bfb04f41906332c099362cc9ef32314adaac6720a5d6e1ece334"
   },
   "tsCheck": {
     "skipped": false,
@@ -18,6 +18,7 @@
       "generated-tests/ts/credit-balance-reserve-funds.ears.spec.ts",
       "generated-tests/ts/fund-order-confirm-tashares.ears.spec.ts",
       "generated-tests/ts/fund-quota-reserve-subscription-quota.ears.spec.ts",
+      "generated-tests/ts/interfaces-http.ears.spec.ts",
       "generated-tests/ts/ta-bridge-settlement.ears.spec.ts"
     ],
     "failedSpecIds": []
@@ -35,6 +36,7 @@
       "example.bankwealth.v2.CreditBalanceReserveFundsEarsSpec",
       "example.bankwealth.v2.FundOrderConfirmTASharesEarsSpec",
       "example.bankwealth.v2.FundQuotaReserveSubscriptionQuotaEarsSpec",
+      "example.bankwealth.v2.InterfacesHttpSpec",
       "example.bankwealth.v2.TaBridgeSettlementEarsSpec"
     ],
     "failedSpecIds": []
@@ -42,8 +44,8 @@
   "provenanceCheck": {
     "passed": true,
     "errors": [],
-    "provenanceIdCount": 23,
-    "specAnchorCount": 28,
+    "provenanceIdCount": 33,
+    "specAnchorCount": 36,
     "clozeSlots": [
       {
         "slotId": "cash-fund-purchase",
@@ -82,5 +84,10 @@
       }
     ]
   },
-  "verifiedAt": "2026-11-26T07:47:32.600Z"
+  "onionCheck": {
+    "passed": true,
+    "checkedCount": 30,
+    "violations": []
+  },
+  "verifiedAt": "2026-11-26T09:59:02.717Z"
 }

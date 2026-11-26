@@ -1,0 +1,5 @@
+# co-arising 2.0 Play HTTP routes (bank-wealth / bankwealth)
+GET     /health                                     controllers.PlayHttpBridge.health
+POST    /api/v1/bankwealth/bank-cash-submit-port/submit controllers.PlayHttpBridge.dispatch(path = "/api/v1/bankwealth/bank-cash-submit-port/submit")
+GET     /api/v1/bankwealth/bank-order-query/get     controllers.PlayHttpBridge.dispatch(path = "/api/v1/bankwealth/bank-order-query/get")
+POST    /api/v1/bankwealth/bank-ta-bridge-port/ingest-outcome controllers.PlayHttpBridge.dispatch(path = "/api/v1/bankwealth/bank-ta-bridge-port/ingest-outcome")

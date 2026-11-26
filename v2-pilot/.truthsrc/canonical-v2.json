@@ -2,7 +2,7 @@
   "schemaVersion": "co-arising.canonical/v2",
   "system": "bank-wealth",
   "context": "bankwealth",
-  "canonicalSha256": "3200fefc1ddd939f4795fbd025fa3ef1c2729e81995111709029813480a7c8b3",
+  "canonicalSha256": "d07707b84cc37fa766fa7715c962b0b4fbfdd0b5410d0fd638df99748eb1dd9d",
   "structures": {
     "exactTypes": [
       {
@@ -2589,9 +2589,30 @@
                 "post": []
               }
             ]
+          },
+          {
+            "id": "bmc-app-pin-once-bankcashoriginal-4step",
+            "kind": "bmc",
+            "command": "CashFundPurchase",
+            "title": "Application pin \"BankCashOriginal\" guarantees at-most-once first-submission dispatch across 4-step replay sequences",
+            "ruleIds": [
+              "US-CFP-03",
+              "US-CFP-04"
+            ],
+            "tags": [
+              "@spec:US-CFP-03",
+              "@spec:US-CFP-04",
+              "@bmc:4-step"
+            ],
+            "bmc": {
+              "steps": 4,
+              "status": "unsat",
+              "passed": true
+            },
+            "examples": []
           }
         ],
-        "sha256": "599879736fd4c5ffbd25530a3e61b9e6441a5de4e07a9fc0670088a40d1ff4d7"
+        "sha256": "27b6197ae8a2e275b9166b83c1495ba3ed9fdcfc09498b1501320eb31fa59d9e"
       }
     },
     {
