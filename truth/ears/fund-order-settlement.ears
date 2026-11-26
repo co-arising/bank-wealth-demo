@@ -1,0 +1,49 @@
+slice FundOrder.RequestFundPurchaseSettlement
+
+where:
+  validAmount      = amount.currency == "CNY" and amount.amount > 0.00      as "申购金额为正数人民币"
+  validAccounts    = investorAccountId != fundCollectionAccountId           as "投资人账户与募集户不同"
+  validIdentity    = operationId is non-empty and fundCode is non-empty     as "操作编号与基金代码非空"
+  sameAsRecorded   = operationId == order.operationId
+                     and investorAccountId == order.investorAccountId
+                     and fundCollectionAccountId == order.fundCollectionAccountId
+                     and fundCode == order.fundCode
+                     and amount == order.amount                             as "重入参数与原申购记录完全一致"
+  extern matchesCashOriginal                                                as "与可信入站原始请求一致"
+
+axioms:
+  [AX-FO-1] ALWAYS order.status in {"new", "payment-requested", "payment-succeeded", "ta-confirmed", "canceled"}
+
+rules:
+  [ORDER_RESOURCE]              IF fundOrderId != order.id
+                                THEN SHALL reject request with ORDER_RESOURCE
+
+  [ORDER_ACCOUNTS]              IF not validAccounts
+                                THEN SHALL reject request with ORDER_ACCOUNTS
+
+  [ORDER_AMOUNT]                IF not validAmount
+                                THEN SHALL reject request with ORDER_AMOUNT
+
+  [ORDER_OPERATION]             IF not validIdentity
+                                THEN SHALL reject request with ORDER_OPERATION
+
+  [CASH_ADMITTED_PAYMENT_MATCH] IF order.cashRequestSource is non-empty and not matchesCashOriginal
+                                THEN SHALL reject request with CASH_ADMITTED_PAYMENT_MATCH
+
+  [ORDER_REPLAY_CONFLICT]       IF not sameAsRecorded WHILE order.status != "new"
+                                THEN SHALL reject request with ORDER_REPLAY_CONFLICT
+
+  [ORDER_REQUEST_ONCE]          WHILE order.status != "new"
+                                WHEN RequestFundPurchaseSettlement AND sameAsRecorded
+                                SHALL succeed-empty
+
+  [SETTLEMENT_REQUESTED]        WHILE order.status == "new"
+                                WHEN RequestFundPurchaseSettlement
+                                  AND fundOrderId == order.id
+                                  AND validAccounts AND validAmount AND validIdentity
+                                  AND (order.cashRequestSource is empty or matchesCashOriginal)
+                                SHALL transition order.status -> "payment-requested"
+                                  AND emit FundPurchaseSettlementRequested
+                                post:
+                                  order.status' = "payment-requested"
+                                  order.amount' = amount

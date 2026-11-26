@@ -1,0 +1,86 @@
+slice SipPlan.StreamBatchExecution
+
+where:
+  scheduleReady     = plan.initialized and plan.scheduleSealed              as "定投计划已初始化且日程已封板"
+  slotValid         = position in plan.slots and plan.slots[position] == dueSlot as "期次与预定扣款槽位匹配"
+  slotDue           = dueSlot <= plan.currentTick                           as "槽位已到达当前业务时钟"
+  inRevisionWindow  = revision in plan.revisions
+                      and plan.revisions[revision] == config
+                      and dueSlot >= config.effectiveSlot
+                      and (revision not in plan.revisionEnds or dueSlot < plan.revisionEnds[revision])
+                                                                            as "槽位落在修订版本有效区间内"
+  alreadyTriggered  = dueSlot in plan.occurrences                           as "该槽位已触发当期申购"
+  sameTriggerReplay = alreadyTriggered
+                      and plan.occurrences[dueSlot].revision == revision
+                      and plan.occurrences[dueSlot].config == config        as "触发重入参数与已记录期次一致"
+
+axioms:
+  [AX-SIP-1] ALWAYS plan.startCount <= plan.observedCount and plan.observedCount <= plan.scheduleCount
+  [AX-SIP-2] ALWAYS plan.successTotal + plan.failureTotal <= plan.scheduleCount
+  [AX-SIP-3] ALWAYS plan.currentTick >= -1
+
+rules:
+  # --- 批处理观察侧（Batch Observation）：暂停期间到期槽位记为 skipped，绝不进入 backlog ---
+  [SIP_SKIP_ONCE]       WHILE dueSlot in plan.slotDisposition and plan.slotDisposition[dueSlot] == "skipped"
+                        WHEN SkipPausedSipDueSlot AND scheduleReady AND slotValid
+                        SHALL succeed-empty
+
+  [SIP_SKIP_CONFLICT]   IF dueSlot in plan.slotDisposition and plan.slotDisposition[dueSlot] != "skipped"
+                        WHEN SkipPausedSipDueSlot
+                        THEN SHALL reject request with SIP_OBSERVATION_CONFLICT
+
+  [SIP_SKIP_ORDER]      IF position != plan.observedCount
+                        WHEN SkipPausedSipDueSlot
+                        THEN SHALL reject request with SIP_OBSERVATION_ORDER
+
+  [SIP_SKIP_NOT_DUE]    IF not slotDue
+                        WHEN SkipPausedSipDueSlot
+                        THEN SHALL reject request with SIP_SLOT_DUE
+
+  [SIP_SKIP_NOT_PAUSED] IF not (plan.paused and dueSlot >= plan.pauseTick)
+                        WHEN SkipPausedSipDueSlot
+                        THEN SHALL reject request with SIP_PAUSE_CLASSIFICATION
+
+  [SIP_SKIP_RECORDED]   WHILE scheduleReady and dueSlot not in plan.slotDisposition
+                        WHEN SkipPausedSipDueSlot
+                          AND slotValid AND position == plan.observedCount
+                          AND slotDue AND plan.paused AND dueSlot >= plan.pauseTick
+                        SHALL emit SipPausedDueSlotSkipped
+                        post:
+                          plan.slotDisposition'[dueSlot] = "skipped"
+                          plan.observedCount'            = plan.observedCount + 1
+
+  # --- 流式派发侧（Stream Dispatch）：严格按 startCount 消费 backlog，永不复活 skipped ---
+  [SIP_ACTIVE_START]    IF plan.paused                                      WHEN TriggerSipInstallment THEN SHALL reject request with SIP_ACTIVE_START
+  [SIP_START_ORDER]     IF position != plan.startCount                      WHEN TriggerSipInstallment THEN SHALL reject request with SIP_START_ORDER
+  [SIP_BACKLOG_REQ]     IF plan.slotDisposition[dueSlot] != "backlog"       WHEN TriggerSipInstallment THEN SHALL reject request with SIP_BACKLOG_REQUIRED
+  [SIP_REV_INTERVAL]    IF not inRevisionWindow                             WHEN TriggerSipInstallment THEN SHALL reject request with SIP_REVISION_INTERVAL
+  [SIP_OCC_CONFLICT]    IF alreadyTriggered and not sameTriggerReplay       WHEN TriggerSipInstallment THEN SHALL reject request with SIP_OCCURRENCE_REPLAY_CONFLICT
+
+  [SIP_OCC_ONCE]        WHILE sameTriggerReplay
+                        WHEN TriggerSipInstallment AND scheduleReady AND slotValid
+                        SHALL succeed-empty
+
+  [SIP_TRIGGERED]       WHILE scheduleReady and not plan.paused and not alreadyTriggered
+                        WHEN TriggerSipInstallment
+                          AND slotValid AND position == plan.startCount
+                          AND plan.slotDisposition[dueSlot] == "backlog"
+                          AND inRevisionWindow
+                        SHALL emit SipInstallmentTriggered
+                        post:
+                          plan.occurrences'[dueSlot] = @host(StableSipOccurrence)
+                          plan.startCount'           = plan.startCount + 1
+
+  # --- 终态防重计数：首次终态才计数，三连败不自动暂停 ---
+  [SIP_TERMINAL_ONCE]   WHILE occurrence.occurrenceId in plan.firstTerminals and plan.firstTerminals[occurrence.occurrenceId] == "failed"
+                        WHEN RecordSipInstallmentFailed
+                        SHALL succeed-empty
+
+  [SIP_FAIL_NO_PAUSE]   WHILE occurrence.occurrenceId not in plan.firstTerminals
+                        WHEN RecordSipInstallmentFailed
+                        SHALL emit SipInstallmentFailed
+                          AND keep plan.paused == plan.paused
+                        post:
+                          plan.firstTerminals'[occurrence.occurrenceId] = "failed"
+                          plan.failureTotal'                            = plan.failureTotal + 1
+                          plan.paused'                                  = plan.paused

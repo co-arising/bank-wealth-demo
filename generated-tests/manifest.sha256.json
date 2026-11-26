@@ -1,0 +1,78 @@
+{
+  "schemaVersion": "co-arising.locked-tests-manifest/v1",
+  "generator": "co-arising-ears/1.0",
+  "files": [
+    {
+      "path": "features/cashfundpurchase.feature",
+      "sha256": "f17b99836420616c8bb7b7f5de84590b86445e024bd2bd2d83a79dc8c319e72f",
+      "sourceFile": "cash-fund-purchase.story.ears",
+      "sourceSha256": "4eaa31e6f83139d1bcaa4065d805222fba0ad5480f04469f01aa7d6f953a170b"
+    },
+    {
+      "path": "features/fundorder-confirmtashares.feature",
+      "sha256": "c2ad110b2a8471f9081edc8a6b394da95cdde89ffd0a14014012a2258a86107c",
+      "sourceFile": "fund-order-confirm-ta-shares.ears",
+      "sourceSha256": "03d69a745b5e8e3100ceea8a32ac7da060ba294f2e95a0a3ecf1a59d9d245e43"
+    },
+    {
+      "path": "features/fundorder-requestfundpurchaserefund.feature",
+      "sha256": "f03c11de24a70d2deff73c32d6edfd4fa870e8ccdb3ad05e62e255e8c39b0aa3",
+      "sourceFile": "fund-order-refund.ears",
+      "sourceSha256": "008fffcb451819334a971136f23cac8295d698ac18d8f9b8c5c786d75d6ac7bc"
+    },
+    {
+      "path": "features/fundorder-requestfundpurchasesettlement.feature",
+      "sha256": "6e2aa3acb945b9345e18a7101f089e088d38c6dfa0841d1eb2dacd5072ca64e7",
+      "sourceFile": "fund-order-settlement.ears",
+      "sourceSha256": "e181ebff52c4447b67d28a27433becd5f25dbbf332068dd7db3ca599ef24ed47"
+    },
+    {
+      "path": "features/fundquota-reservesubscriptionquota.feature",
+      "sha256": "6ef5b2ddd5e274b64573d1de97de07c8c78bf90d634ccebc41ea57b2690f86b7",
+      "sourceFile": "fund-quota-reserve.ears",
+      "sourceSha256": "61537682db1ba6f366b990ce0f5b318be3dab788013c007d2f11dbf1d9539198"
+    },
+    {
+      "path": "features/sipplan-streambatchexecution.feature",
+      "sha256": "1b05962d5fbdd38598fc20ea7f120abd39c1b6648d533f742dd1cafb2bf521fd",
+      "sourceFile": "sip-plan-stream-batch.ears",
+      "sourceSha256": "bab4fa2dbd9be78175b2c943932660ac04dc53ff43d8c8c5d75169c6b043018a"
+    },
+    {
+      "path": "scala/example/bankwealth/ears/CashFundPurchaseEarsSpec.scala",
+      "sha256": "80f45ada3608332b373b2875ea6c4816b1cfe7b3ce28daca6e0b1e36b2ac3aaa",
+      "sourceFile": "cash-fund-purchase.story.ears",
+      "sourceSha256": "4eaa31e6f83139d1bcaa4065d805222fba0ad5480f04469f01aa7d6f953a170b"
+    },
+    {
+      "path": "scala/example/bankwealth/ears/FundOrderConfirmTASharesEarsSpec.scala",
+      "sha256": "f9b7324002f4e4766bd74b675b37051d12bdaf105d4c4ef1c0c5e8069d041296",
+      "sourceFile": "fund-order-confirm-ta-shares.ears",
+      "sourceSha256": "03d69a745b5e8e3100ceea8a32ac7da060ba294f2e95a0a3ecf1a59d9d245e43"
+    },
+    {
+      "path": "scala/example/bankwealth/ears/FundOrderRequestFundPurchaseRefundEarsSpec.scala",
+      "sha256": "b5469712a137734370b7e532498a07215bfd3c6b65df4a193a93d4fd4993ce30",
+      "sourceFile": "fund-order-refund.ears",
+      "sourceSha256": "008fffcb451819334a971136f23cac8295d698ac18d8f9b8c5c786d75d6ac7bc"
+    },
+    {
+      "path": "scala/example/bankwealth/ears/FundOrderRequestFundPurchaseSettlementEarsSpec.scala",
+      "sha256": "bda089bc13292f5d5cfec528a3351972b7fd7493a7b7ec9b9f0e6bebfd877d4f",
+      "sourceFile": "fund-order-settlement.ears",
+      "sourceSha256": "e181ebff52c4447b67d28a27433becd5f25dbbf332068dd7db3ca599ef24ed47"
+    },
+    {
+      "path": "scala/example/bankwealth/ears/FundQuotaReserveSubscriptionQuotaEarsSpec.scala",
+      "sha256": "e360c3117704acb6db2a68567cdacf53e345f65ce27c0bb353a03d55d22aa582",
+      "sourceFile": "fund-quota-reserve.ears",
+      "sourceSha256": "61537682db1ba6f366b990ce0f5b318be3dab788013c007d2f11dbf1d9539198"
+    },
+    {
+      "path": "scala/example/bankwealth/ears/SipPlanStreamBatchExecutionEarsSpec.scala",
+      "sha256": "b668b042c6c0f64c30551134ec51806d39127ede92798fbbe99ea82fa33941a1",
+      "sourceFile": "sip-plan-stream-batch.ears",
+      "sourceSha256": "bab4fa2dbd9be78175b2c943932660ac04dc53ff43d8c8c5d75169c6b043018a"
+    }
+  ]
+}

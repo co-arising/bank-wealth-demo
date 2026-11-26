@@ -1,0 +1,85 @@
+切片 SipPlan.StreamBatchExecution
+
+定义:
+  日程已就绪       = plan.initialized 且 plan.scheduleSealed
+  槽位匹配         = position 属于 plan.slots 且 plan.slots[position] == dueSlot
+  槽位已到期       = dueSlot <= plan.currentTick
+  在修订有效期内   = revision 属于 plan.revisions
+                     且 plan.revisions[revision] == config
+                     且 dueSlot >= config.effectiveSlot
+                     且 (不满足 (revision 属于 plan.revisionEnds) 或 dueSlot < plan.revisionEnds[revision])
+  当期已触发       = dueSlot 属于 plan.occurrences
+  触发重入一致     = 当期已触发
+                     且 plan.occurrences[dueSlot].revision == revision
+                     且 plan.occurrences[dueSlot].config == config
+
+公理:
+  [AX-SIP-1] 恒成立 plan.startCount <= plan.observedCount 且 plan.observedCount <= plan.scheduleCount
+  [AX-SIP-2] 恒成立 plan.successTotal + plan.failureTotal <= plan.scheduleCount
+  [AX-SIP-3] 恒成立 plan.currentTick >= -1
+
+规则:
+  # --- 批处理观察侧：暂停期间到期槽位记为 skipped，绝不进入 backlog ---
+  [SIP_SKIP_ONCE]       当处于 dueSlot 属于 plan.slotDisposition 且 plan.slotDisposition[dueSlot] == "skipped"
+                        当收到 SkipPausedSipDueSlot 且 日程已就绪 且 槽位匹配
+                        必须 幂等空成功
+
+  [SIP_SKIP_CONFLICT]   如果 dueSlot 属于 plan.slotDisposition 且 plan.slotDisposition[dueSlot] != "skipped"
+                        当收到 SkipPausedSipDueSlot
+                        则 必须 拒绝请求，返回 SIP_OBSERVATION_CONFLICT
+
+  [SIP_SKIP_ORDER]      如果 position != plan.observedCount
+                        当收到 SkipPausedSipDueSlot
+                        则 必须 拒绝请求，返回 SIP_OBSERVATION_ORDER
+
+  [SIP_SKIP_NOT_DUE]    如果 不满足 槽位已到期
+                        当收到 SkipPausedSipDueSlot
+                        则 必须 拒绝请求，返回 SIP_SLOT_DUE
+
+  [SIP_SKIP_NOT_PAUSED] 如果 不满足 (plan.paused 且 dueSlot >= plan.pauseTick)
+                        当收到 SkipPausedSipDueSlot
+                        则 必须 拒绝请求，返回 SIP_PAUSE_CLASSIFICATION
+
+  [SIP_SKIP_RECORDED]   当处于 日程已就绪 且 不满足 (dueSlot 属于 plan.slotDisposition)
+                        当收到 SkipPausedSipDueSlot
+                          且 槽位匹配 且 position == plan.observedCount
+                          且 槽位已到期 且 plan.paused 且 dueSlot >= plan.pauseTick
+                        必须 发射 SipPausedDueSlotSkipped
+                        变更后:
+                          plan.slotDisposition'[dueSlot] = "skipped"
+                          plan.observedCount'            = plan.observedCount + 1
+
+  # --- 流式派发侧：严格按 startCount 消费 backlog，永不复活 skipped ---
+  [SIP_ACTIVE_START]    如果 plan.paused                                    当收到 TriggerSipInstallment 则 必须 拒绝请求，返回 SIP_ACTIVE_START
+  [SIP_START_ORDER]     如果 position != plan.startCount                    当收到 TriggerSipInstallment 则 必须 拒绝请求，返回 SIP_START_ORDER
+  [SIP_BACKLOG_REQ]     如果 plan.slotDisposition[dueSlot] != "backlog"     当收到 TriggerSipInstallment 则 必须 拒绝请求，返回 SIP_BACKLOG_REQUIRED
+  [SIP_REV_INTERVAL]    如果 不满足 在修订有效期内                          当收到 TriggerSipInstallment 则 必须 拒绝请求，返回 SIP_REVISION_INTERVAL
+  [SIP_OCC_CONFLICT]    如果 当期已触发 且 不满足 触发重入一致              当收到 TriggerSipInstallment 则 必须 拒绝请求，返回 SIP_OCCURRENCE_REPLAY_CONFLICT
+
+  [SIP_OCC_ONCE]        当处于 触发重入一致
+                        当收到 TriggerSipInstallment 且 日程已就绪 且 槽位匹配
+                        必须 幂等空成功
+
+  [SIP_TRIGGERED]       当处于 日程已就绪 且 不满足 plan.paused 且 不满足 当期已触发
+                        当收到 TriggerSipInstallment
+                          且 槽位匹配 且 position == plan.startCount
+                          且 plan.slotDisposition[dueSlot] == "backlog"
+                          且 在修订有效期内
+                        必须 发射 SipInstallmentTriggered
+                        变更后:
+                          plan.occurrences'[dueSlot] = @host(StableSipOccurrence)
+                          plan.startCount'           = plan.startCount + 1
+
+  # --- 终态防重计数：首次终态才计数，三连败不自动暂停 ---
+  [SIP_TERMINAL_ONCE]   当处于 occurrence.occurrenceId 属于 plan.firstTerminals 且 plan.firstTerminals[occurrence.occurrenceId] == "failed"
+                        当收到 RecordSipInstallmentFailed
+                        必须 幂等空成功
+
+  [SIP_FAIL_NO_PAUSE]   当处于 不满足 (occurrence.occurrenceId 属于 plan.firstTerminals)
+                        当收到 RecordSipInstallmentFailed
+                        必须 发射 SipInstallmentFailed
+                          且 维持 plan.paused == plan.paused
+                        变更后:
+                          plan.firstTerminals'[occurrence.occurrenceId] = "failed"
+                          plan.failureTotal'                            = plan.failureTotal + 1
+                          plan.paused'                                  = plan.paused

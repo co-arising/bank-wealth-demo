@@ -1,0 +1,34 @@
+{
+  "aggregates": {
+    "FundQuota": {
+      "aliases": ["quota", "state", "fundquota"],
+      "stateFields": {
+        "minPurchase": { "kind": "decimal", "scale": 2 },
+        "maxSingleLimit": { "kind": "decimal", "scale": 2 },
+        "fundTotalUsed": { "kind": "decimal", "scale": 2 },
+        "fundTotalCap": { "kind": "decimal", "scale": 2 },
+        "perAccountCap": { "kind": "decimal", "scale": 2 },
+        "accountUsed": {
+          "kind": "map",
+          "key": { "kind": "string" },
+          "value": { "kind": "decimal", "scale": 2 }
+        }
+      },
+      "commands": {
+        "ReserveSubscriptionQuota": {
+          "params": {
+            "accountId": { "kind": "string" },
+            "amount": { "kind": "decimal", "scale": 2 }
+          },
+          "produces": ["SubscriptionQuotaReserved"]
+        }
+      },
+      "events": ["SubscriptionQuotaReserved"],
+      "ruleRefs": {
+        "QUOTA_AMOUNT_RANGE": "单笔申购金额须在合法区间内",
+        "QUOTA_FUND_CAP": "申购后不得突破基金申购总门限",
+        "QUOTA_ACCOUNT_CAP": "申购后不得突破单账户申购总门限"
+      }
+    }
+  }
+}

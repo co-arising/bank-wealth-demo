@@ -1,0 +1,50 @@
+切片 FundOrder.RequestFundPurchaseSettlement
+
+定义:
+  申购金额合法     = amount.currency == "CNY" 且 amount.amount > 0.00
+  出入账户不同     = investorAccountId != fundCollectionAccountId
+  身份与基金非空   = operationId 为 非空 且 fundCode 为 非空
+  重入参数一致     = operationId == order.operationId
+                     且 investorAccountId == order.investorAccountId
+                     且 fundCollectionAccountId == order.fundCollectionAccountId
+                     且 fundCode == order.fundCode
+                     且 amount == order.amount
+  外部判定 与入站原单一致
+
+公理:
+  [AX-FO-1] 恒成立 order.status 属于 {"new", "payment-requested", "payment-succeeded", "ta-confirmed", "canceled"}
+
+规则:
+  [ORDER_RESOURCE]              如果 fundOrderId != order.id
+                                则 必须 拒绝请求，返回 ORDER_RESOURCE
+
+  [ORDER_ACCOUNTS]              如果 不满足 出入账户不同
+                                则 必须 拒绝请求，返回 ORDER_ACCOUNTS
+
+  [ORDER_AMOUNT]                如果 不满足 申购金额合法
+                                则 必须 拒绝请求，返回 ORDER_AMOUNT
+
+  [ORDER_OPERATION]             如果 不满足 身份与基金非空
+                                则 必须 拒绝请求，返回 ORDER_OPERATION
+
+  [CASH_ADMITTED_PAYMENT_MATCH] 如果 order.cashRequestSource 为 非空 且 不满足 与入站原单一致
+                                则 必须 拒绝请求，返回 CASH_ADMITTED_PAYMENT_MATCH
+
+  [ORDER_REPLAY_CONFLICT]       当处于 order.status != "new"
+                                如果 不满足 重入参数一致
+                                则 必须 拒绝请求，返回 ORDER_REPLAY_CONFLICT
+
+  [ORDER_REQUEST_ONCE]          当处于 order.status != "new"
+                                当收到 RequestFundPurchaseSettlement 且 重入参数一致
+                                必须 幂等空成功
+
+  [SETTLEMENT_REQUESTED]        当处于 order.status == "new"
+                                当收到 RequestFundPurchaseSettlement
+                                  且 fundOrderId == order.id
+                                  且 出入账户不同 且 申购金额合法 且 身份与基金非空
+                                  且 (order.cashRequestSource 为 空 或 与入站原单一致)
+                                必须 状态变为 order.status -> "payment-requested"
+                                  且 发射 FundPurchaseSettlementRequested
+                                变更后:
+                                  order.status' = "payment-requested"
+                                  order.amount' = amount

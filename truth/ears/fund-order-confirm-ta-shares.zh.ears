@@ -1,0 +1,16 @@
+切片 FundOrder.ConfirmTAShares
+
+定义:
+  本期净值合法   = nav > 0.0000
+  份额折算精确   = shares >= 0
+                   且 shares * nav <= order.netAmount
+                   且 (shares + 1) * nav > order.netAmount
+
+规则:
+  [TA_INVALID_NAV]     如果 不满足 本期净值合法 则 必须 拒绝请求，返回 TA_INVALID_NAV
+  [TA_SHARES_MISMATCH] 如果 不满足 份额折算精确 则 必须 拒绝请求，返回 TA_SHARES_MISMATCH
+
+  [TA_CONFIRMED]       当处于 order.paymentOutcome == "succeeded" 且 order.taStatus != "confirmed"
+                       当收到 RecordFundTAConfirmed 且 本期净值合法 且 份额折算精确
+                       必须 状态变为 order.taStatus -> "confirmed"
+                         且 发射 FundTASharesConfirmed

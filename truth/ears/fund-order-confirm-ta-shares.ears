@@ -1,0 +1,16 @@
+slice FundOrder.ConfirmTAShares
+
+where:
+  validNav       = nav > 0.0000                                             as "本期基金净值为正"
+  exactFloorMath = shares >= 0
+                   and shares * nav <= order.netAmount
+                   and (shares + 1) * nav > order.netAmount                 as "确认份额精确等于净申购额向下取整除以本期净值"
+
+rules:
+  [TA_INVALID_NAV]     IF not validNav       THEN SHALL reject request with TA_INVALID_NAV
+  [TA_SHARES_MISMATCH] IF not exactFloorMath THEN SHALL reject request with TA_SHARES_MISMATCH
+
+  [TA_CONFIRMED]       WHILE order.paymentOutcome == "succeeded" and order.taStatus != "confirmed"
+                       WHEN RecordFundTAConfirmed AND validNav AND exactFloorMath
+                       SHALL transition order.taStatus -> "confirmed"
+                         AND emit FundTASharesConfirmed

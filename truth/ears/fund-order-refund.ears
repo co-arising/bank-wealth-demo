@@ -1,0 +1,23 @@
+slice FundOrder.RequestFundPurchaseRefund {
+  define paymentSucceeded = paymentTxId == order.selectedPaymentTxId
+                            and order.cashPaymentFinalResults[paymentTxId] == "succeeded"
+  define taRejected       = order.taStatus == "rejected"
+  define refundPending    = order.refundOperationId is non-empty
+
+  rule [REFUND_RESOURCE]    { if fundOrderId != order.id then reject request with REFUND_RESOURCE }
+  rule [REFUND_PAYMENT]     { if not paymentSucceeded    then reject request with REFUND_PAYMENT }
+  rule [REFUND_TA_REJECTED] { if not taRejected          then reject request with REFUND_TA_REJECTED }
+
+  rule [REFUND_INTENT_ONCE] {
+    while refundPending
+    when RequestFundPurchaseRefund and paymentSucceeded and taRejected
+    then succeed-empty
+  }
+
+  rule [REFUND_REQUESTED] {
+    while not refundPending
+    when RequestFundPurchaseRefund and fundOrderId == order.id and paymentSucceeded and taRejected
+    then emit FundPurchaseRefundRequested
+     and transition order.refundOutcome -> "pending"
+  }
+}

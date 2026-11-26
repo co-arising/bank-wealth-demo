@@ -1,0 +1,22 @@
+切片 FundQuota.ReserveSubscriptionQuota
+
+定义:
+  单笔额度合法     = amount 属于 [quota.minPurchase..quota.maxSingleLimit]
+  在基金总门限内   = quota.fundTotalUsed + amount <= quota.fundTotalCap
+  在单户总门限内   = quota.accountUsed[accountId] + amount <= quota.perAccountCap
+
+公理:
+  [AX-Q-1] 恒成立 quota.fundTotalUsed <= quota.fundTotalCap
+  [AX-Q-2] 恒成立 quota.accountUsed[accountId] <= quota.perAccountCap
+
+规则:
+  [QUOTA_AMOUNT_RANGE] 如果 不满足 单笔额度合法   则 必须 拒绝请求，返回 QUOTA_AMOUNT_RANGE
+  [QUOTA_FUND_CAP]     如果 不满足 在基金总门限内 则 必须 拒绝请求，返回 QUOTA_FUND_CAP
+  [QUOTA_ACCOUNT_CAP]  如果 不满足 在单户总门限内 则 必须 拒绝请求，返回 QUOTA_ACCOUNT_CAP
+
+  [QUOTA_RESERVED]     当处于 单笔额度合法 且 在基金总门限内 且 在单户总门限内
+                       当收到 ReserveSubscriptionQuota
+                       必须 发射 SubscriptionQuotaReserved
+                       变更后:
+                         quota.fundTotalUsed'          = quota.fundTotalUsed + amount
+                         quota.accountUsed'[accountId] = quota.accountUsed[accountId] + amount

@@ -24,6 +24,10 @@
     "project:status": "node tools/truthsrc-project.mjs status --out generated/current",
     "runtime:prepare": "node tools/prepare-truthsrc-runtime.mjs",
     "demo:start": "node tools/demo-start.mjs",
-    "demo:smoke": "node tools/demo-start.mjs --smoke"
+    "demo:smoke": "node tools/demo-start.mjs --smoke",
+    "ears:check": "node ../metarch-truthsrc/bin/truthsrc.js check-spec --in truth/ears --types truth/ears/standalone-types.json --format human",
+    "ears:project": "node ../metarch-truthsrc/bin/truthsrc.js project-spec --in truth/ears --types truth/ears/standalone-types.json --out-ac projections/ac --out-tables projections/tables --lang zh",
+    "ears:emit": "node ../metarch-truthsrc/bin/truthsrc.js emit-tests --in truth/ears --types truth/ears/standalone-types.json --no-gap-check --out-features generated-tests/features --out-scala generated-tests/scala --package example.bankwealth.ears --manifest generated-tests/manifest.sha256.json",
+    "test:ears": "node --test --test-concurrency=1 test/ears-integration.test.mjs"
   }
 }

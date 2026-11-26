@@ -1,0 +1,44 @@
+故事 CashFundPurchase layer application
+
+定义:
+  提交金额合法               = amount.currency == "CNY" 且 amount.amount > 0.00
+  外部判定 客户会话已认证(principal)
+  外部判定 来源与CSRF合法
+  外部判定 基金代码可申购(fundCode)
+  外部判定 原请求已存在(principal, clientRequestId)
+  外部判定 重入参数与原单一致(principal, clientRequestId, fundCode, amount)
+
+公理:
+  [AX-APP-1] 恒成立 禁止 BankCashSubmit 携带 operationId, investorAccountId, fundCollectionAccountId
+
+规则:
+  [US-CFP-01] 如果 不满足 客户会话已认证(principal) 或 不满足 来源与CSRF合法
+              当收到 BankCashSubmitPort.submit
+              则 必须 拒绝请求，返回 UNAUTHORIZED_OR_CSRF
+
+  [US-CFP-02] 如果 不满足 基金代码可申购(fundCode) 或 不满足 提交金额合法
+              当收到 BankCashSubmitPort.submit
+              则 必须 拒绝请求，返回 INVALID_CASH_SUBMIT
+
+  [US-CFP-03] 当处于 不满足 原请求已存在(principal, clientRequestId)
+              当收到 BankCashSubmitPort.submit
+                且 客户会话已认证(principal) 且 来源与CSRF合法
+                且 基金代码可申购(fundCode) 且 提交金额合法
+              必须 固定 BankCashOriginal from (principal, clientRequestId)
+                且 派发 FundOrder.RecordCashRequestSource
+                且 派发 FundOrder.RequestFundPurchaseSettlement
+                且 响应 BankCashAcknowledgement with ack.replayed == false 且 ack.accepted == true
+
+  [US-CFP-04] 当处于 原请求已存在(principal, clientRequestId)
+              当收到 BankCashSubmitPort.submit 且 重入参数与原单一致(principal, clientRequestId, fundCode, amount)
+              必须 响应 BankCashAcknowledgement with ack.replayed == true
+                且 禁止 派发 FundOrder.RequestFundPurchaseSettlement
+
+  [US-CFP-05] 当处于 原请求已存在(principal, clientRequestId)
+              如果 不满足 重入参数与原单一致(principal, clientRequestId, fundCode, amount)
+              当收到 BankCashSubmitPort.submit
+              则 必须 拒绝请求，返回 CASH_SOURCE_CONFLICT
+
+  [US-CFP-06] 当处于 order.paymentOutcome == "succeeded" 且 order.taStatus != "confirmed"
+              当收到 BankOrderQuery.get
+              必须 展示 bank-order-view as view.paymentCompleted == true 且 view.taFinalized == false

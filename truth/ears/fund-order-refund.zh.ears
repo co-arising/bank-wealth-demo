@@ -1,0 +1,23 @@
+切片 FundOrder.RequestFundPurchaseRefund {
+  定义 付款已成功   = paymentTxId == order.selectedPaymentTxId
+                      且 order.cashPaymentFinalResults[paymentTxId] == "succeeded"
+  定义 TA已拒绝     = order.taStatus == "rejected"
+  定义 退款已发起   = order.refundOperationId 为 非空
+
+  规则 [REFUND_RESOURCE]    { 如果 fundOrderId != order.id 则 拒绝请求，返回 REFUND_RESOURCE }
+  规则 [REFUND_PAYMENT]     { 如果 不满足 付款已成功        则 拒绝请求，返回 REFUND_PAYMENT }
+  规则 [REFUND_TA_REJECTED] { 如果 不满足 TA已拒绝          则 拒绝请求，返回 REFUND_TA_REJECTED }
+
+  规则 [REFUND_INTENT_ONCE] {
+    当处于 退款已发起
+    当收到 RequestFundPurchaseRefund 且 付款已成功 且 TA已拒绝
+    必须 幂等空成功
+  }
+
+  规则 [REFUND_REQUESTED] {
+    当处于 不满足 退款已发起
+    当收到 RequestFundPurchaseRefund 且 fundOrderId == order.id 且 付款已成功 且 TA已拒绝
+    必须 发射 FundPurchaseRefundRequested
+      且 状态变为 order.refundOutcome -> "pending"
+  }
+}
