@@ -2,7 +2,7 @@
   "schemaVersion": "co-arising.canonical/v2",
   "system": "bank-wealth",
   "context": "bankwealth",
-  "canonicalSha256": "bf9ab55f76a604a7417492438dbdbfb456dfac74eed5d8200653acfacd10b458",
+  "canonicalSha256": "3200fefc1ddd939f4795fbd025fa3ef1c2729e81995111709029813480a7c8b3",
   "structures": {
     "exactTypes": [
       {
@@ -2599,7 +2599,7 @@
       "kind": "story",
       "layer": "application",
       "target": "TaBridgeSettlement",
-      "sourceFile": "ta-bridge-settlement.ears",
+      "sourceFile": "ta-bridge-settlement.integration.ears",
       "hitPolicy": "FIRST",
       "theory": {
         "tier": "L3",
@@ -3051,7 +3051,7 @@
       "testIr": {
         "schemaVersion": "co-arising.test-ir/v2",
         "meta": {
-          "sourceFile": "ta-bridge-settlement.ears",
+          "sourceFile": "ta-bridge-settlement.integration.ears",
           "sourceSha256": "cc348b961d4970a106bf7af29984ea1b43246e79d5bbdb59085b10247f3571cc",
           "canonicalSha256": "540b6e0b1a46a2eae5cccc248cb29039ef60b9fd7eafa8b1e93cb8dab9900453",
           "kind": "story",
@@ -3312,7 +3312,7 @@
             ]
           }
         ],
-        "sha256": "76c94b5ebe3ba30053a7ae70d6921d496688def1a3b65219c2899f7566731ae7"
+        "sha256": "c35a9e0a9cbff4972af14947cb1f164fb209862e5dc116230e5aeaf71da8fc9a"
       }
     },
     {

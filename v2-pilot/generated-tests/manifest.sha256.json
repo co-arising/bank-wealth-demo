@@ -28,8 +28,8 @@
     },
     {
       "path": "features/tabridgesettlement.feature",
-      "sha256": "0b355e2a349172a0a32515ec842cdb5860774077d4c5334bc07977597958e5b0",
-      "sourceFile": "ta-bridge-settlement.ears",
+      "sha256": "fea24bbc6dbf5cfd593c018566a00aa134337755d99d77a7df3ed93c1d103883",
+      "sourceFile": "ta-bridge-settlement.integration.ears",
       "sourceSha256": "cc348b961d4970a106bf7af29984ea1b43246e79d5bbdb59085b10247f3571cc"
     },
     {
@@ -76,8 +76,8 @@
     },
     {
       "path": "ts/ta-bridge-settlement.ears.spec.ts",
-      "sha256": "da35f982fde5d4006d4a1adafb0b7f7c57bece49a5aeb2aff05b9bcacce08751",
-      "sourceFile": "ta-bridge-settlement.ears",
+      "sha256": "79177a1011b7c7ba604288c7e60d9c42eac8121530fb535d712ea6ca7dd29271",
+      "sourceFile": "ta-bridge-settlement.integration.ears",
       "sourceSha256": "cc348b961d4970a106bf7af29984ea1b43246e79d5bbdb59085b10247f3571cc"
     }
   ]
