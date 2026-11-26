@@ -14,6 +14,8 @@ const READ_ONLY_PREFIXES = [
   'generated-tests/',
   'generated-scaffold/',
   'generated/',
+  'v2-pilot/generated-tests/',
+  'v2-pilot/generated-scaffold/',
 ];
 
 const CLOZE_START_RE = /@cloze:start\(([^)]+)\)/u;
@@ -78,7 +80,7 @@ export function evaluateWriteGuard(payload, { rootDir = ROOT, activeCloze = proc
     }
   }
 
-  if (rel.startsWith('handwritten/') && existsSync(abs)) {
+  if ((rel.startsWith('handwritten/') || rel.startsWith('v2-pilot/handwritten/')) && existsSync(abs)) {
     const current = readFileSync(abs, 'utf8');
     const ranges = parseClozeRanges(current);
     if (ranges.length > 0) {

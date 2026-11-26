@@ -1,0 +1,54 @@
+{
+  "schemaVersion": "co-arising.locked-tests-manifest/v1",
+  "generator": "co-arising-v2/2.0",
+  "files": [
+    {
+      "path": "features/cashfundpurchase.feature",
+      "sha256": "9923f83cb3d2f4c792d1104c16f73af9c52f54ff905a5cf7bcc0a7de41013132",
+      "sourceFile": "cash-fund-purchase.story.ears",
+      "sourceSha256": "b5628bbaabd7037df8435d400c454b1ce8f007af14956b2ee46c562919d7cc41"
+    },
+    {
+      "path": "features/fundorder-confirmtashares.feature",
+      "sha256": "7108d054690c94f74cabad80f704bc38dce84acee497d52d946db2f3e28563b3",
+      "sourceFile": "fund-order-confirm-ta-shares.ears",
+      "sourceSha256": "a55b5c5edf689d583eb7828f71b641c406dd2de053ff089b8a0b8447c058c809"
+    },
+    {
+      "path": "features/fundquota-reservesubscriptionquota.feature",
+      "sha256": "c7eb7a23209282dc5b3061e405ac8bd4b08c26941a4b6fb249bc36e3968b4210",
+      "sourceFile": "fund-quota-reserve.ears",
+      "sourceSha256": "61537682db1ba6f366b990ce0f5b318be3dab788013c007d2f11dbf1d9539198"
+    },
+    {
+      "path": "scala/example/bankwealth/v2/FundOrderConfirmTASharesEarsSpec.scala",
+      "sha256": "b1f6b39b6b77d9a001f924cdb73e9deefb2985042d1d7a7e10c0a5d22647f6a1",
+      "sourceFile": "fund-order-confirm-ta-shares.ears",
+      "sourceSha256": "a55b5c5edf689d583eb7828f71b641c406dd2de053ff089b8a0b8447c058c809"
+    },
+    {
+      "path": "scala/example/bankwealth/v2/FundQuotaReserveSubscriptionQuotaEarsSpec.scala",
+      "sha256": "ea08093c08ad48c2f04ede1e3f03017f593c76d19eabd81e33a3fd24392024c9",
+      "sourceFile": "fund-quota-reserve.ears",
+      "sourceSha256": "61537682db1ba6f366b990ce0f5b318be3dab788013c007d2f11dbf1d9539198"
+    },
+    {
+      "path": "ts/cash-fund-purchase.ears.spec.ts",
+      "sha256": "3f256836ab1b2f05eba9738f616e17e3cd80eb4a0e30249cd1ccdd8102fafe96",
+      "sourceFile": "cash-fund-purchase.story.ears",
+      "sourceSha256": "b5628bbaabd7037df8435d400c454b1ce8f007af14956b2ee46c562919d7cc41"
+    },
+    {
+      "path": "ts/fund-order-confirm-tashares.ears.spec.ts",
+      "sha256": "c23cea49513453a3ca61d84f12fc79d82175cf7e9e635cab5226a332d0abc6c7",
+      "sourceFile": "fund-order-confirm-ta-shares.ears",
+      "sourceSha256": "a55b5c5edf689d583eb7828f71b641c406dd2de053ff089b8a0b8447c058c809"
+    },
+    {
+      "path": "ts/fund-quota-reserve-subscription-quota.ears.spec.ts",
+      "sha256": "4e636e7e9f75a4667b0af44de14190be2051fb66d78164062c1bf8cd5aaee5a8",
+      "sourceFile": "fund-quota-reserve.ears",
+      "sourceSha256": "61537682db1ba6f366b990ce0f5b318be3dab788013c007d2f11dbf1d9539198"
+    }
+  ]
+}

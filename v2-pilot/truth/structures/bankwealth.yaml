@@ -1,0 +1,88 @@
+system: bank-wealth
+context: bankwealth
+
+exactTypes:
+  - name: AmountDecimal
+    form: decimal
+    scale: 2
+  - name: NavDecimal
+    form: decimal
+    scale: 4
+  - name: Money
+    form: unit-decimal
+    scale: 2
+    amountField: amount
+    unitField: currency
+    units: ["CNY"]
+
+readModels:
+  - name: bank-order-view
+    fields:
+      - paymentCompleted: Bool
+      - taFinalized: Bool
+
+aggregates:
+  - name: FundQuota
+    aliases: [quota, state, fundquota]
+    stateFields:
+      - minPurchase: AmountDecimal = "0.00"
+      - maxSingleLimit: AmountDecimal = "0.00"
+      - fundTotalUsed: AmountDecimal = "0.00"
+      - fundTotalCap: AmountDecimal = "0.00"
+      - perAccountCap: AmountDecimal = "0.00"
+      - accountUsed: Map[AccountId, AmountDecimal] = []
+    commands:
+      - name: ReserveSubscriptionQuota
+        parameters:
+          - accountId: AccountId
+          - amount: AmountDecimal
+        produces: [SubscriptionQuotaReserved]
+    events:
+      - name: SubscriptionQuotaReserved
+        fields:
+          - accountId: AccountId
+          - amount: AmountDecimal
+    ruleRefs:
+      QUOTA_AMOUNT_RANGE: "Single purchase amount must be within [minPurchase..maxSingleLimit]"
+      QUOTA_FUND_CAP: "Total fund subscription quota must not exceed fundTotalCap"
+      QUOTA_ACCOUNT_CAP: "Per-account subscription quota must not exceed perAccountCap"
+
+  - name: FundOrder
+    aliases: [order, state, fundorder]
+    stateFields:
+      - netAmount: AmountDecimal = "0.00"
+      - paymentOutcome: String = "pending"
+      - taStatus: String = "pending"
+    commands:
+      - name: RecordFundTAConfirmed
+        parameters:
+          - shares: Int
+          - nav: NavDecimal
+        produces: [FundTASharesConfirmed]
+    events:
+      - name: FundTASharesConfirmed
+        fields:
+          - shares: Int
+          - nav: NavDecimal
+    ruleRefs:
+      TA_INVALID_NAV: "Fund NAV must be strictly positive"
+      TA_SHARES_MISMATCH: "Confirmed shares must equal floor(netAmount / nav)"
+      TA_PAYMENT_NOT_SUCCEEDED: "TA confirmation requires succeeded payment"
+      TA_ALREADY_CONFIRMED: "TA confirmation is single-shot and cannot repeat"
+
+stories:
+  - name: CashFundPurchase
+    description: "Trusted cash fund purchase intake with idempotent replay, conflict rejection, and order status projection"
+    entryPort: BankCashSubmitPort
+    entryOperation: submit
+    queryPort: BankOrderQuery
+    pins: [BankCashOriginal]
+    dispatches:
+      - FundOrder.RecordCashRequestSource
+      - FundOrder.RequestFundPurchaseSettlement
+    responses: [BankCashAcknowledgement]
+    views: [bank-order-view]
+    callerContract:
+      idempotencyKey: "(principal, clientRequestId)"
+      retryPolicy: "at-least-once safe; replayed identical payload must never re-dispatch settlement"
+      forbiddenUntrustedFields: [operationId, investorAccountId, fundCollectionAccountId]

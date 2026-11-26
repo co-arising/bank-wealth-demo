@@ -1,0 +1,547 @@
+{
+  "schemaVersion": "co-arising.context-pack/v2",
+  "canonicalSha256": "2d270cec2cebea6d3ae0af8b79fde3541b574b43a417db5ba20c9a30526716a3",
+  "slotId": "cash-fund-purchase",
+  "topBread": {
+    "exactTypes": [
+      {
+        "name": "AmountDecimal",
+        "form": "decimal",
+        "scale": 2
+      },
+      {
+        "name": "NavDecimal",
+        "form": "decimal",
+        "scale": 4
+      },
+      {
+        "name": "Money",
+        "form": "unit-decimal",
+        "scale": 2,
+        "amountField": "amount",
+        "unitField": "currency",
+        "units": [
+          "CNY"
+        ]
+      }
+    ],
+    "valueObjects": [],
+    "aggregate": null,
+    "story": {
+      "name": "CashFundPurchase",
+      "description": "Trusted cash fund purchase intake with idempotent replay, conflict rejection, and order status projection",
+      "entryPort": "BankCashSubmitPort",
+      "entryOperation": "submit",
+      "queryPort": "BankOrderQuery",
+      "dispatches": [
+        "FundOrder.RecordCashRequestSource",
+        "FundOrder.RequestFundPurchaseSettlement"
+      ],
+      "pins": [
+        "BankCashOriginal"
+      ],
+      "responses": [
+        "BankCashAcknowledgement"
+      ],
+      "views": [
+        "bank-order-view"
+      ],
+      "callerContract": {
+        "idempotencyKey": "(principal, clientRequestId)",
+        "retryPolicy": "at-least-once safe; replayed identical payload must never re-dispatch settlement",
+        "forbiddenUntrustedFields": [
+          "operationId",
+          "investorAccountId",
+          "fundCollectionAccountId"
+        ]
+      },
+      "parameters": []
+    },
+    "relatedGraphNodes": [
+      {
+        "id": "agg:FundOrder",
+        "kind": "aggregate",
+        "name": "FundOrder"
+      },
+      {
+        "id": "readmodel:bank-order-view",
+        "kind": "read-model",
+        "name": "bank-order-view"
+      },
+      {
+        "id": "rule:CashFundPurchase#US-CFP-01",
+        "kind": "rule",
+        "name": "US-CFP-01"
+      },
+      {
+        "id": "rule:CashFundPurchase#US-CFP-02",
+        "kind": "rule",
+        "name": "US-CFP-02"
+      },
+      {
+        "id": "rule:CashFundPurchase#US-CFP-03",
+        "kind": "rule",
+        "name": "US-CFP-03"
+      },
+      {
+        "id": "rule:CashFundPurchase#US-CFP-04",
+        "kind": "rule",
+        "name": "US-CFP-04"
+      },
+      {
+        "id": "rule:CashFundPurchase#US-CFP-05",
+        "kind": "rule",
+        "name": "US-CFP-05"
+      },
+      {
+        "id": "rule:CashFundPurchase#US-CFP-06",
+        "kind": "rule",
+        "name": "US-CFP-06"
+      },
+      {
+        "id": "rule:CashFundPurchase#US-CFP-07",
+        "kind": "rule",
+        "name": "US-CFP-07"
+      },
+      {
+        "id": "rule:CashFundPurchase#US-CFP-08",
+        "kind": "rule",
+        "name": "US-CFP-08"
+      },
+      {
+        "id": "cloze:cash-fund-purchase",
+        "kind": "cloze-slot",
+        "name": "cash-fund-purchase"
+      }
+    ]
+  },
+  "middle": {
+    "slotId": "cash-fund-purchase",
+    "target": "CashFundPurchase",
+    "layer": "application",
+    "tier": "L3",
+    "logic": "QF_AUFLIA",
+    "hitPolicy": "FIRST",
+    "callerContract": {
+      "idempotencyKey": "(principal, clientRequestId)",
+      "retryPolicy": "at-least-once safe; replayed identical payload must never re-dispatch settlement",
+      "forbiddenUntrustedFields": [
+        "operationId",
+        "investorAccountId",
+        "fundCollectionAccountId"
+      ]
+    },
+    "externs": [
+      {
+        "index": 0,
+        "name": "sessionAuthenticated",
+        "params": [
+          "principal"
+        ],
+        "gloss": null
+      },
+      {
+        "index": 1,
+        "name": "originAndCsrfValid",
+        "params": [],
+        "gloss": null
+      },
+      {
+        "index": 2,
+        "name": "fundCodeActive",
+        "params": [
+          "fundCode"
+        ],
+        "gloss": null
+      },
+      {
+        "index": 3,
+        "name": "requestExists",
+        "params": [
+          "principal",
+          "clientRequestId"
+        ],
+        "gloss": null
+      },
+      {
+        "index": 4,
+        "name": "payloadMatchesOriginal",
+        "params": [
+          "principal",
+          "clientRequestId",
+          "fundCode",
+          "amount"
+        ],
+        "gloss": null
+      }
+    ],
+    "axioms": [
+      {
+        "id": "AX-APP-1",
+        "kind": "action",
+        "actions": [
+          {
+            "kind": "supply",
+            "modality": "SHALL_NOT",
+            "subject": "BankCashSubmit",
+            "fields": [
+              "operationId",
+              "investorAccountId",
+              "fundCollectionAccountId"
+            ]
+          }
+        ]
+      }
+    ],
+    "rules": [
+      {
+        "id": "US-CFP-01",
+        "firstHitOrder": 0,
+        "command": "BankCashSubmitPort.submit",
+        "actions": [
+          {
+            "kind": "reject",
+            "modality": "SHALL",
+            "code": "UNAUTHORIZED_OR_CSRF"
+          }
+        ],
+        "postCount": 0
+      },
+      {
+        "id": "US-CFP-02",
+        "firstHitOrder": 1,
+        "command": "BankCashSubmitPort.submit",
+        "actions": [
+          {
+            "kind": "reject",
+            "modality": "SHALL",
+            "code": "INVALID_CASH_SUBMIT"
+          }
+        ],
+        "postCount": 0
+      },
+      {
+        "id": "US-CFP-03",
+        "firstHitOrder": 2,
+        "command": "BankCashSubmitPort.submit",
+        "actions": [
+          {
+            "kind": "pin",
+            "modality": "SHALL",
+            "artifact": "BankCashOriginal",
+            "inputs": [
+              "principal",
+              "clientRequestId"
+            ]
+          },
+          {
+            "kind": "dispatch",
+            "modality": "SHALL",
+            "target": "FundOrder.RecordCashRequestSource"
+          },
+          {
+            "kind": "dispatch",
+            "modality": "SHALL",
+            "target": "FundOrder.RequestFundPurchaseSettlement"
+          },
+          {
+            "kind": "respond",
+            "modality": "SHALL",
+            "response": "BankCashAcknowledgement",
+            "constraint": {
+              "kind": "binary",
+              "op": "and",
+              "left": {
+                "kind": "compare",
+                "op": "==",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "var",
+                    "name": "ack"
+                  },
+                  "field": "accepted"
+                },
+                "right": {
+                  "kind": "boolean",
+                  "value": true
+                }
+              },
+              "right": {
+                "kind": "compare",
+                "op": "==",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "var",
+                    "name": "ack"
+                  },
+                  "field": "replayed"
+                },
+                "right": {
+                  "kind": "boolean",
+                  "value": false
+                }
+              }
+            }
+          }
+        ],
+        "postCount": 0
+      },
+      {
+        "id": "US-CFP-04",
+        "firstHitOrder": 3,
+        "command": "BankCashSubmitPort.submit",
+        "actions": [
+          {
+            "kind": "respond",
+            "modality": "SHALL",
+            "response": "BankCashAcknowledgement",
+            "constraint": {
+              "kind": "compare",
+              "op": "==",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "var",
+                  "name": "ack"
+                },
+                "field": "replayed"
+              },
+              "right": {
+                "kind": "boolean",
+                "value": true
+              }
+            }
+          },
+          {
+            "kind": "dispatch",
+            "modality": "SHALL_NOT",
+            "target": "FundOrder.RequestFundPurchaseSettlement"
+          }
+        ],
+        "postCount": 0
+      },
+      {
+        "id": "US-CFP-05",
+        "firstHitOrder": 4,
+        "command": "BankCashSubmitPort.submit",
+        "actions": [
+          {
+            "kind": "reject",
+            "modality": "SHALL",
+            "code": "CASH_SOURCE_CONFLICT"
+          }
+        ],
+        "postCount": 0
+      },
+      {
+        "id": "US-CFP-06",
+        "firstHitOrder": 5,
+        "command": "BankOrderQuery.get",
+        "actions": [
+          {
+            "kind": "expose",
+            "modality": "SHALL",
+            "view": "bank-order-view",
+            "constraint": {
+              "kind": "binary",
+              "op": "and",
+              "left": {
+                "kind": "compare",
+                "op": "==",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "var",
+                    "name": "view"
+                  },
+                  "field": "paymentCompleted"
+                },
+                "right": {
+                  "kind": "boolean",
+                  "value": true
+                }
+              },
+              "right": {
+                "kind": "compare",
+                "op": "==",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "var",
+                    "name": "view"
+                  },
+                  "field": "taFinalized"
+                },
+                "right": {
+                  "kind": "boolean",
+                  "value": false
+                }
+              }
+            }
+          }
+        ],
+        "postCount": 0
+      },
+      {
+        "id": "US-CFP-07",
+        "firstHitOrder": 6,
+        "command": "BankOrderQuery.get",
+        "actions": [
+          {
+            "kind": "expose",
+            "modality": "SHALL",
+            "view": "bank-order-view",
+            "constraint": {
+              "kind": "binary",
+              "op": "and",
+              "left": {
+                "kind": "compare",
+                "op": "==",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "var",
+                    "name": "view"
+                  },
+                  "field": "paymentCompleted"
+                },
+                "right": {
+                  "kind": "boolean",
+                  "value": true
+                }
+              },
+              "right": {
+                "kind": "compare",
+                "op": "==",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "var",
+                    "name": "view"
+                  },
+                  "field": "taFinalized"
+                },
+                "right": {
+                  "kind": "boolean",
+                  "value": true
+                }
+              }
+            }
+          }
+        ],
+        "postCount": 0
+      },
+      {
+        "id": "US-CFP-08",
+        "firstHitOrder": 7,
+        "command": "BankOrderQuery.get",
+        "actions": [
+          {
+            "kind": "expose",
+            "modality": "SHALL",
+            "view": "bank-order-view",
+            "constraint": {
+              "kind": "binary",
+              "op": "and",
+              "left": {
+                "kind": "compare",
+                "op": "==",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "var",
+                    "name": "view"
+                  },
+                  "field": "paymentCompleted"
+                },
+                "right": {
+                  "kind": "boolean",
+                  "value": false
+                }
+              },
+              "right": {
+                "kind": "compare",
+                "op": "==",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "var",
+                    "name": "view"
+                  },
+                  "field": "taFinalized"
+                },
+                "right": {
+                  "kind": "boolean",
+                  "value": false
+                }
+              }
+            }
+          }
+        ],
+        "postCount": 0
+      }
+    ],
+    "clozeBounds": {
+      "file": "/Users/zhongdj/Workspaces/mad-polaris/bank-wealth-demo/v2-pilot/handwritten/cash-fund-purchase.cloze.ts",
+      "startLine": 10,
+      "endLine": 15,
+      "editableStart": 11,
+      "editableEnd": 14
+    }
+  },
+  "bottomBread": {
+    "testIrSha256": "d748a67bc3531b3ebdc59d68775351581ebe04f3eaa73cce3cf11f09fb918458",
+    "lockedOracles": [
+      {
+        "specId": "US-CFP-01",
+        "command": "BankCashSubmitPort.submit",
+        "outcome": "reject UNAUTHORIZED_OR_CSRF",
+        "hasSecondaryWitness": true
+      },
+      {
+        "specId": "US-CFP-02",
+        "command": "BankCashSubmitPort.submit",
+        "outcome": "reject INVALID_CASH_SUBMIT",
+        "hasSecondaryWitness": true
+      },
+      {
+        "specId": "US-CFP-03",
+        "command": "BankCashSubmitPort.submit",
+        "outcome": "pin BankCashOriginal and dispatch FundOrder.RecordCashRequestSource and dispatch FundOrder.RequestFundPurchaseSettlement and respond BankCashAcknowledgement",
+        "hasSecondaryWitness": true
+      },
+      {
+        "specId": "US-CFP-04",
+        "command": "BankCashSubmitPort.submit",
+        "outcome": "respond BankCashAcknowledgement and forbid dispatch FundOrder.RequestFundPurchaseSettlement",
+        "hasSecondaryWitness": true
+      },
+      {
+        "specId": "US-CFP-05",
+        "command": "BankCashSubmitPort.submit",
+        "outcome": "reject CASH_SOURCE_CONFLICT",
+        "hasSecondaryWitness": true
+      },
+      {
+        "specId": "US-CFP-06",
+        "command": "BankOrderQuery.get",
+        "outcome": "expose bank-order-view",
+        "hasSecondaryWitness": true
+      },
+      {
+        "specId": "US-CFP-07",
+        "command": "BankOrderQuery.get",
+        "outcome": "expose bank-order-view",
+        "hasSecondaryWitness": true
+      },
+      {
+        "specId": "US-CFP-08",
+        "command": "BankOrderQuery.get",
+        "outcome": "expose bank-order-view",
+        "hasSecondaryWitness": true
+      }
+    ]
+  }
+}

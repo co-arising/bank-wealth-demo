@@ -1,0 +1,3565 @@
+{
+  "schemaVersion": "co-arising.canonical/v2",
+  "system": "bank-wealth",
+  "context": "bankwealth",
+  "canonicalSha256": "98bcc05de3f42d97d4b0c626b2a0bc703e7fe18867e0028faa378fe6ccd9b9f1",
+  "structures": {
+    "exactTypes": [
+      {
+        "name": "AmountDecimal",
+        "form": "decimal",
+        "scale": 2
+      },
+      {
+        "name": "NavDecimal",
+        "form": "decimal",
+        "scale": 4
+      },
+      {
+        "name": "Money",
+        "form": "unit-decimal",
+        "scale": 2,
+        "amountField": "amount",
+        "unitField": "currency",
+        "units": [
+          "CNY"
+        ]
+      }
+    ],
+    "valueObjects": [],
+    "aggregates": [
+      {
+        "name": "FundQuota",
+        "aliases": [
+          "quota",
+          "state",
+          "fundquota"
+        ],
+        "idField": "id",
+        "stateFields": [
+          {
+            "name": "minPurchase",
+            "type": "AmountDecimal",
+            "defaultValue": "0.00",
+            "resolvedType": {
+              "kind": "decimal",
+              "typeName": "AmountDecimal",
+              "scale": 2
+            }
+          },
+          {
+            "name": "maxSingleLimit",
+            "type": "AmountDecimal",
+            "defaultValue": "0.00",
+            "resolvedType": {
+              "kind": "decimal",
+              "typeName": "AmountDecimal",
+              "scale": 2
+            }
+          },
+          {
+            "name": "fundTotalUsed",
+            "type": "AmountDecimal",
+            "defaultValue": "0.00",
+            "resolvedType": {
+              "kind": "decimal",
+              "typeName": "AmountDecimal",
+              "scale": 2
+            }
+          },
+          {
+            "name": "fundTotalCap",
+            "type": "AmountDecimal",
+            "defaultValue": "0.00",
+            "resolvedType": {
+              "kind": "decimal",
+              "typeName": "AmountDecimal",
+              "scale": 2
+            }
+          },
+          {
+            "name": "perAccountCap",
+            "type": "AmountDecimal",
+            "defaultValue": "0.00",
+            "resolvedType": {
+              "kind": "decimal",
+              "typeName": "AmountDecimal",
+              "scale": 2
+            }
+          },
+          {
+            "name": "accountUsed",
+            "type": "Map[AccountId, AmountDecimal]",
+            "defaultValue": [],
+            "resolvedType": {
+              "kind": "map",
+              "key": {
+                "kind": "string",
+                "typeName": "AccountId"
+              },
+              "value": {
+                "kind": "decimal",
+                "typeName": "AmountDecimal",
+                "scale": 2
+              }
+            }
+          }
+        ],
+        "commands": [
+          {
+            "name": "ReserveSubscriptionQuota",
+            "parameters": [
+              {
+                "name": "accountId",
+                "type": "AccountId",
+                "resolvedType": {
+                  "kind": "string",
+                  "typeName": "AccountId"
+                }
+              },
+              {
+                "name": "amount",
+                "type": "AmountDecimal",
+                "resolvedType": {
+                  "kind": "decimal",
+                  "typeName": "AmountDecimal",
+                  "scale": 2
+                }
+              }
+            ],
+            "produces": [
+              "SubscriptionQuotaReserved"
+            ]
+          }
+        ],
+        "events": [
+          {
+            "name": "SubscriptionQuotaReserved",
+            "fields": [
+              {
+                "name": "accountId",
+                "type": "AccountId",
+                "resolvedType": {
+                  "kind": "string",
+                  "typeName": "AccountId"
+                }
+              },
+              {
+                "name": "amount",
+                "type": "AmountDecimal",
+                "resolvedType": {
+                  "kind": "decimal",
+                  "typeName": "AmountDecimal",
+                  "scale": 2
+                }
+              }
+            ]
+          }
+        ],
+        "ruleRefs": {
+          "QUOTA_AMOUNT_RANGE": "Single purchase amount must be within [minPurchase..maxSingleLimit]",
+          "QUOTA_FUND_CAP": "Total fund subscription quota must not exceed fundTotalCap",
+          "QUOTA_ACCOUNT_CAP": "Per-account subscription quota must not exceed perAccountCap"
+        }
+      },
+      {
+        "name": "FundOrder",
+        "aliases": [
+          "order",
+          "state",
+          "fundorder"
+        ],
+        "idField": "id",
+        "stateFields": [
+          {
+            "name": "netAmount",
+            "type": "AmountDecimal",
+            "defaultValue": "0.00",
+            "resolvedType": {
+              "kind": "decimal",
+              "typeName": "AmountDecimal",
+              "scale": 2
+            }
+          },
+          {
+            "name": "paymentOutcome",
+            "type": "String",
+            "defaultValue": "pending",
+            "resolvedType": {
+              "kind": "string",
+              "typeName": "String"
+            }
+          },
+          {
+            "name": "taStatus",
+            "type": "String",
+            "defaultValue": "pending",
+            "resolvedType": {
+              "kind": "string",
+              "typeName": "String"
+            }
+          }
+        ],
+        "commands": [
+          {
+            "name": "RecordFundTAConfirmed",
+            "parameters": [
+              {
+                "name": "shares",
+                "type": "Int",
+                "resolvedType": {
+                  "kind": "int",
+                  "typeName": "Int"
+                }
+              },
+              {
+                "name": "nav",
+                "type": "NavDecimal",
+                "resolvedType": {
+                  "kind": "decimal",
+                  "typeName": "NavDecimal",
+                  "scale": 4
+                }
+              }
+            ],
+            "produces": [
+              "FundTASharesConfirmed"
+            ]
+          }
+        ],
+        "events": [
+          {
+            "name": "FundTASharesConfirmed",
+            "fields": [
+              {
+                "name": "shares",
+                "type": "Int",
+                "resolvedType": {
+                  "kind": "int",
+                  "typeName": "Int"
+                }
+              },
+              {
+                "name": "nav",
+                "type": "NavDecimal",
+                "resolvedType": {
+                  "kind": "decimal",
+                  "typeName": "NavDecimal",
+                  "scale": 4
+                }
+              }
+            ]
+          }
+        ],
+        "ruleRefs": {
+          "TA_INVALID_NAV": "Fund NAV must be strictly positive",
+          "TA_SHARES_MISMATCH": "Confirmed shares must equal floor(netAmount / nav)",
+          "TA_PAYMENT_NOT_SUCCEEDED": "TA confirmation requires succeeded payment",
+          "TA_ALREADY_CONFIRMED": "TA confirmation is single-shot and cannot repeat"
+        }
+      }
+    ],
+    "sagas": [],
+    "readModels": [
+      {
+        "name": "bank-order-view",
+        "fields": [
+          {
+            "name": "paymentCompleted",
+            "type": "Bool",
+            "resolvedType": {
+              "kind": "bool",
+              "typeName": "Bool"
+            }
+          },
+          {
+            "name": "taFinalized",
+            "type": "Bool",
+            "resolvedType": {
+              "kind": "bool",
+              "typeName": "Bool"
+            }
+          }
+        ]
+      }
+    ],
+    "ports": [],
+    "stories": [
+      {
+        "name": "CashFundPurchase",
+        "description": "Trusted cash fund purchase intake with idempotent replay, conflict rejection, and order status projection",
+        "entryPort": "BankCashSubmitPort",
+        "entryOperation": "submit",
+        "queryPort": "BankOrderQuery",
+        "dispatches": [
+          "FundOrder.RecordCashRequestSource",
+          "FundOrder.RequestFundPurchaseSettlement"
+        ],
+        "pins": [
+          "BankCashOriginal"
+        ],
+        "responses": [
+          "BankCashAcknowledgement"
+        ],
+        "views": [
+          "bank-order-view"
+        ],
+        "callerContract": {
+          "idempotencyKey": "(principal, clientRequestId)",
+          "retryPolicy": "at-least-once safe; replayed identical payload must never re-dispatch settlement",
+          "forbiddenUntrustedFields": [
+            "operationId",
+            "investorAccountId",
+            "fundCollectionAccountId"
+          ]
+        },
+        "parameters": []
+      }
+    ]
+  },
+  "behaviors": [
+    {
+      "schemaVersion": "co-arising.ears-ir/v2",
+      "kind": "story",
+      "layer": "application",
+      "target": "CashFundPurchase",
+      "sourceFile": "cash-fund-purchase.story.ears",
+      "hitPolicy": "FIRST",
+      "theory": {
+        "tier": "L3",
+        "logic": "QF_AUFLIA",
+        "codegenChannel": "cloze-tdd",
+        "hasNonlinearMul": false,
+        "hasMultiStepBmc": false,
+        "externCount": 5
+      },
+      "verification": {
+        "solver": "z3",
+        "passed": true,
+        "bmcSteps": 4,
+        "canonicalSha256": "a971bc4e46235d7761d43d4fa0e10b214ec904f4044951d17e7ca9555a05bece"
+      },
+      "axioms": [
+        {
+          "id": "AX-APP-1",
+          "kind": "action",
+          "actions": [
+            {
+              "kind": "supply",
+              "modality": "SHALL_NOT",
+              "subject": "BankCashSubmit",
+              "fields": [
+                "operationId",
+                "investorAccountId",
+                "fundCollectionAccountId"
+              ]
+            }
+          ]
+        }
+      ],
+      "externs": [
+        {
+          "index": 0,
+          "name": "sessionAuthenticated",
+          "params": [
+            "principal"
+          ],
+          "gloss": null
+        },
+        {
+          "index": 1,
+          "name": "originAndCsrfValid",
+          "params": [],
+          "gloss": null
+        },
+        {
+          "index": 2,
+          "name": "fundCodeActive",
+          "params": [
+            "fundCode"
+          ],
+          "gloss": null
+        },
+        {
+          "index": 3,
+          "name": "requestExists",
+          "params": [
+            "principal",
+            "clientRequestId"
+          ],
+          "gloss": null
+        },
+        {
+          "index": 4,
+          "name": "payloadMatchesOriginal",
+          "params": [
+            "principal",
+            "clientRequestId",
+            "fundCode",
+            "amount"
+          ],
+          "gloss": null
+        }
+      ],
+      "where": [
+        {
+          "name": "validSubmit",
+          "gloss": null
+        }
+      ],
+      "rules": [
+        {
+          "id": "US-CFP-01",
+          "firstHitOrder": 0,
+          "pattern": "complex",
+          "command": "BankCashSubmitPort.submit",
+          "guard": {
+            "kind": "binary",
+            "op": "or",
+            "left": {
+              "kind": "not",
+              "argument": {
+                "kind": "extern-ref",
+                "index": 0,
+                "args": [
+                  {
+                    "kind": "var",
+                    "name": "principal"
+                  }
+                ]
+              }
+            },
+            "right": {
+              "kind": "not",
+              "argument": {
+                "kind": "extern-ref",
+                "index": 1,
+                "args": []
+              }
+            }
+          },
+          "actions": [
+            {
+              "kind": "reject",
+              "modality": "SHALL",
+              "code": "UNAUTHORIZED_OR_CSRF"
+            }
+          ],
+          "post": []
+        },
+        {
+          "id": "US-CFP-02",
+          "firstHitOrder": 1,
+          "pattern": "complex",
+          "command": "BankCashSubmitPort.submit",
+          "guard": {
+            "kind": "binary",
+            "op": "or",
+            "left": {
+              "kind": "not",
+              "argument": {
+                "kind": "extern-ref",
+                "index": 2,
+                "args": [
+                  {
+                    "kind": "var",
+                    "name": "fundCode"
+                  }
+                ]
+              }
+            },
+            "right": {
+              "kind": "not",
+              "argument": {
+                "kind": "binary",
+                "op": "and",
+                "left": {
+                  "kind": "compare",
+                  "op": "==",
+                  "left": {
+                    "kind": "member",
+                    "object": {
+                      "kind": "var",
+                      "name": "amount"
+                    },
+                    "field": "currency"
+                  },
+                  "right": {
+                    "kind": "string",
+                    "value": "CNY"
+                  }
+                },
+                "right": {
+                  "kind": "compare",
+                  "op": ">",
+                  "left": {
+                    "kind": "member",
+                    "object": {
+                      "kind": "var",
+                      "name": "amount"
+                    },
+                    "field": "amount"
+                  },
+                  "right": {
+                    "kind": "number",
+                    "value": "0.00",
+                    "scale": 2
+                  }
+                }
+              }
+            }
+          },
+          "actions": [
+            {
+              "kind": "reject",
+              "modality": "SHALL",
+              "code": "INVALID_CASH_SUBMIT"
+            }
+          ],
+          "post": []
+        },
+        {
+          "id": "US-CFP-03",
+          "firstHitOrder": 2,
+          "pattern": "complex",
+          "command": "BankCashSubmitPort.submit",
+          "guard": {
+            "kind": "binary",
+            "op": "and",
+            "left": {
+              "kind": "binary",
+              "op": "and",
+              "left": {
+                "kind": "binary",
+                "op": "and",
+                "left": {
+                  "kind": "binary",
+                  "op": "and",
+                  "left": {
+                    "kind": "binary",
+                    "op": "and",
+                    "left": {
+                      "kind": "compare",
+                      "op": "==",
+                      "left": {
+                        "kind": "member",
+                        "object": {
+                          "kind": "var",
+                          "name": "amount"
+                        },
+                        "field": "currency"
+                      },
+                      "right": {
+                        "kind": "string",
+                        "value": "CNY"
+                      }
+                    },
+                    "right": {
+                      "kind": "compare",
+                      "op": ">",
+                      "left": {
+                        "kind": "member",
+                        "object": {
+                          "kind": "var",
+                          "name": "amount"
+                        },
+                        "field": "amount"
+                      },
+                      "right": {
+                        "kind": "number",
+                        "value": "0.00",
+                        "scale": 2
+                      }
+                    }
+                  },
+                  "right": {
+                    "kind": "extern-ref",
+                    "index": 0,
+                    "args": [
+                      {
+                        "kind": "var",
+                        "name": "principal"
+                      }
+                    ]
+                  }
+                },
+                "right": {
+                  "kind": "extern-ref",
+                  "index": 1,
+                  "args": []
+                }
+              },
+              "right": {
+                "kind": "extern-ref",
+                "index": 2,
+                "args": [
+                  {
+                    "kind": "var",
+                    "name": "fundCode"
+                  }
+                ]
+              }
+            },
+            "right": {
+              "kind": "not",
+              "argument": {
+                "kind": "extern-ref",
+                "index": 3,
+                "args": [
+                  {
+                    "kind": "var",
+                    "name": "principal"
+                  },
+                  {
+                    "kind": "var",
+                    "name": "clientRequestId"
+                  }
+                ]
+              }
+            }
+          },
+          "actions": [
+            {
+              "kind": "pin",
+              "modality": "SHALL",
+              "artifact": "BankCashOriginal",
+              "inputs": [
+                "principal",
+                "clientRequestId"
+              ]
+            },
+            {
+              "kind": "dispatch",
+              "modality": "SHALL",
+              "target": "FundOrder.RecordCashRequestSource"
+            },
+            {
+              "kind": "dispatch",
+              "modality": "SHALL",
+              "target": "FundOrder.RequestFundPurchaseSettlement"
+            },
+            {
+              "kind": "respond",
+              "modality": "SHALL",
+              "response": "BankCashAcknowledgement",
+              "constraint": {
+                "kind": "binary",
+                "op": "and",
+                "left": {
+                  "kind": "compare",
+                  "op": "==",
+                  "left": {
+                    "kind": "member",
+                    "object": {
+                      "kind": "var",
+                      "name": "ack"
+                    },
+                    "field": "accepted"
+                  },
+                  "right": {
+                    "kind": "boolean",
+                    "value": true
+                  }
+                },
+                "right": {
+                  "kind": "compare",
+                  "op": "==",
+                  "left": {
+                    "kind": "member",
+                    "object": {
+                      "kind": "var",
+                      "name": "ack"
+                    },
+                    "field": "replayed"
+                  },
+                  "right": {
+                    "kind": "boolean",
+                    "value": false
+                  }
+                }
+              }
+            }
+          ],
+          "post": []
+        },
+        {
+          "id": "US-CFP-04",
+          "firstHitOrder": 3,
+          "pattern": "complex",
+          "command": "BankCashSubmitPort.submit",
+          "guard": {
+            "kind": "binary",
+            "op": "and",
+            "left": {
+              "kind": "binary",
+              "op": "and",
+              "left": {
+                "kind": "binary",
+                "op": "and",
+                "left": {
+                  "kind": "binary",
+                  "op": "and",
+                  "left": {
+                    "kind": "binary",
+                    "op": "and",
+                    "left": {
+                      "kind": "binary",
+                      "op": "and",
+                      "left": {
+                        "kind": "compare",
+                        "op": "==",
+                        "left": {
+                          "kind": "member",
+                          "object": {
+                            "kind": "var",
+                            "name": "amount"
+                          },
+                          "field": "currency"
+                        },
+                        "right": {
+                          "kind": "string",
+                          "value": "CNY"
+                        }
+                      },
+                      "right": {
+                        "kind": "compare",
+                        "op": ">",
+                        "left": {
+                          "kind": "member",
+                          "object": {
+                            "kind": "var",
+                            "name": "amount"
+                          },
+                          "field": "amount"
+                        },
+                        "right": {
+                          "kind": "number",
+                          "value": "0.00",
+                          "scale": 2
+                        }
+                      }
+                    },
+                    "right": {
+                      "kind": "extern-ref",
+                      "index": 0,
+                      "args": [
+                        {
+                          "kind": "var",
+                          "name": "principal"
+                        }
+                      ]
+                    }
+                  },
+                  "right": {
+                    "kind": "extern-ref",
+                    "index": 1,
+                    "args": []
+                  }
+                },
+                "right": {
+                  "kind": "extern-ref",
+                  "index": 2,
+                  "args": [
+                    {
+                      "kind": "var",
+                      "name": "fundCode"
+                    }
+                  ]
+                }
+              },
+              "right": {
+                "kind": "extern-ref",
+                "index": 3,
+                "args": [
+                  {
+                    "kind": "var",
+                    "name": "principal"
+                  },
+                  {
+                    "kind": "var",
+                    "name": "clientRequestId"
+                  }
+                ]
+              }
+            },
+            "right": {
+              "kind": "extern-ref",
+              "index": 4,
+              "args": [
+                {
+                  "kind": "var",
+                  "name": "principal"
+                },
+                {
+                  "kind": "var",
+                  "name": "clientRequestId"
+                },
+                {
+                  "kind": "var",
+                  "name": "fundCode"
+                },
+                {
+                  "kind": "var",
+                  "name": "amount"
+                }
+              ]
+            }
+          },
+          "actions": [
+            {
+              "kind": "respond",
+              "modality": "SHALL",
+              "response": "BankCashAcknowledgement",
+              "constraint": {
+                "kind": "compare",
+                "op": "==",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "var",
+                    "name": "ack"
+                  },
+                  "field": "replayed"
+                },
+                "right": {
+                  "kind": "boolean",
+                  "value": true
+                }
+              }
+            },
+            {
+              "kind": "dispatch",
+              "modality": "SHALL_NOT",
+              "target": "FundOrder.RequestFundPurchaseSettlement"
+            }
+          ],
+          "post": []
+        },
+        {
+          "id": "US-CFP-05",
+          "firstHitOrder": 4,
+          "pattern": "complex",
+          "command": "BankCashSubmitPort.submit",
+          "guard": {
+            "kind": "binary",
+            "op": "and",
+            "left": {
+              "kind": "binary",
+              "op": "and",
+              "left": {
+                "kind": "binary",
+                "op": "and",
+                "left": {
+                  "kind": "binary",
+                  "op": "and",
+                  "left": {
+                    "kind": "binary",
+                    "op": "and",
+                    "left": {
+                      "kind": "binary",
+                      "op": "and",
+                      "left": {
+                        "kind": "compare",
+                        "op": "==",
+                        "left": {
+                          "kind": "member",
+                          "object": {
+                            "kind": "var",
+                            "name": "amount"
+                          },
+                          "field": "currency"
+                        },
+                        "right": {
+                          "kind": "string",
+                          "value": "CNY"
+                        }
+                      },
+                      "right": {
+                        "kind": "compare",
+                        "op": ">",
+                        "left": {
+                          "kind": "member",
+                          "object": {
+                            "kind": "var",
+                            "name": "amount"
+                          },
+                          "field": "amount"
+                        },
+                        "right": {
+                          "kind": "number",
+                          "value": "0.00",
+                          "scale": 2
+                        }
+                      }
+                    },
+                    "right": {
+                      "kind": "extern-ref",
+                      "index": 0,
+                      "args": [
+                        {
+                          "kind": "var",
+                          "name": "principal"
+                        }
+                      ]
+                    }
+                  },
+                  "right": {
+                    "kind": "extern-ref",
+                    "index": 1,
+                    "args": []
+                  }
+                },
+                "right": {
+                  "kind": "extern-ref",
+                  "index": 2,
+                  "args": [
+                    {
+                      "kind": "var",
+                      "name": "fundCode"
+                    }
+                  ]
+                }
+              },
+              "right": {
+                "kind": "extern-ref",
+                "index": 3,
+                "args": [
+                  {
+                    "kind": "var",
+                    "name": "principal"
+                  },
+                  {
+                    "kind": "var",
+                    "name": "clientRequestId"
+                  }
+                ]
+              }
+            },
+            "right": {
+              "kind": "not",
+              "argument": {
+                "kind": "extern-ref",
+                "index": 4,
+                "args": [
+                  {
+                    "kind": "var",
+                    "name": "principal"
+                  },
+                  {
+                    "kind": "var",
+                    "name": "clientRequestId"
+                  },
+                  {
+                    "kind": "var",
+                    "name": "fundCode"
+                  },
+                  {
+                    "kind": "var",
+                    "name": "amount"
+                  }
+                ]
+              }
+            }
+          },
+          "actions": [
+            {
+              "kind": "reject",
+              "modality": "SHALL",
+              "code": "CASH_SOURCE_CONFLICT"
+            }
+          ],
+          "post": []
+        },
+        {
+          "id": "US-CFP-06",
+          "firstHitOrder": 5,
+          "pattern": "complex",
+          "command": "BankOrderQuery.get",
+          "guard": {
+            "kind": "binary",
+            "op": "and",
+            "left": {
+              "kind": "compare",
+              "op": "!=",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "var",
+                  "name": "order"
+                },
+                "field": "taStatus"
+              },
+              "right": {
+                "kind": "string",
+                "value": "confirmed"
+              }
+            },
+            "right": {
+              "kind": "compare",
+              "op": "==",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "var",
+                  "name": "order"
+                },
+                "field": "paymentOutcome"
+              },
+              "right": {
+                "kind": "string",
+                "value": "succeeded"
+              }
+            }
+          },
+          "actions": [
+            {
+              "kind": "expose",
+              "modality": "SHALL",
+              "view": "bank-order-view",
+              "constraint": {
+                "kind": "binary",
+                "op": "and",
+                "left": {
+                  "kind": "compare",
+                  "op": "==",
+                  "left": {
+                    "kind": "member",
+                    "object": {
+                      "kind": "var",
+                      "name": "view"
+                    },
+                    "field": "paymentCompleted"
+                  },
+                  "right": {
+                    "kind": "boolean",
+                    "value": true
+                  }
+                },
+                "right": {
+                  "kind": "compare",
+                  "op": "==",
+                  "left": {
+                    "kind": "member",
+                    "object": {
+                      "kind": "var",
+                      "name": "view"
+                    },
+                    "field": "taFinalized"
+                  },
+                  "right": {
+                    "kind": "boolean",
+                    "value": false
+                  }
+                }
+              }
+            }
+          ],
+          "post": []
+        },
+        {
+          "id": "US-CFP-07",
+          "firstHitOrder": 6,
+          "pattern": "complex",
+          "command": "BankOrderQuery.get",
+          "guard": {
+            "kind": "binary",
+            "op": "and",
+            "left": {
+              "kind": "compare",
+              "op": "==",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "var",
+                  "name": "order"
+                },
+                "field": "paymentOutcome"
+              },
+              "right": {
+                "kind": "string",
+                "value": "succeeded"
+              }
+            },
+            "right": {
+              "kind": "compare",
+              "op": "==",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "var",
+                  "name": "order"
+                },
+                "field": "taStatus"
+              },
+              "right": {
+                "kind": "string",
+                "value": "confirmed"
+              }
+            }
+          },
+          "actions": [
+            {
+              "kind": "expose",
+              "modality": "SHALL",
+              "view": "bank-order-view",
+              "constraint": {
+                "kind": "binary",
+                "op": "and",
+                "left": {
+                  "kind": "compare",
+                  "op": "==",
+                  "left": {
+                    "kind": "member",
+                    "object": {
+                      "kind": "var",
+                      "name": "view"
+                    },
+                    "field": "paymentCompleted"
+                  },
+                  "right": {
+                    "kind": "boolean",
+                    "value": true
+                  }
+                },
+                "right": {
+                  "kind": "compare",
+                  "op": "==",
+                  "left": {
+                    "kind": "member",
+                    "object": {
+                      "kind": "var",
+                      "name": "view"
+                    },
+                    "field": "taFinalized"
+                  },
+                  "right": {
+                    "kind": "boolean",
+                    "value": true
+                  }
+                }
+              }
+            }
+          ],
+          "post": []
+        },
+        {
+          "id": "US-CFP-08",
+          "firstHitOrder": 7,
+          "pattern": "complex",
+          "command": "BankOrderQuery.get",
+          "guard": {
+            "kind": "compare",
+            "op": "!=",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "var",
+                "name": "order"
+              },
+              "field": "paymentOutcome"
+            },
+            "right": {
+              "kind": "string",
+              "value": "succeeded"
+            }
+          },
+          "actions": [
+            {
+              "kind": "expose",
+              "modality": "SHALL",
+              "view": "bank-order-view",
+              "constraint": {
+                "kind": "binary",
+                "op": "and",
+                "left": {
+                  "kind": "compare",
+                  "op": "==",
+                  "left": {
+                    "kind": "member",
+                    "object": {
+                      "kind": "var",
+                      "name": "view"
+                    },
+                    "field": "paymentCompleted"
+                  },
+                  "right": {
+                    "kind": "boolean",
+                    "value": false
+                  }
+                },
+                "right": {
+                  "kind": "compare",
+                  "op": "==",
+                  "left": {
+                    "kind": "member",
+                    "object": {
+                      "kind": "var",
+                      "name": "view"
+                    },
+                    "field": "taFinalized"
+                  },
+                  "right": {
+                    "kind": "boolean",
+                    "value": false
+                  }
+                }
+              }
+            }
+          ],
+          "post": []
+        }
+      ],
+      "eventPropagations": [],
+      "testIr": {
+        "schemaVersion": "co-arising.test-ir/v2",
+        "meta": {
+          "sourceFile": "cash-fund-purchase.story.ears",
+          "sourceSha256": "b5628bbaabd7037df8435d400c454b1ce8f007af14956b2ee46c562919d7cc41",
+          "canonicalSha256": "a971bc4e46235d7761d43d4fa0e10b214ec904f4044951d17e7ca9555a05bece",
+          "kind": "story",
+          "layer": "application",
+          "target": "CashFundPurchase",
+          "aggregate": null,
+          "slice": null,
+          "story": "cash-fund-purchase",
+          "solver": "z3",
+          "logic": "QF_AUFLIA",
+          "verified": true
+        },
+        "scenarios": [
+          {
+            "id": "bank-cash-submit-port-submit-oracle",
+            "kind": "application",
+            "command": "BankCashSubmitPort.submit",
+            "title": "CashFundPurchase — BankCashSubmitPort.submit First-Hit executable oracle",
+            "ruleIds": [
+              "US-CFP-01",
+              "US-CFP-02",
+              "US-CFP-03",
+              "US-CFP-04",
+              "US-CFP-05"
+            ],
+            "tags": [
+              "@spec:US-CFP-01",
+              "@spec:US-CFP-02",
+              "@spec:US-CFP-03",
+              "@spec:US-CFP-04",
+              "@spec:US-CFP-05",
+              "@z3-witness"
+            ],
+            "examples": [
+              {
+                "ruleId": "US-CFP-01",
+                "firstHitOrder": 0,
+                "pattern": "complex",
+                "witness": {
+                  "scalars": {
+                    "amount.currency": "",
+                    "amount.amount": "0.00",
+                    "order.paymentOutcome": "",
+                    "order.taStatus": "",
+                    "principal": 0,
+                    "fundCode": 0,
+                    "amount": 0,
+                    "clientRequestId": 0,
+                    "order": 0
+                  },
+                  "mapEntries": {},
+                  "externs": {
+                    "sessionAuthenticated": false,
+                    "originAndCsrfValid": false,
+                    "fundCodeActive": false,
+                    "requestExists": false,
+                    "payloadMatchesOriginal": false
+                  }
+                },
+                "secondaryWitness": {
+                  "scalars": {
+                    "amount.currency": "",
+                    "amount.amount": "0.01",
+                    "order.paymentOutcome": "",
+                    "order.taStatus": "",
+                    "principal": 1,
+                    "fundCode": 1,
+                    "amount": 1,
+                    "clientRequestId": 1,
+                    "order": 1
+                  },
+                  "mapEntries": {},
+                  "externs": {
+                    "sessionAuthenticated": false,
+                    "originAndCsrfValid": false,
+                    "fundCodeActive": false,
+                    "requestExists": false,
+                    "payloadMatchesOriginal": false
+                  }
+                },
+                "boundaryWitnesses": [],
+                "outcome": "reject UNAUTHORIZED_OR_CSRF",
+                "actions": [
+                  {
+                    "kind": "reject",
+                    "modality": "SHALL",
+                    "code": "UNAUTHORIZED_OR_CSRF"
+                  }
+                ],
+                "post": []
+              },
+              {
+                "ruleId": "US-CFP-02",
+                "firstHitOrder": 1,
+                "pattern": "complex",
+                "witness": {
+                  "scalars": {
+                    "amount.currency": "succeeded",
+                    "amount.amount": "0.00",
+                    "order.paymentOutcome": "",
+                    "order.taStatus": "",
+                    "principal": 0,
+                    "fundCode": 2437,
+                    "amount": 0,
+                    "clientRequestId": 0,
+                    "order": 0
+                  },
+                  "mapEntries": {},
+                  "externs": {
+                    "sessionAuthenticated": true,
+                    "originAndCsrfValid": true,
+                    "fundCodeActive": false,
+                    "requestExists": false,
+                    "payloadMatchesOriginal": false
+                  }
+                },
+                "secondaryWitness": {
+                  "scalars": {
+                    "amount.currency": "succeeded",
+                    "amount.amount": "0.01",
+                    "order.paymentOutcome": "",
+                    "order.taStatus": "",
+                    "principal": 1,
+                    "fundCode": 0,
+                    "amount": 1,
+                    "clientRequestId": 1,
+                    "order": 1
+                  },
+                  "mapEntries": {},
+                  "externs": {
+                    "sessionAuthenticated": true,
+                    "originAndCsrfValid": true,
+                    "fundCodeActive": false,
+                    "requestExists": false,
+                    "payloadMatchesOriginal": false
+                  }
+                },
+                "boundaryWitnesses": [
+                  {
+                    "scalars": {
+                      "amount.currency": "",
+                      "amount.amount": "0.00",
+                      "order.paymentOutcome": "",
+                      "order.taStatus": "",
+                      "principal": 0,
+                      "fundCode": 0,
+                      "amount": 0,
+                      "clientRequestId": 0,
+                      "order": 0
+                    },
+                    "mapEntries": {},
+                    "externs": {
+                      "sessionAuthenticated": true,
+                      "originAndCsrfValid": true,
+                      "fundCodeActive": false,
+                      "requestExists": false,
+                      "payloadMatchesOriginal": false
+                    }
+                  }
+                ],
+                "outcome": "reject INVALID_CASH_SUBMIT",
+                "actions": [
+                  {
+                    "kind": "reject",
+                    "modality": "SHALL",
+                    "code": "INVALID_CASH_SUBMIT"
+                  }
+                ],
+                "post": []
+              },
+              {
+                "ruleId": "US-CFP-03",
+                "firstHitOrder": 2,
+                "pattern": "complex",
+                "witness": {
+                  "scalars": {
+                    "amount.currency": "CNY",
+                    "amount.amount": "0.01",
+                    "order.paymentOutcome": "",
+                    "order.taStatus": "",
+                    "principal": 0,
+                    "fundCode": 21238,
+                    "amount": 0,
+                    "clientRequestId": 2437,
+                    "order": 0
+                  },
+                  "mapEntries": {},
+                  "externs": {
+                    "sessionAuthenticated": true,
+                    "originAndCsrfValid": true,
+                    "fundCodeActive": true,
+                    "requestExists": false,
+                    "payloadMatchesOriginal": false
+                  }
+                },
+                "secondaryWitness": {
+                  "scalars": {
+                    "amount.currency": "CNY",
+                    "amount.amount": "0.02",
+                    "order.paymentOutcome": "",
+                    "order.taStatus": "",
+                    "principal": 1,
+                    "fundCode": 0,
+                    "amount": 1,
+                    "clientRequestId": 32285,
+                    "order": 1
+                  },
+                  "mapEntries": {},
+                  "externs": {
+                    "sessionAuthenticated": true,
+                    "originAndCsrfValid": true,
+                    "fundCodeActive": true,
+                    "requestExists": false,
+                    "payloadMatchesOriginal": false
+                  }
+                },
+                "boundaryWitnesses": [],
+                "outcome": "pin BankCashOriginal and dispatch FundOrder.RecordCashRequestSource and dispatch FundOrder.RequestFundPurchaseSettlement and respond BankCashAcknowledgement",
+                "actions": [
+                  {
+                    "kind": "pin",
+                    "modality": "SHALL",
+                    "artifact": "BankCashOriginal",
+                    "inputs": [
+                      "principal",
+                      "clientRequestId"
+                    ]
+                  },
+                  {
+                    "kind": "dispatch",
+                    "modality": "SHALL",
+                    "target": "FundOrder.RecordCashRequestSource"
+                  },
+                  {
+                    "kind": "dispatch",
+                    "modality": "SHALL",
+                    "target": "FundOrder.RequestFundPurchaseSettlement"
+                  },
+                  {
+                    "kind": "respond",
+                    "modality": "SHALL",
+                    "response": "BankCashAcknowledgement",
+                    "constraint": {
+                      "kind": "binary",
+                      "op": "and",
+                      "left": {
+                        "kind": "compare",
+                        "op": "==",
+                        "left": {
+                          "kind": "member",
+                          "object": {
+                            "kind": "var",
+                            "name": "ack"
+                          },
+                          "field": "accepted"
+                        },
+                        "right": {
+                          "kind": "boolean",
+                          "value": true
+                        }
+                      },
+                      "right": {
+                        "kind": "compare",
+                        "op": "==",
+                        "left": {
+                          "kind": "member",
+                          "object": {
+                            "kind": "var",
+                            "name": "ack"
+                          },
+                          "field": "replayed"
+                        },
+                        "right": {
+                          "kind": "boolean",
+                          "value": false
+                        }
+                      }
+                    }
+                  }
+                ],
+                "post": []
+              },
+              {
+                "ruleId": "US-CFP-04",
+                "firstHitOrder": 3,
+                "pattern": "complex",
+                "witness": {
+                  "scalars": {
+                    "amount.currency": "CNY",
+                    "amount.amount": "0.01",
+                    "order.paymentOutcome": "",
+                    "order.taStatus": "",
+                    "principal": 0,
+                    "fundCode": 21238,
+                    "amount": 2437,
+                    "clientRequestId": 8855,
+                    "order": 0
+                  },
+                  "mapEntries": {},
+                  "externs": {
+                    "sessionAuthenticated": true,
+                    "originAndCsrfValid": true,
+                    "fundCodeActive": true,
+                    "requestExists": true,
+                    "payloadMatchesOriginal": true
+                  }
+                },
+                "secondaryWitness": {
+                  "scalars": {
+                    "amount.currency": "CNY",
+                    "amount.amount": "0.02",
+                    "order.paymentOutcome": "",
+                    "order.taStatus": "",
+                    "principal": 1,
+                    "fundCode": 0,
+                    "amount": 8365,
+                    "clientRequestId": 32285,
+                    "order": 1
+                  },
+                  "mapEntries": {},
+                  "externs": {
+                    "sessionAuthenticated": true,
+                    "originAndCsrfValid": true,
+                    "fundCodeActive": true,
+                    "requestExists": true,
+                    "payloadMatchesOriginal": true
+                  }
+                },
+                "boundaryWitnesses": [],
+                "outcome": "respond BankCashAcknowledgement and forbid dispatch FundOrder.RequestFundPurchaseSettlement",
+                "actions": [
+                  {
+                    "kind": "respond",
+                    "modality": "SHALL",
+                    "response": "BankCashAcknowledgement",
+                    "constraint": {
+                      "kind": "compare",
+                      "op": "==",
+                      "left": {
+                        "kind": "member",
+                        "object": {
+                          "kind": "var",
+                          "name": "ack"
+                        },
+                        "field": "replayed"
+                      },
+                      "right": {
+                        "kind": "boolean",
+                        "value": true
+                      }
+                    }
+                  },
+                  {
+                    "kind": "dispatch",
+                    "modality": "SHALL_NOT",
+                    "target": "FundOrder.RequestFundPurchaseSettlement"
+                  }
+                ],
+                "post": []
+              },
+              {
+                "ruleId": "US-CFP-05",
+                "firstHitOrder": 4,
+                "pattern": "complex",
+                "witness": {
+                  "scalars": {
+                    "amount.currency": "CNY",
+                    "amount.amount": "0.01",
+                    "order.paymentOutcome": "",
+                    "order.taStatus": "",
+                    "principal": 0,
+                    "fundCode": 21238,
+                    "amount": 2437,
+                    "clientRequestId": 8855,
+                    "order": 0
+                  },
+                  "mapEntries": {},
+                  "externs": {
+                    "sessionAuthenticated": true,
+                    "originAndCsrfValid": true,
+                    "fundCodeActive": true,
+                    "requestExists": true,
+                    "payloadMatchesOriginal": false
+                  }
+                },
+                "secondaryWitness": {
+                  "scalars": {
+                    "amount.currency": "CNY",
+                    "amount.amount": "0.02",
+                    "order.paymentOutcome": "",
+                    "order.taStatus": "",
+                    "principal": 1,
+                    "fundCode": 0,
+                    "amount": 8365,
+                    "clientRequestId": 32285,
+                    "order": 1
+                  },
+                  "mapEntries": {},
+                  "externs": {
+                    "sessionAuthenticated": true,
+                    "originAndCsrfValid": true,
+                    "fundCodeActive": true,
+                    "requestExists": true,
+                    "payloadMatchesOriginal": false
+                  }
+                },
+                "boundaryWitnesses": [],
+                "outcome": "reject CASH_SOURCE_CONFLICT",
+                "actions": [
+                  {
+                    "kind": "reject",
+                    "modality": "SHALL",
+                    "code": "CASH_SOURCE_CONFLICT"
+                  }
+                ],
+                "post": []
+              }
+            ]
+          },
+          {
+            "id": "bank-order-query-get-oracle",
+            "kind": "application",
+            "command": "BankOrderQuery.get",
+            "title": "CashFundPurchase — BankOrderQuery.get First-Hit executable oracle",
+            "ruleIds": [
+              "US-CFP-06",
+              "US-CFP-07",
+              "US-CFP-08"
+            ],
+            "tags": [
+              "@spec:US-CFP-06",
+              "@spec:US-CFP-07",
+              "@spec:US-CFP-08",
+              "@z3-witness"
+            ],
+            "examples": [
+              {
+                "ruleId": "US-CFP-06",
+                "firstHitOrder": 0,
+                "pattern": "complex",
+                "witness": {
+                  "scalars": {
+                    "amount.currency": "",
+                    "amount.amount": "0.00",
+                    "order.paymentOutcome": "succeeded",
+                    "order.taStatus": "id_5",
+                    "principal": 0,
+                    "fundCode": 0,
+                    "amount": 0,
+                    "clientRequestId": 0,
+                    "order": 0
+                  },
+                  "mapEntries": {},
+                  "externs": {
+                    "sessionAuthenticated": false,
+                    "originAndCsrfValid": false,
+                    "fundCodeActive": false,
+                    "requestExists": false,
+                    "payloadMatchesOriginal": false
+                  }
+                },
+                "secondaryWitness": {
+                  "scalars": {
+                    "amount.currency": "",
+                    "amount.amount": "0.01",
+                    "order.paymentOutcome": "succeeded",
+                    "order.taStatus": "id_5",
+                    "principal": 1,
+                    "fundCode": 1,
+                    "amount": 1,
+                    "clientRequestId": 1,
+                    "order": 1
+                  },
+                  "mapEntries": {},
+                  "externs": {
+                    "sessionAuthenticated": false,
+                    "originAndCsrfValid": false,
+                    "fundCodeActive": false,
+                    "requestExists": false,
+                    "payloadMatchesOriginal": false
+                  }
+                },
+                "boundaryWitnesses": [],
+                "outcome": "expose bank-order-view",
+                "actions": [
+                  {
+                    "kind": "expose",
+                    "modality": "SHALL",
+                    "view": "bank-order-view",
+                    "constraint": {
+                      "kind": "binary",
+                      "op": "and",
+                      "left": {
+                        "kind": "compare",
+                        "op": "==",
+                        "left": {
+                          "kind": "member",
+                          "object": {
+                            "kind": "var",
+                            "name": "view"
+                          },
+                          "field": "paymentCompleted"
+                        },
+                        "right": {
+                          "kind": "boolean",
+                          "value": true
+                        }
+                      },
+                      "right": {
+                        "kind": "compare",
+                        "op": "==",
+                        "left": {
+                          "kind": "member",
+                          "object": {
+                            "kind": "var",
+                            "name": "view"
+                          },
+                          "field": "taFinalized"
+                        },
+                        "right": {
+                          "kind": "boolean",
+                          "value": false
+                        }
+                      }
+                    }
+                  }
+                ],
+                "post": []
+              },
+              {
+                "ruleId": "US-CFP-07",
+                "firstHitOrder": 1,
+                "pattern": "complex",
+                "witness": {
+                  "scalars": {
+                    "amount.currency": "",
+                    "amount.amount": "0.00",
+                    "order.paymentOutcome": "succeeded",
+                    "order.taStatus": "confirmed",
+                    "principal": 0,
+                    "fundCode": 0,
+                    "amount": 0,
+                    "clientRequestId": 0,
+                    "order": 0
+                  },
+                  "mapEntries": {},
+                  "externs": {
+                    "sessionAuthenticated": false,
+                    "originAndCsrfValid": false,
+                    "fundCodeActive": false,
+                    "requestExists": false,
+                    "payloadMatchesOriginal": false
+                  }
+                },
+                "secondaryWitness": {
+                  "scalars": {
+                    "amount.currency": "",
+                    "amount.amount": "0.01",
+                    "order.paymentOutcome": "succeeded",
+                    "order.taStatus": "confirmed",
+                    "principal": 1,
+                    "fundCode": 1,
+                    "amount": 1,
+                    "clientRequestId": 1,
+                    "order": 1
+                  },
+                  "mapEntries": {},
+                  "externs": {
+                    "sessionAuthenticated": false,
+                    "originAndCsrfValid": false,
+                    "fundCodeActive": false,
+                    "requestExists": false,
+                    "payloadMatchesOriginal": false
+                  }
+                },
+                "boundaryWitnesses": [],
+                "outcome": "expose bank-order-view",
+                "actions": [
+                  {
+                    "kind": "expose",
+                    "modality": "SHALL",
+                    "view": "bank-order-view",
+                    "constraint": {
+                      "kind": "binary",
+                      "op": "and",
+                      "left": {
+                        "kind": "compare",
+                        "op": "==",
+                        "left": {
+                          "kind": "member",
+                          "object": {
+                            "kind": "var",
+                            "name": "view"
+                          },
+                          "field": "paymentCompleted"
+                        },
+                        "right": {
+                          "kind": "boolean",
+                          "value": true
+                        }
+                      },
+                      "right": {
+                        "kind": "compare",
+                        "op": "==",
+                        "left": {
+                          "kind": "member",
+                          "object": {
+                            "kind": "var",
+                            "name": "view"
+                          },
+                          "field": "taFinalized"
+                        },
+                        "right": {
+                          "kind": "boolean",
+                          "value": true
+                        }
+                      }
+                    }
+                  }
+                ],
+                "post": []
+              },
+              {
+                "ruleId": "US-CFP-08",
+                "firstHitOrder": 2,
+                "pattern": "complex",
+                "witness": {
+                  "scalars": {
+                    "amount.currency": "",
+                    "amount.amount": "0.00",
+                    "order.paymentOutcome": "confirmed",
+                    "order.taStatus": "",
+                    "principal": 0,
+                    "fundCode": 0,
+                    "amount": 0,
+                    "clientRequestId": 0,
+                    "order": 0
+                  },
+                  "mapEntries": {},
+                  "externs": {
+                    "sessionAuthenticated": false,
+                    "originAndCsrfValid": false,
+                    "fundCodeActive": false,
+                    "requestExists": false,
+                    "payloadMatchesOriginal": false
+                  }
+                },
+                "secondaryWitness": {
+                  "scalars": {
+                    "amount.currency": "",
+                    "amount.amount": "0.01",
+                    "order.paymentOutcome": "confirmed",
+                    "order.taStatus": "",
+                    "principal": 1,
+                    "fundCode": 1,
+                    "amount": 1,
+                    "clientRequestId": 1,
+                    "order": 1
+                  },
+                  "mapEntries": {},
+                  "externs": {
+                    "sessionAuthenticated": false,
+                    "originAndCsrfValid": false,
+                    "fundCodeActive": false,
+                    "requestExists": false,
+                    "payloadMatchesOriginal": false
+                  }
+                },
+                "boundaryWitnesses": [],
+                "outcome": "expose bank-order-view",
+                "actions": [
+                  {
+                    "kind": "expose",
+                    "modality": "SHALL",
+                    "view": "bank-order-view",
+                    "constraint": {
+                      "kind": "binary",
+                      "op": "and",
+                      "left": {
+                        "kind": "compare",
+                        "op": "==",
+                        "left": {
+                          "kind": "member",
+                          "object": {
+                            "kind": "var",
+                            "name": "view"
+                          },
+                          "field": "paymentCompleted"
+                        },
+                        "right": {
+                          "kind": "boolean",
+                          "value": false
+                        }
+                      },
+                      "right": {
+                        "kind": "compare",
+                        "op": "==",
+                        "left": {
+                          "kind": "member",
+                          "object": {
+                            "kind": "var",
+                            "name": "view"
+                          },
+                          "field": "taFinalized"
+                        },
+                        "right": {
+                          "kind": "boolean",
+                          "value": false
+                        }
+                      }
+                    }
+                  }
+                ],
+                "post": []
+              }
+            ]
+          }
+        ],
+        "sha256": "42f209521a89aaf5f9f8655156fa6386deb50dd0ea08e3af5929d9f0b43dd361"
+      }
+    },
+    {
+      "schemaVersion": "co-arising.ears-ir/v2",
+      "kind": "slice",
+      "layer": "domain",
+      "target": "FundOrder.ConfirmTAShares",
+      "sourceFile": "fund-order-confirm-ta-shares.ears",
+      "hitPolicy": "FIRST",
+      "theory": {
+        "tier": "L2",
+        "logic": "QF_NIA",
+        "codegenChannel": "cloze-tdd",
+        "hasNonlinearMul": true,
+        "hasMultiStepBmc": false,
+        "externCount": 0
+      },
+      "verification": {
+        "solver": "z3",
+        "passed": true,
+        "bmcSteps": 4,
+        "canonicalSha256": "53a7bcd6f4ccfae41f63cd7b193ffc681c9f436d059389686c82de0c66f56393"
+      },
+      "axioms": [],
+      "externs": [],
+      "where": [
+        {
+          "name": "validNav",
+          "gloss": null
+        },
+        {
+          "name": "exactFloorMath",
+          "gloss": null
+        },
+        {
+          "name": "paymentSucceeded",
+          "gloss": null
+        },
+        {
+          "name": "taPending",
+          "gloss": null
+        }
+      ],
+      "rules": [
+        {
+          "id": "TA_INVALID_NAV",
+          "firstHitOrder": 0,
+          "pattern": "complex",
+          "command": "RecordFundTAConfirmed",
+          "guard": {
+            "kind": "not",
+            "argument": {
+              "kind": "compare",
+              "op": ">",
+              "left": {
+                "kind": "var",
+                "name": "nav"
+              },
+              "right": {
+                "kind": "number",
+                "value": "0.0000",
+                "scale": 4
+              }
+            }
+          },
+          "actions": [
+            {
+              "kind": "reject",
+              "modality": "SHALL",
+              "code": "TA_INVALID_NAV"
+            }
+          ],
+          "post": []
+        },
+        {
+          "id": "TA_SHARES_MISMATCH",
+          "firstHitOrder": 1,
+          "pattern": "complex",
+          "command": "RecordFundTAConfirmed",
+          "guard": {
+            "kind": "not",
+            "argument": {
+              "kind": "binary",
+              "op": "and",
+              "left": {
+                "kind": "binary",
+                "op": "and",
+                "left": {
+                  "kind": "compare",
+                  "op": "<=",
+                  "left": {
+                    "kind": "arith",
+                    "op": "*",
+                    "left": {
+                      "kind": "var",
+                      "name": "shares"
+                    },
+                    "right": {
+                      "kind": "var",
+                      "name": "nav"
+                    }
+                  },
+                  "right": {
+                    "kind": "member",
+                    "object": {
+                      "kind": "var",
+                      "name": "order"
+                    },
+                    "field": "netAmount"
+                  }
+                },
+                "right": {
+                  "kind": "compare",
+                  "op": ">",
+                  "left": {
+                    "kind": "arith",
+                    "op": "*",
+                    "left": {
+                      "kind": "arith",
+                      "op": "+",
+                      "left": {
+                        "kind": "var",
+                        "name": "shares"
+                      },
+                      "right": {
+                        "kind": "number",
+                        "value": "1",
+                        "scale": 0
+                      }
+                    },
+                    "right": {
+                      "kind": "var",
+                      "name": "nav"
+                    }
+                  },
+                  "right": {
+                    "kind": "member",
+                    "object": {
+                      "kind": "var",
+                      "name": "order"
+                    },
+                    "field": "netAmount"
+                  }
+                }
+              },
+              "right": {
+                "kind": "compare",
+                "op": ">=",
+                "left": {
+                  "kind": "var",
+                  "name": "shares"
+                },
+                "right": {
+                  "kind": "number",
+                  "value": "0",
+                  "scale": 0
+                }
+              }
+            }
+          },
+          "actions": [
+            {
+              "kind": "reject",
+              "modality": "SHALL",
+              "code": "TA_SHARES_MISMATCH"
+            }
+          ],
+          "post": []
+        },
+        {
+          "id": "TA_PAYMENT_NOT_SUCCEEDED",
+          "firstHitOrder": 2,
+          "pattern": "complex",
+          "command": "RecordFundTAConfirmed",
+          "guard": {
+            "kind": "not",
+            "argument": {
+              "kind": "compare",
+              "op": "==",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "var",
+                  "name": "order"
+                },
+                "field": "paymentOutcome"
+              },
+              "right": {
+                "kind": "string",
+                "value": "succeeded"
+              }
+            }
+          },
+          "actions": [
+            {
+              "kind": "reject",
+              "modality": "SHALL",
+              "code": "TA_PAYMENT_NOT_SUCCEEDED"
+            }
+          ],
+          "post": []
+        },
+        {
+          "id": "TA_ALREADY_CONFIRMED",
+          "firstHitOrder": 3,
+          "pattern": "complex",
+          "command": "RecordFundTAConfirmed",
+          "guard": {
+            "kind": "not",
+            "argument": {
+              "kind": "compare",
+              "op": "!=",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "var",
+                  "name": "order"
+                },
+                "field": "taStatus"
+              },
+              "right": {
+                "kind": "string",
+                "value": "confirmed"
+              }
+            }
+          },
+          "actions": [
+            {
+              "kind": "reject",
+              "modality": "SHALL",
+              "code": "TA_ALREADY_CONFIRMED"
+            }
+          ],
+          "post": []
+        },
+        {
+          "id": "TA_CONFIRMED",
+          "firstHitOrder": 4,
+          "pattern": "complex",
+          "command": "RecordFundTAConfirmed",
+          "guard": {
+            "kind": "binary",
+            "op": "and",
+            "left": {
+              "kind": "binary",
+              "op": "and",
+              "left": {
+                "kind": "binary",
+                "op": "and",
+                "left": {
+                  "kind": "binary",
+                  "op": "and",
+                  "left": {
+                    "kind": "binary",
+                    "op": "and",
+                    "left": {
+                      "kind": "compare",
+                      "op": "!=",
+                      "left": {
+                        "kind": "member",
+                        "object": {
+                          "kind": "var",
+                          "name": "order"
+                        },
+                        "field": "taStatus"
+                      },
+                      "right": {
+                        "kind": "string",
+                        "value": "confirmed"
+                      }
+                    },
+                    "right": {
+                      "kind": "compare",
+                      "op": "<=",
+                      "left": {
+                        "kind": "arith",
+                        "op": "*",
+                        "left": {
+                          "kind": "var",
+                          "name": "shares"
+                        },
+                        "right": {
+                          "kind": "var",
+                          "name": "nav"
+                        }
+                      },
+                      "right": {
+                        "kind": "member",
+                        "object": {
+                          "kind": "var",
+                          "name": "order"
+                        },
+                        "field": "netAmount"
+                      }
+                    }
+                  },
+                  "right": {
+                    "kind": "compare",
+                    "op": "==",
+                    "left": {
+                      "kind": "member",
+                      "object": {
+                        "kind": "var",
+                        "name": "order"
+                      },
+                      "field": "paymentOutcome"
+                    },
+                    "right": {
+                      "kind": "string",
+                      "value": "succeeded"
+                    }
+                  }
+                },
+                "right": {
+                  "kind": "compare",
+                  "op": ">",
+                  "left": {
+                    "kind": "arith",
+                    "op": "*",
+                    "left": {
+                      "kind": "arith",
+                      "op": "+",
+                      "left": {
+                        "kind": "var",
+                        "name": "shares"
+                      },
+                      "right": {
+                        "kind": "number",
+                        "value": "1",
+                        "scale": 0
+                      }
+                    },
+                    "right": {
+                      "kind": "var",
+                      "name": "nav"
+                    }
+                  },
+                  "right": {
+                    "kind": "member",
+                    "object": {
+                      "kind": "var",
+                      "name": "order"
+                    },
+                    "field": "netAmount"
+                  }
+                }
+              },
+              "right": {
+                "kind": "compare",
+                "op": ">",
+                "left": {
+                  "kind": "var",
+                  "name": "nav"
+                },
+                "right": {
+                  "kind": "number",
+                  "value": "0.0000",
+                  "scale": 4
+                }
+              }
+            },
+            "right": {
+              "kind": "compare",
+              "op": ">=",
+              "left": {
+                "kind": "var",
+                "name": "shares"
+              },
+              "right": {
+                "kind": "number",
+                "value": "0",
+                "scale": 0
+              }
+            }
+          },
+          "actions": [
+            {
+              "kind": "transition",
+              "modality": "SHALL",
+              "path": {
+                "kind": "member",
+                "object": {
+                  "kind": "var",
+                  "name": "order"
+                },
+                "field": "taStatus"
+              },
+              "value": {
+                "kind": "string",
+                "value": "confirmed"
+              }
+            },
+            {
+              "kind": "emit",
+              "modality": "SHALL",
+              "event": "FundTASharesConfirmed"
+            }
+          ],
+          "post": [
+            {
+              "target": {
+                "segments": [
+                  "order",
+                  "taStatus"
+                ],
+                "index": null
+              },
+              "value": {
+                "kind": "string",
+                "value": "confirmed"
+              },
+              "source": "transition"
+            }
+          ]
+        }
+      ],
+      "eventPropagations": [
+        {
+          "ruleId": "TA_CONFIRMED",
+          "command": "RecordFundTAConfirmed",
+          "event": "FundTASharesConfirmed",
+          "bindings": [
+            {
+              "eventField": "shares",
+              "source": "@PROPAGATED",
+              "paramName": "shares",
+              "type": "Int"
+            },
+            {
+              "eventField": "nav",
+              "source": "@PROPAGATED",
+              "paramName": "nav",
+              "type": "NavDecimal"
+            }
+          ]
+        }
+      ],
+      "testIr": {
+        "schemaVersion": "co-arising.test-ir/v2",
+        "meta": {
+          "sourceFile": "fund-order-confirm-ta-shares.ears",
+          "sourceSha256": "a55b5c5edf689d583eb7828f71b641c406dd2de053ff089b8a0b8447c058c809",
+          "canonicalSha256": "53a7bcd6f4ccfae41f63cd7b193ffc681c9f436d059389686c82de0c66f56393",
+          "kind": "slice",
+          "layer": "domain",
+          "target": "FundOrder.ConfirmTAShares",
+          "aggregate": "FundOrder",
+          "slice": "ConfirmTAShares",
+          "story": null,
+          "solver": "z3",
+          "logic": "QF_NIA",
+          "verified": true
+        },
+        "scenarios": [
+          {
+            "id": "record-fund-taconfirmed-oracle",
+            "kind": "outline",
+            "command": "RecordFundTAConfirmed",
+            "title": "FundOrder.ConfirmTAShares — RecordFundTAConfirmed First-Hit executable oracle",
+            "ruleIds": [
+              "TA_INVALID_NAV",
+              "TA_SHARES_MISMATCH",
+              "TA_PAYMENT_NOT_SUCCEEDED",
+              "TA_ALREADY_CONFIRMED",
+              "TA_CONFIRMED"
+            ],
+            "tags": [
+              "@spec:TA_INVALID_NAV",
+              "@spec:TA_SHARES_MISMATCH",
+              "@spec:TA_PAYMENT_NOT_SUCCEEDED",
+              "@spec:TA_ALREADY_CONFIRMED",
+              "@spec:TA_CONFIRMED",
+              "@z3-witness:QF_NIA"
+            ],
+            "examples": [
+              {
+                "ruleId": "TA_INVALID_NAV",
+                "firstHitOrder": 0,
+                "pattern": "complex",
+                "witness": {
+                  "scalars": {
+                    "nav": "0.0000",
+                    "order.paymentOutcome": "",
+                    "order.taStatus": "",
+                    "shares": 0,
+                    "order.netAmount": "0.00"
+                  },
+                  "mapEntries": {},
+                  "externs": {}
+                },
+                "secondaryWitness": {
+                  "scalars": {
+                    "nav": "0.0000",
+                    "order.paymentOutcome": "",
+                    "order.taStatus": "",
+                    "shares": 1,
+                    "order.netAmount": "0.01"
+                  },
+                  "mapEntries": {},
+                  "externs": {}
+                },
+                "boundaryWitnesses": [],
+                "outcome": "reject TA_INVALID_NAV",
+                "actions": [
+                  {
+                    "kind": "reject",
+                    "modality": "SHALL",
+                    "code": "TA_INVALID_NAV"
+                  }
+                ],
+                "post": []
+              },
+              {
+                "ruleId": "TA_SHARES_MISMATCH",
+                "firstHitOrder": 1,
+                "pattern": "complex",
+                "witness": {
+                  "scalars": {
+                    "nav": "100.0000",
+                    "order.paymentOutcome": "",
+                    "order.taStatus": "",
+                    "shares": 1000000,
+                    "order.netAmount": "10000.00"
+                  },
+                  "mapEntries": {},
+                  "externs": {}
+                },
+                "secondaryWitness": {
+                  "scalars": {
+                    "nav": "99.9999",
+                    "order.paymentOutcome": "",
+                    "order.taStatus": "",
+                    "shares": 999999,
+                    "order.netAmount": "9999.99"
+                  },
+                  "mapEntries": {},
+                  "externs": {}
+                },
+                "boundaryWitnesses": [
+                  {
+                    "scalars": {
+                      "nav": "0.0100",
+                      "order.paymentOutcome": "",
+                      "order.taStatus": "",
+                      "shares": 0,
+                      "order.netAmount": "0.01"
+                    },
+                    "mapEntries": {},
+                    "externs": {}
+                  },
+                  {
+                    "scalars": {
+                      "nav": "100.0000",
+                      "order.paymentOutcome": "",
+                      "order.taStatus": "",
+                      "shares": 99,
+                      "order.netAmount": "10000.00"
+                    },
+                    "mapEntries": {},
+                    "externs": {}
+                  }
+                ],
+                "outcome": "reject TA_SHARES_MISMATCH",
+                "actions": [
+                  {
+                    "kind": "reject",
+                    "modality": "SHALL",
+                    "code": "TA_SHARES_MISMATCH"
+                  }
+                ],
+                "post": []
+              },
+              {
+                "ruleId": "TA_PAYMENT_NOT_SUCCEEDED",
+                "firstHitOrder": 2,
+                "pattern": "complex",
+                "witness": {
+                  "scalars": {
+                    "nav": "0.0001",
+                    "order.paymentOutcome": "",
+                    "order.taStatus": "",
+                    "shares": 0,
+                    "order.netAmount": "0.00"
+                  },
+                  "mapEntries": {},
+                  "externs": {}
+                },
+                "secondaryWitness": {
+                  "scalars": {
+                    "nav": "100.0000",
+                    "order.paymentOutcome": "",
+                    "order.taStatus": "",
+                    "shares": 100,
+                    "order.netAmount": "10000.00"
+                  },
+                  "mapEntries": {},
+                  "externs": {}
+                },
+                "boundaryWitnesses": [],
+                "outcome": "reject TA_PAYMENT_NOT_SUCCEEDED",
+                "actions": [
+                  {
+                    "kind": "reject",
+                    "modality": "SHALL",
+                    "code": "TA_PAYMENT_NOT_SUCCEEDED"
+                  }
+                ],
+                "post": []
+              },
+              {
+                "ruleId": "TA_ALREADY_CONFIRMED",
+                "firstHitOrder": 3,
+                "pattern": "complex",
+                "witness": {
+                  "scalars": {
+                    "nav": "0.0001",
+                    "order.paymentOutcome": "succeeded",
+                    "order.taStatus": "confirmed",
+                    "shares": 0,
+                    "order.netAmount": "0.00"
+                  },
+                  "mapEntries": {},
+                  "externs": {}
+                },
+                "secondaryWitness": {
+                  "scalars": {
+                    "nav": "0.0003",
+                    "order.paymentOutcome": "succeeded",
+                    "order.taStatus": "confirmed",
+                    "shares": 133,
+                    "order.netAmount": "0.04"
+                  },
+                  "mapEntries": {},
+                  "externs": {}
+                },
+                "boundaryWitnesses": [],
+                "outcome": "reject TA_ALREADY_CONFIRMED",
+                "actions": [
+                  {
+                    "kind": "reject",
+                    "modality": "SHALL",
+                    "code": "TA_ALREADY_CONFIRMED"
+                  }
+                ],
+                "post": []
+              },
+              {
+                "ruleId": "TA_CONFIRMED",
+                "firstHitOrder": 4,
+                "pattern": "complex",
+                "witness": {
+                  "scalars": {
+                    "nav": "0.0001",
+                    "order.paymentOutcome": "succeeded",
+                    "order.taStatus": "id_4",
+                    "shares": 0,
+                    "order.netAmount": "0.00"
+                  },
+                  "mapEntries": {},
+                  "externs": {}
+                },
+                "secondaryWitness": {
+                  "scalars": {
+                    "nav": "100.0000",
+                    "order.paymentOutcome": "succeeded",
+                    "order.taStatus": "id_4",
+                    "shares": 100,
+                    "order.netAmount": "10000.00"
+                  },
+                  "mapEntries": {},
+                  "externs": {}
+                },
+                "boundaryWitnesses": [],
+                "outcome": "transition -> confirmed and emit FundTASharesConfirmed",
+                "actions": [
+                  {
+                    "kind": "transition",
+                    "modality": "SHALL",
+                    "path": {
+                      "kind": "member",
+                      "object": {
+                        "kind": "var",
+                        "name": "order"
+                      },
+                      "field": "taStatus"
+                    },
+                    "value": {
+                      "kind": "string",
+                      "value": "confirmed"
+                    }
+                  },
+                  {
+                    "kind": "emit",
+                    "modality": "SHALL",
+                    "event": "FundTASharesConfirmed"
+                  }
+                ],
+                "post": [
+                  {
+                    "target": {
+                      "segments": [
+                        "order",
+                        "taStatus"
+                      ],
+                      "index": null
+                    },
+                    "value": {
+                      "kind": "string",
+                      "value": "confirmed"
+                    },
+                    "source": "transition"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "sha256": "8e49e0d25e2c9e2374fc97ced6543cb076c440bd3b2d8b555846f39b971ddc7b"
+      }
+    },
+    {
+      "schemaVersion": "co-arising.ears-ir/v2",
+      "kind": "slice",
+      "layer": "domain",
+      "target": "FundQuota.ReserveSubscriptionQuota",
+      "sourceFile": "fund-quota-reserve.ears",
+      "hitPolicy": "FIRST",
+      "theory": {
+        "tier": "L1",
+        "logic": "QF_AUFLIA",
+        "codegenChannel": "deterministic",
+        "hasNonlinearMul": false,
+        "hasMultiStepBmc": false,
+        "externCount": 0
+      },
+      "verification": {
+        "solver": "z3",
+        "passed": true,
+        "bmcSteps": 4,
+        "canonicalSha256": "86de0630fffd85abb89581bf45640d55c190245e3fb8e324ad0465b8f9f6e01f"
+      },
+      "axioms": [
+        {
+          "id": "AX-Q-1",
+          "kind": "invariant",
+          "expr": {
+            "kind": "compare",
+            "op": "<=",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "var",
+                "name": "quota"
+              },
+              "field": "fundTotalUsed"
+            },
+            "right": {
+              "kind": "member",
+              "object": {
+                "kind": "var",
+                "name": "quota"
+              },
+              "field": "fundTotalCap"
+            }
+          }
+        },
+        {
+          "id": "AX-Q-2",
+          "kind": "invariant",
+          "expr": {
+            "kind": "compare",
+            "op": "<=",
+            "left": {
+              "kind": "index",
+              "collection": {
+                "kind": "member",
+                "object": {
+                  "kind": "var",
+                  "name": "quota"
+                },
+                "field": "accountUsed"
+              },
+              "index": {
+                "kind": "var",
+                "name": "accountId"
+              }
+            },
+            "right": {
+              "kind": "member",
+              "object": {
+                "kind": "var",
+                "name": "quota"
+              },
+              "field": "perAccountCap"
+            }
+          }
+        }
+      ],
+      "externs": [],
+      "where": [
+        {
+          "name": "validAmount",
+          "gloss": null
+        },
+        {
+          "name": "withinFundCap",
+          "gloss": null
+        },
+        {
+          "name": "withinAcctCap",
+          "gloss": null
+        }
+      ],
+      "rules": [
+        {
+          "id": "QUOTA_AMOUNT_RANGE",
+          "firstHitOrder": 0,
+          "pattern": "unwanted",
+          "command": "ReserveSubscriptionQuota",
+          "guard": {
+            "kind": "not",
+            "argument": {
+              "kind": "in",
+              "element": {
+                "kind": "var",
+                "name": "amount"
+              },
+              "target": {
+                "kind": "interval",
+                "min": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "var",
+                    "name": "quota"
+                  },
+                  "field": "minPurchase"
+                },
+                "max": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "var",
+                    "name": "quota"
+                  },
+                  "field": "maxSingleLimit"
+                },
+                "leftInclusive": true,
+                "rightInclusive": true
+              }
+            }
+          },
+          "actions": [
+            {
+              "kind": "reject",
+              "modality": "SHALL",
+              "code": "QUOTA_AMOUNT_RANGE"
+            }
+          ],
+          "post": []
+        },
+        {
+          "id": "QUOTA_FUND_CAP",
+          "firstHitOrder": 1,
+          "pattern": "unwanted",
+          "command": "ReserveSubscriptionQuota",
+          "guard": {
+            "kind": "not",
+            "argument": {
+              "kind": "compare",
+              "op": "<=",
+              "left": {
+                "kind": "arith",
+                "op": "+",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "var",
+                    "name": "quota"
+                  },
+                  "field": "fundTotalUsed"
+                },
+                "right": {
+                  "kind": "var",
+                  "name": "amount"
+                }
+              },
+              "right": {
+                "kind": "member",
+                "object": {
+                  "kind": "var",
+                  "name": "quota"
+                },
+                "field": "fundTotalCap"
+              }
+            }
+          },
+          "actions": [
+            {
+              "kind": "reject",
+              "modality": "SHALL",
+              "code": "QUOTA_FUND_CAP"
+            }
+          ],
+          "post": []
+        },
+        {
+          "id": "QUOTA_ACCOUNT_CAP",
+          "firstHitOrder": 2,
+          "pattern": "unwanted",
+          "command": "ReserveSubscriptionQuota",
+          "guard": {
+            "kind": "not",
+            "argument": {
+              "kind": "compare",
+              "op": "<=",
+              "left": {
+                "kind": "arith",
+                "op": "+",
+                "left": {
+                  "kind": "index",
+                  "collection": {
+                    "kind": "member",
+                    "object": {
+                      "kind": "var",
+                      "name": "quota"
+                    },
+                    "field": "accountUsed"
+                  },
+                  "index": {
+                    "kind": "var",
+                    "name": "accountId"
+                  }
+                },
+                "right": {
+                  "kind": "var",
+                  "name": "amount"
+                }
+              },
+              "right": {
+                "kind": "member",
+                "object": {
+                  "kind": "var",
+                  "name": "quota"
+                },
+                "field": "perAccountCap"
+              }
+            }
+          },
+          "actions": [
+            {
+              "kind": "reject",
+              "modality": "SHALL",
+              "code": "QUOTA_ACCOUNT_CAP"
+            }
+          ],
+          "post": []
+        },
+        {
+          "id": "QUOTA_RESERVED",
+          "firstHitOrder": 3,
+          "pattern": "complex",
+          "command": "ReserveSubscriptionQuota",
+          "guard": {
+            "kind": "binary",
+            "op": "and",
+            "left": {
+              "kind": "binary",
+              "op": "and",
+              "left": {
+                "kind": "compare",
+                "op": "<=",
+                "left": {
+                  "kind": "arith",
+                  "op": "+",
+                  "left": {
+                    "kind": "index",
+                    "collection": {
+                      "kind": "member",
+                      "object": {
+                        "kind": "var",
+                        "name": "quota"
+                      },
+                      "field": "accountUsed"
+                    },
+                    "index": {
+                      "kind": "var",
+                      "name": "accountId"
+                    }
+                  },
+                  "right": {
+                    "kind": "var",
+                    "name": "amount"
+                  }
+                },
+                "right": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "var",
+                    "name": "quota"
+                  },
+                  "field": "perAccountCap"
+                }
+              },
+              "right": {
+                "kind": "compare",
+                "op": "<=",
+                "left": {
+                  "kind": "arith",
+                  "op": "+",
+                  "left": {
+                    "kind": "member",
+                    "object": {
+                      "kind": "var",
+                      "name": "quota"
+                    },
+                    "field": "fundTotalUsed"
+                  },
+                  "right": {
+                    "kind": "var",
+                    "name": "amount"
+                  }
+                },
+                "right": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "var",
+                    "name": "quota"
+                  },
+                  "field": "fundTotalCap"
+                }
+              }
+            },
+            "right": {
+              "kind": "in",
+              "element": {
+                "kind": "var",
+                "name": "amount"
+              },
+              "target": {
+                "kind": "interval",
+                "min": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "var",
+                    "name": "quota"
+                  },
+                  "field": "minPurchase"
+                },
+                "max": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "var",
+                    "name": "quota"
+                  },
+                  "field": "maxSingleLimit"
+                },
+                "leftInclusive": true,
+                "rightInclusive": true
+              }
+            }
+          },
+          "actions": [
+            {
+              "kind": "emit",
+              "modality": "SHALL",
+              "event": "SubscriptionQuotaReserved"
+            }
+          ],
+          "post": [
+            {
+              "target": {
+                "segments": [
+                  "quota",
+                  "fundTotalUsed"
+                ],
+                "index": null
+              },
+              "value": {
+                "kind": "arith",
+                "op": "+",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "var",
+                    "name": "quota"
+                  },
+                  "field": "fundTotalUsed"
+                },
+                "right": {
+                  "kind": "var",
+                  "name": "amount"
+                }
+              },
+              "source": "post"
+            },
+            {
+              "target": {
+                "segments": [
+                  "quota",
+                  "accountUsed"
+                ],
+                "index": {
+                  "kind": "var",
+                  "name": "accountId"
+                }
+              },
+              "value": {
+                "kind": "arith",
+                "op": "+",
+                "left": {
+                  "kind": "index",
+                  "collection": {
+                    "kind": "member",
+                    "object": {
+                      "kind": "var",
+                      "name": "quota"
+                    },
+                    "field": "accountUsed"
+                  },
+                  "index": {
+                    "kind": "var",
+                    "name": "accountId"
+                  }
+                },
+                "right": {
+                  "kind": "var",
+                  "name": "amount"
+                }
+              },
+              "source": "post"
+            }
+          ]
+        }
+      ],
+      "eventPropagations": [
+        {
+          "ruleId": "QUOTA_RESERVED",
+          "command": "ReserveSubscriptionQuota",
+          "event": "SubscriptionQuotaReserved",
+          "bindings": [
+            {
+              "eventField": "accountId",
+              "source": "@PROPAGATED",
+              "paramName": "accountId",
+              "type": "AccountId"
+            },
+            {
+              "eventField": "amount",
+              "source": "@PROPAGATED",
+              "paramName": "amount",
+              "type": "AmountDecimal"
+            }
+          ]
+        }
+      ],
+      "testIr": {
+        "schemaVersion": "co-arising.test-ir/v2",
+        "meta": {
+          "sourceFile": "fund-quota-reserve.ears",
+          "sourceSha256": "61537682db1ba6f366b990ce0f5b318be3dab788013c007d2f11dbf1d9539198",
+          "canonicalSha256": "86de0630fffd85abb89581bf45640d55c190245e3fb8e324ad0465b8f9f6e01f",
+          "kind": "slice",
+          "layer": "domain",
+          "target": "FundQuota.ReserveSubscriptionQuota",
+          "aggregate": "FundQuota",
+          "slice": "ReserveSubscriptionQuota",
+          "story": null,
+          "solver": "z3",
+          "logic": "QF_AUFLIA",
+          "verified": true
+        },
+        "scenarios": [
+          {
+            "id": "reserve-subscription-quota-oracle",
+            "kind": "outline",
+            "command": "ReserveSubscriptionQuota",
+            "title": "FundQuota.ReserveSubscriptionQuota — ReserveSubscriptionQuota First-Hit executable oracle",
+            "ruleIds": [
+              "QUOTA_AMOUNT_RANGE",
+              "QUOTA_FUND_CAP",
+              "QUOTA_ACCOUNT_CAP",
+              "QUOTA_RESERVED"
+            ],
+            "tags": [
+              "@spec:QUOTA_AMOUNT_RANGE",
+              "@spec:QUOTA_FUND_CAP",
+              "@spec:QUOTA_ACCOUNT_CAP",
+              "@spec:QUOTA_RESERVED",
+              "@z3-witness"
+            ],
+            "examples": [
+              {
+                "ruleId": "QUOTA_AMOUNT_RANGE",
+                "firstHitOrder": 0,
+                "pattern": "unwanted",
+                "witness": {
+                  "scalars": {
+                    "amount": "0.01",
+                    "quota.fundTotalUsed": "0.00",
+                    "quota.fundTotalCap": "0.00",
+                    "accountId": "id_2",
+                    "quota.perAccountCap": "0.00",
+                    "quota.minPurchase": "0.00",
+                    "quota.maxSingleLimit": "0.00"
+                  },
+                  "mapEntries": {
+                    "quota.accountUsed": {
+                      "accountId": "0.00"
+                    }
+                  },
+                  "externs": {}
+                },
+                "secondaryWitness": {
+                  "scalars": {
+                    "amount": "0.02",
+                    "quota.fundTotalUsed": "0.01",
+                    "quota.fundTotalCap": "0.01",
+                    "accountId": "id_2",
+                    "quota.perAccountCap": "0.01",
+                    "quota.minPurchase": "0.01",
+                    "quota.maxSingleLimit": "0.01"
+                  },
+                  "mapEntries": {
+                    "quota.accountUsed": {
+                      "accountId": "0.00"
+                    }
+                  },
+                  "externs": {}
+                },
+                "boundaryWitnesses": [
+                  {
+                    "scalars": {
+                      "amount": "0.01",
+                      "quota.fundTotalUsed": "0.00",
+                      "quota.fundTotalCap": "0.00",
+                      "accountId": "id_2",
+                      "quota.perAccountCap": "0.00",
+                      "quota.minPurchase": "0.01",
+                      "quota.maxSingleLimit": "0.00"
+                    },
+                    "mapEntries": {
+                      "quota.accountUsed": {
+                        "accountId": "0.00"
+                      }
+                    },
+                    "externs": {}
+                  },
+                  {
+                    "scalars": {
+                      "amount": "0.00",
+                      "quota.fundTotalUsed": "0.00",
+                      "quota.fundTotalCap": "0.00",
+                      "accountId": "id_2",
+                      "quota.perAccountCap": "0.00",
+                      "quota.minPurchase": "0.01",
+                      "quota.maxSingleLimit": "0.00"
+                    },
+                    "mapEntries": {
+                      "quota.accountUsed": {
+                        "accountId": "0.00"
+                      }
+                    },
+                    "externs": {}
+                  }
+                ],
+                "outcome": "reject QUOTA_AMOUNT_RANGE",
+                "actions": [
+                  {
+                    "kind": "reject",
+                    "modality": "SHALL",
+                    "code": "QUOTA_AMOUNT_RANGE"
+                  }
+                ],
+                "post": []
+              },
+              {
+                "ruleId": "QUOTA_FUND_CAP",
+                "firstHitOrder": 1,
+                "pattern": "unwanted",
+                "witness": {
+                  "scalars": {
+                    "amount": "0.01",
+                    "quota.fundTotalUsed": "0.00",
+                    "quota.fundTotalCap": "0.00",
+                    "accountId": "id_2",
+                    "quota.perAccountCap": "0.00",
+                    "quota.minPurchase": "0.00",
+                    "quota.maxSingleLimit": "0.01"
+                  },
+                  "mapEntries": {
+                    "quota.accountUsed": {
+                      "accountId": "0.00"
+                    }
+                  },
+                  "externs": {}
+                },
+                "secondaryWitness": {
+                  "scalars": {
+                    "amount": "0.02",
+                    "quota.fundTotalUsed": "0.01",
+                    "quota.fundTotalCap": "0.01",
+                    "accountId": "id_2",
+                    "quota.perAccountCap": "0.01",
+                    "quota.minPurchase": "0.01",
+                    "quota.maxSingleLimit": "0.02"
+                  },
+                  "mapEntries": {
+                    "quota.accountUsed": {
+                      "accountId": "0.00"
+                    }
+                  },
+                  "externs": {}
+                },
+                "boundaryWitnesses": [],
+                "outcome": "reject QUOTA_FUND_CAP",
+                "actions": [
+                  {
+                    "kind": "reject",
+                    "modality": "SHALL",
+                    "code": "QUOTA_FUND_CAP"
+                  }
+                ],
+                "post": []
+              },
+              {
+                "ruleId": "QUOTA_ACCOUNT_CAP",
+                "firstHitOrder": 2,
+                "pattern": "unwanted",
+                "witness": {
+                  "scalars": {
+                    "amount": "0.01",
+                    "quota.fundTotalUsed": "0.00",
+                    "quota.fundTotalCap": "0.01",
+                    "accountId": "id_2",
+                    "quota.perAccountCap": "0.00",
+                    "quota.minPurchase": "0.00",
+                    "quota.maxSingleLimit": "0.01"
+                  },
+                  "mapEntries": {
+                    "quota.accountUsed": {
+                      "accountId": "0.00"
+                    }
+                  },
+                  "externs": {}
+                },
+                "secondaryWitness": {
+                  "scalars": {
+                    "amount": "0.02",
+                    "quota.fundTotalUsed": "0.01",
+                    "quota.fundTotalCap": "0.03",
+                    "accountId": "",
+                    "quota.perAccountCap": "0.01",
+                    "quota.minPurchase": "0.01",
+                    "quota.maxSingleLimit": "0.02"
+                  },
+                  "mapEntries": {
+                    "quota.accountUsed": {
+                      "accountId": "0.01"
+                    }
+                  },
+                  "externs": {}
+                },
+                "boundaryWitnesses": [],
+                "outcome": "reject QUOTA_ACCOUNT_CAP",
+                "actions": [
+                  {
+                    "kind": "reject",
+                    "modality": "SHALL",
+                    "code": "QUOTA_ACCOUNT_CAP"
+                  }
+                ],
+                "post": []
+              },
+              {
+                "ruleId": "QUOTA_RESERVED",
+                "firstHitOrder": 3,
+                "pattern": "complex",
+                "witness": {
+                  "scalars": {
+                    "amount": "0.00",
+                    "quota.fundTotalUsed": "0.00",
+                    "quota.fundTotalCap": "0.00",
+                    "accountId": "id_2",
+                    "quota.perAccountCap": "0.00",
+                    "quota.minPurchase": "0.00",
+                    "quota.maxSingleLimit": "0.00"
+                  },
+                  "mapEntries": {
+                    "quota.accountUsed": {
+                      "accountId": "0.00"
+                    }
+                  },
+                  "externs": {}
+                },
+                "secondaryWitness": {
+                  "scalars": {
+                    "amount": "0.01",
+                    "quota.fundTotalUsed": "0.01",
+                    "quota.fundTotalCap": "0.02",
+                    "accountId": "id_2",
+                    "quota.perAccountCap": "0.01",
+                    "quota.minPurchase": "0.01",
+                    "quota.maxSingleLimit": "0.01"
+                  },
+                  "mapEntries": {
+                    "quota.accountUsed": {
+                      "accountId": "0.00"
+                    }
+                  },
+                  "externs": {}
+                },
+                "boundaryWitnesses": [],
+                "outcome": "emit SubscriptionQuotaReserved",
+                "actions": [
+                  {
+                    "kind": "emit",
+                    "modality": "SHALL",
+                    "event": "SubscriptionQuotaReserved"
+                  }
+                ],
+                "post": [
+                  {
+                    "target": {
+                      "segments": [
+                        "quota",
+                        "fundTotalUsed"
+                      ],
+                      "index": null
+                    },
+                    "value": {
+                      "kind": "arith",
+                      "op": "+",
+                      "left": {
+                        "kind": "member",
+                        "object": {
+                          "kind": "var",
+                          "name": "quota"
+                        },
+                        "field": "fundTotalUsed"
+                      },
+                      "right": {
+                        "kind": "var",
+                        "name": "amount"
+                      }
+                    },
+                    "source": "post"
+                  },
+                  {
+                    "target": {
+                      "segments": [
+                        "quota",
+                        "accountUsed"
+                      ],
+                      "index": {
+                        "kind": "var",
+                        "name": "accountId"
+                      }
+                    },
+                    "value": {
+                      "kind": "arith",
+                      "op": "+",
+                      "left": {
+                        "kind": "index",
+                        "collection": {
+                          "kind": "member",
+                          "object": {
+                            "kind": "var",
+                            "name": "quota"
+                          },
+                          "field": "accountUsed"
+                        },
+                        "index": {
+                          "kind": "var",
+                          "name": "accountId"
+                        }
+                      },
+                      "right": {
+                        "kind": "var",
+                        "name": "amount"
+                      }
+                    },
+                    "source": "post"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "sha256": "54f1b020c3b4d34915b30552b8e92fba9eb876c220755bece38a74ba70e82db3"
+      }
+    }
+  ],
+  "eventFolds": [
+    {
+      "aggregate": "FundOrder",
+      "event": "FundTASharesConfirmed",
+      "assignments": [
+        {
+          "target": {
+            "segments": [
+              "state",
+              "taStatus"
+            ],
+            "index": null
+          },
+          "value": {
+            "kind": "string",
+            "value": "confirmed"
+          },
+          "source": "transition"
+        }
+      ],
+      "foldSha256": "f055bf7a2f3290be37f0fa8b6744429af7132d5bef620b35b7942aa23a5311b1",
+      "sourceRuleIds": [
+        "TA_CONFIRMED"
+      ]
+    },
+    {
+      "aggregate": "FundQuota",
+      "event": "SubscriptionQuotaReserved",
+      "assignments": [
+        {
+          "target": {
+            "segments": [
+              "state",
+              "fundTotalUsed"
+            ],
+            "index": null
+          },
+          "value": {
+            "kind": "arith",
+            "op": "+",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "var",
+                "name": "quota"
+              },
+              "field": "fundTotalUsed"
+            },
+            "right": {
+              "kind": "var",
+              "name": "amount"
+            }
+          },
+          "source": "post"
+        },
+        {
+          "target": {
+            "segments": [
+              "state",
+              "accountUsed"
+            ],
+            "index": {
+              "kind": "var",
+              "name": "accountId"
+            }
+          },
+          "value": {
+            "kind": "arith",
+            "op": "+",
+            "left": {
+              "kind": "index",
+              "collection": {
+                "kind": "member",
+                "object": {
+                  "kind": "var",
+                  "name": "quota"
+                },
+                "field": "accountUsed"
+              },
+              "index": {
+                "kind": "var",
+                "name": "accountId"
+              }
+            },
+            "right": {
+              "kind": "var",
+              "name": "amount"
+            }
+          },
+          "source": "post"
+        }
+      ],
+      "foldSha256": "3733a121f18c17ffbe09288a11220a8d5d3c2f4e38a630c38ffc777e06d6a988",
+      "sourceRuleIds": [
+        "QUOTA_RESERVED"
+      ]
+    }
+  ],
+  "clozeSlots": [
+    {
+      "slotId": "cash-fund-purchase",
+      "target": "CashFundPurchase",
+      "kind": "story",
+      "layer": "application",
+      "tier": "L3",
+      "ruleIds": [
+        "US-CFP-01",
+        "US-CFP-02",
+        "US-CFP-03",
+        "US-CFP-04",
+        "US-CFP-05",
+        "US-CFP-06",
+        "US-CFP-07",
+        "US-CFP-08"
+      ]
+    },
+    {
+      "slotId": "fund-order-confirm-tashares",
+      "target": "FundOrder.ConfirmTAShares",
+      "kind": "slice",
+      "layer": "domain",
+      "tier": "L2",
+      "ruleIds": [
+        "TA_INVALID_NAV",
+        "TA_SHARES_MISMATCH",
+        "TA_PAYMENT_NOT_SUCCEEDED",
+        "TA_ALREADY_CONFIRMED",
+        "TA_CONFIRMED"
+      ]
+    }
+  ],
+  "verificationSummary": {
+    "solver": "z3",
+    "passed": true,
+    "behaviorCount": 3,
+    "deterministicCount": 1,
+    "clozeCount": 2
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "schemaVersion": "co-arising.verify-v2/v1",
+  "passed": true,
+  "canonicalSha256": "98bcc05de3f42d97d4b0c626b2a0bc703e7fe18867e0028faa378fe6ccd9b9f1",
+  "manifestCheck": {
+    "passed": true,
+    "errors": [],
+    "verifiedFiles": 8,
+    "manifestSha256": "2db0840640632ddcca27b7e05ebc2816fd3602091999a40ca25bfb7a8ea7ecef"
+  },
+  "tsCheck": {
+    "skipped": false,
+    "passed": true,
+    "exitCode": 0,
+    "specFiles": [
+      "generated-tests/ts/cash-fund-purchase.ears.spec.ts",
+      "generated-tests/ts/fund-order-confirm-tashares.ears.spec.ts",
+      "generated-tests/ts/fund-quota-reserve-subscription-quota.ears.spec.ts"
+    ],
+    "failedSpecIds": []
+  },
+  "scalaCheck": {
+    "skipped": false,
+    "passed": true,
+    "stage": "scalatest",
+    "exitCode": 0,
+    "suiteClasses": [
+      "example.bankwealth.v2.FundOrderConfirmTASharesEarsSpec",
+      "example.bankwealth.v2.FundQuotaReserveSubscriptionQuotaEarsSpec"
+    ],
+    "failedSpecIds": []
+  },
+  "provenanceCheck": {
+    "passed": true,
+    "errors": [],
+    "provenanceIdCount": 13,
+    "specAnchorCount": 18,
+    "clozeSlots": [
+      {
+        "slotId": "cash-fund-purchase",
+        "file": "handwritten/cash-fund-purchase.cloze.ts",
+        "unimplemented": false
+      },
+      {
+        "slotId": "fund-order-confirm-tashares",
+        "file": "handwritten/fund-order-confirm-tashares.cloze.ts",
+        "unimplemented": false
+      },
+      {
+        "slotId": "fund-order-confirm-tashares",
+        "file": "handwritten/scala/example/bankwealth/v2/FundOrderConfirmTASharesCloze.scala",
+        "unimplemented": false
+      }
+    ]
+  },
+  "verifiedAt": "2026-11-26T04:10:27.614Z"
+}

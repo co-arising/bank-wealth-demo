@@ -1,0 +1,300 @@
+{
+  "schemaVersion": "co-arising.context-pack/v2",
+  "canonicalSha256": "2d270cec2cebea6d3ae0af8b79fde3541b574b43a417db5ba20c9a30526716a3",
+  "slotId": "fund-order-confirm-tashares",
+  "topBread": {
+    "exactTypes": [
+      {
+        "name": "AmountDecimal",
+        "form": "decimal",
+        "scale": 2
+      },
+      {
+        "name": "NavDecimal",
+        "form": "decimal",
+        "scale": 4
+      },
+      {
+        "name": "Money",
+        "form": "unit-decimal",
+        "scale": 2,
+        "amountField": "amount",
+        "unitField": "currency",
+        "units": [
+          "CNY"
+        ]
+      }
+    ],
+    "valueObjects": [],
+    "aggregate": {
+      "name": "FundOrder",
+      "aliases": [
+        "order",
+        "state",
+        "fundorder"
+      ],
+      "idField": "id",
+      "stateFields": [
+        {
+          "name": "netAmount",
+          "type": "AmountDecimal",
+          "defaultValue": "0.00",
+          "resolvedType": {
+            "kind": "decimal",
+            "typeName": "AmountDecimal",
+            "scale": 2
+          }
+        },
+        {
+          "name": "paymentOutcome",
+          "type": "String",
+          "defaultValue": "pending",
+          "resolvedType": {
+            "kind": "string",
+            "typeName": "String"
+          }
+        },
+        {
+          "name": "taStatus",
+          "type": "String",
+          "defaultValue": "pending",
+          "resolvedType": {
+            "kind": "string",
+            "typeName": "String"
+          }
+        }
+      ],
+      "commands": [
+        {
+          "name": "RecordFundTAConfirmed",
+          "parameters": [
+            {
+              "name": "shares",
+              "type": "Int",
+              "resolvedType": {
+                "kind": "int",
+                "typeName": "Int"
+              }
+            },
+            {
+              "name": "nav",
+              "type": "NavDecimal",
+              "resolvedType": {
+                "kind": "decimal",
+                "typeName": "NavDecimal",
+                "scale": 4
+              }
+            }
+          ],
+          "produces": [
+            "FundTASharesConfirmed"
+          ]
+        }
+      ],
+      "events": [
+        {
+          "name": "FundTASharesConfirmed",
+          "fields": [
+            {
+              "name": "shares",
+              "type": "Int",
+              "resolvedType": {
+                "kind": "int",
+                "typeName": "Int"
+              }
+            },
+            {
+              "name": "nav",
+              "type": "NavDecimal",
+              "resolvedType": {
+                "kind": "decimal",
+                "typeName": "NavDecimal",
+                "scale": 4
+              }
+            }
+          ]
+        }
+      ],
+      "ruleRefs": {
+        "TA_INVALID_NAV": "Fund NAV must be strictly positive",
+        "TA_SHARES_MISMATCH": "Confirmed shares must equal floor(netAmount / nav)",
+        "TA_PAYMENT_NOT_SUCCEEDED": "TA confirmation requires succeeded payment",
+        "TA_ALREADY_CONFIRMED": "TA confirmation is single-shot and cannot repeat"
+      }
+    },
+    "story": null,
+    "relatedGraphNodes": [
+      {
+        "id": "agg:FundOrder",
+        "kind": "aggregate",
+        "name": "FundOrder"
+      },
+      {
+        "id": "rule:FundOrder.ConfirmTAShares#TA_ALREADY_CONFIRMED",
+        "kind": "rule",
+        "name": "TA_ALREADY_CONFIRMED"
+      },
+      {
+        "id": "rule:FundOrder.ConfirmTAShares#TA_CONFIRMED",
+        "kind": "rule",
+        "name": "TA_CONFIRMED"
+      },
+      {
+        "id": "rule:FundOrder.ConfirmTAShares#TA_INVALID_NAV",
+        "kind": "rule",
+        "name": "TA_INVALID_NAV"
+      },
+      {
+        "id": "rule:FundOrder.ConfirmTAShares#TA_PAYMENT_NOT_SUCCEEDED",
+        "kind": "rule",
+        "name": "TA_PAYMENT_NOT_SUCCEEDED"
+      },
+      {
+        "id": "rule:FundOrder.ConfirmTAShares#TA_SHARES_MISMATCH",
+        "kind": "rule",
+        "name": "TA_SHARES_MISMATCH"
+      },
+      {
+        "id": "cloze:fund-order-confirm-tashares",
+        "kind": "cloze-slot",
+        "name": "fund-order-confirm-tashares"
+      }
+    ]
+  },
+  "middle": {
+    "slotId": "fund-order-confirm-tashares",
+    "target": "FundOrder.ConfirmTAShares",
+    "layer": "domain",
+    "tier": "L2",
+    "logic": "QF_NIA",
+    "hitPolicy": "FIRST",
+    "callerContract": null,
+    "externs": [],
+    "axioms": [],
+    "rules": [
+      {
+        "id": "TA_INVALID_NAV",
+        "firstHitOrder": 0,
+        "command": "RecordFundTAConfirmed",
+        "actions": [
+          {
+            "kind": "reject",
+            "modality": "SHALL",
+            "code": "TA_INVALID_NAV"
+          }
+        ],
+        "postCount": 0
+      },
+      {
+        "id": "TA_SHARES_MISMATCH",
+        "firstHitOrder": 1,
+        "command": "RecordFundTAConfirmed",
+        "actions": [
+          {
+            "kind": "reject",
+            "modality": "SHALL",
+            "code": "TA_SHARES_MISMATCH"
+          }
+        ],
+        "postCount": 0
+      },
+      {
+        "id": "TA_PAYMENT_NOT_SUCCEEDED",
+        "firstHitOrder": 2,
+        "command": "RecordFundTAConfirmed",
+        "actions": [
+          {
+            "kind": "reject",
+            "modality": "SHALL",
+            "code": "TA_PAYMENT_NOT_SUCCEEDED"
+          }
+        ],
+        "postCount": 0
+      },
+      {
+        "id": "TA_ALREADY_CONFIRMED",
+        "firstHitOrder": 3,
+        "command": "RecordFundTAConfirmed",
+        "actions": [
+          {
+            "kind": "reject",
+            "modality": "SHALL",
+            "code": "TA_ALREADY_CONFIRMED"
+          }
+        ],
+        "postCount": 0
+      },
+      {
+        "id": "TA_CONFIRMED",
+        "firstHitOrder": 4,
+        "command": "RecordFundTAConfirmed",
+        "actions": [
+          {
+            "kind": "transition",
+            "modality": "SHALL",
+            "path": {
+              "kind": "member",
+              "object": {
+                "kind": "var",
+                "name": "order"
+              },
+              "field": "taStatus"
+            },
+            "value": {
+              "kind": "string",
+              "value": "confirmed"
+            }
+          },
+          {
+            "kind": "emit",
+            "modality": "SHALL",
+            "event": "FundTASharesConfirmed"
+          }
+        ],
+        "postCount": 1
+      }
+    ],
+    "clozeBounds": {
+      "file": "/Users/zhongdj/Workspaces/mad-polaris/bank-wealth-demo/v2-pilot/handwritten/fund-order-confirm-tashares.cloze.ts",
+      "startLine": 11,
+      "endLine": 15,
+      "editableStart": 12,
+      "editableEnd": 14
+    }
+  },
+  "bottomBread": {
+    "testIrSha256": "5960fcf28c2b143cde1946feb14d2efca2f117a5809f8fa67977240d60d726bd",
+    "lockedOracles": [
+      {
+        "specId": "TA_INVALID_NAV",
+        "command": "RecordFundTAConfirmed",
+        "outcome": "reject TA_INVALID_NAV",
+        "hasSecondaryWitness": true
+      },
+      {
+        "specId": "TA_SHARES_MISMATCH",
+        "command": "RecordFundTAConfirmed",
+        "outcome": "reject TA_SHARES_MISMATCH",
+        "hasSecondaryWitness": true
+      },
+      {
+        "specId": "TA_PAYMENT_NOT_SUCCEEDED",
+        "command": "RecordFundTAConfirmed",
+        "outcome": "reject TA_PAYMENT_NOT_SUCCEEDED",
+        "hasSecondaryWitness": true
+      },
+      {
+        "specId": "TA_ALREADY_CONFIRMED",
+        "command": "RecordFundTAConfirmed",
+        "outcome": "reject TA_ALREADY_CONFIRMED",
+        "hasSecondaryWitness": true
+      },
+      {
+        "specId": "TA_CONFIRMED",
+        "command": "RecordFundTAConfirmed",
+        "outcome": "transition -> confirmed and emit FundTASharesConfirmed",
+        "hasSecondaryWitness": true
+      }
+    ]
+  }
+}

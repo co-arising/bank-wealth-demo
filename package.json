@@ -28,6 +28,11 @@
     "ears:check": "node ../metarch-truthsrc/bin/truthsrc.js check-spec --in truth/ears --types truth/ears/standalone-types.json --format human",
     "ears:project": "node ../metarch-truthsrc/bin/truthsrc.js project-spec --in truth/ears --types truth/ears/standalone-types.json --out-ac projections/ac --out-tables projections/tables --lang zh",
     "ears:emit": "node ../metarch-truthsrc/bin/truthsrc.js emit-tests --in truth/ears --types truth/ears/standalone-types.json --no-gap-check --out-features generated-tests/features --out-scala generated-tests/scala --package example.bankwealth.ears --manifest generated-tests/manifest.sha256.json",
-    "test:ears": "node --test --test-concurrency=1 test/ears-integration.test.mjs"
+    "test:ears": "node --test --test-concurrency=1 test/ears-integration.test.mjs",
+    "v2:compile": "node ../metarch-truthsrc/bin/truthsrc.js compile-v2 --structures v2-pilot/truth/structures --specs v2-pilot/truth/specs --out v2-pilot/.truthsrc/canonical-v2.json --db v2-pilot/.truthsrc/knowledge.sqlite --format human",
+    "v2:generate": "node ../metarch-truthsrc/bin/truthsrc.js generate-v2 --in v2-pilot/.truthsrc/canonical-v2.json --out v2-pilot --target typescript,scala --package example.bankwealth.v2",
+    "v2:emit-tests": "node ../metarch-truthsrc/bin/truthsrc.js emit-tests-v2 --in v2-pilot/.truthsrc/canonical-v2.json --out v2-pilot --target typescript,scala --package example.bankwealth.v2",
+    "v2:verify": "node ../metarch-truthsrc/bin/truthsrc.js verify-v2 --root v2-pilot --target typescript,scala --canonical v2-pilot/.truthsrc/canonical-v2.json --db v2-pilot/.truthsrc/knowledge.sqlite",
+    "test:v2": "node --test --test-concurrency=1 test/v2-pilot-e2e.test.mjs"
   }
 }
