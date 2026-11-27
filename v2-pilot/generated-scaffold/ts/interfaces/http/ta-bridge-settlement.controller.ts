@@ -3,7 +3,7 @@
 // @ProvenanceId(interfaces:http:TaBridgeSettlement)
 // canonicalSha256: d07707b84cc37fa766fa7715c962b0b4fbfdd0b5410d0fd638df99748eb1dd9d
 import type { TaBridgeSettlementHandler, TaBridgeSettlementExternPorts, TaBridgeSettlementEffectsPort } from "../../ta-bridge-settlement.port.ts";
-import { jsonResponse, mapRejectionToHttpStatus, type HttpRequestDto, type HttpResponseDto } from "../api/dto.ts";
+import { jsonResponse, mapRejectionToHttpStatus, resolvePrincipalField, type HttpRequestDto, type HttpResponseDto, type RouteDescriptor } from "../api/dto.ts";
 
 export interface TaBridgeSettlementControllerDeps {
   readonly handler: TaBridgeSettlementHandler;
@@ -12,7 +12,7 @@ export interface TaBridgeSettlementControllerDeps {
 }
 
 export interface TaBridgeSettlementController {
-  readonly handleOperation: (operation: string, req: HttpRequestDto) => HttpResponseDto;
+  readonly handleOperation: (operation: string, req: HttpRequestDto, routeDesc?: RouteDescriptor) => HttpResponseDto;
 }
 
 export const taBridgeSettlementRoutes = [
@@ -26,10 +26,10 @@ export const taBridgeSettlementRoutes = [
 
 export function createTaBridgeSettlementController(deps: TaBridgeSettlementControllerDeps): TaBridgeSettlementController {
   return {
-    handleOperation(operation: string, req: HttpRequestDto): HttpResponseDto {
+    handleOperation(operation: string, req: HttpRequestDto, routeDesc?: RouteDescriptor): HttpResponseDto {
       const payload: Record<string, unknown> = { ...(req.query ?? {}), ...(req.body ?? {}) };
       const outcome = deps.handler.handle(
-        { operation, payload, stateSnapshot: req.stateSnapshot },
+        { operation, payload, stateSnapshot: req.stateSnapshot, ...(req.principal ? { principal: req.principal } : {}) },
         deps.externs,
         deps.effects,
       );
@@ -39,6 +39,13 @@ export function createTaBridgeSettlementController(deps: TaBridgeSettlementContr
           code: outcome.code,
           ruleId: outcome.ruleId,
         });
+      }
+      if (outcome.view && routeDesc?.rowScope?.matchField && routeDesc.rowScope.kind !== "global" && req.principal && !req.principal.roles.includes("*")) {
+        const expectedVal = resolvePrincipalField(req.principal, routeDesc.rowScope.principalKey ?? "id");
+        const actualVal = outcome.view[routeDesc.rowScope.matchField];
+        if (expectedVal === undefined || actualVal === undefined || actualVal === null || String(actualVal) !== String(expectedVal)) {
+          return jsonResponse(403, { ok: false, code: "FORBIDDEN_ROW_SCOPE", route: routeDesc.path });
+        }
       }
       return jsonResponse(200, {
         ok: true,

@@ -7,6 +7,7 @@ export interface CashFundPurchaseRequest {
   readonly operation: string;
   readonly payload: Readonly<Record<string, unknown>>;
   readonly stateSnapshot?: Readonly<Record<string, unknown>>;
+  readonly principal?: Readonly<{ id: string; roles: readonly string[]; tenantId?: string; entitlements?: readonly string[]; attributes?: Readonly<Record<string, unknown>> }>;
 }
 
 export interface CashFundPurchaseExternPorts {

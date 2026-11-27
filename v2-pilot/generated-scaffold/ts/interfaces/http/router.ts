@@ -2,7 +2,7 @@
 // Unified inbound HTTP router dispatching /health and all declared application ports with Authority gate.
 // @ProvenanceId(layer:interfaces:http)
 // canonicalSha256: d07707b84cc37fa766fa7715c962b0b4fbfdd0b5410d0fd638df99748eb1dd9d
-import { allowAllAuthority, jsonResponse, type HttpAuthority, type HttpRequestDto, type HttpResponseDto, type RouteDescriptor } from "../api/dto.ts";
+import { allowAllAuthority, jsonResponse, resolvePrincipalField, type HttpAuthority, type HttpRequestDto, type HttpResponseDto, type RouteDescriptor } from "../api/dto.ts";
 import type { CashFundPurchaseController } from "./cash-fund-purchase.controller.ts";
 import type { TaBridgeSettlementController } from "./ta-bridge-settlement.controller.ts";
 
@@ -12,10 +12,15 @@ export interface HttpRouterControllers {
 }
 
 export const DECLARED_ROUTES: readonly RouteDescriptor[] = [
-  { method: "POST", path: "/api/v1/bankwealth/bank-cash-submit-port/submit", story: "CashFundPurchase", operation: "BankCashSubmitPort.submit" },
-  { method: "GET", path: "/api/v1/bankwealth/bank-order-query/get", story: "CashFundPurchase", operation: "BankOrderQuery.get" },
-  { method: "POST", path: "/api/v1/bankwealth/bank-ta-bridge-port/ingest-outcome", story: "TaBridgeSettlement", operation: "BankTaBridgePort.ingestOutcome" },
+  {"method":"POST","path":"/api/v1/bankwealth/bank-cash-submit-port/submit","story":"CashFundPurchase","operation":"BankCashSubmitPort.submit","callerKind":"human"},
+  {"method":"GET","path":"/api/v1/bankwealth/bank-order-query/get","story":"CashFundPurchase","operation":"BankOrderQuery.get","callerKind":"human"},
+  {"method":"POST","path":"/api/v1/bankwealth/bank-ta-bridge-port/ingest-outcome","story":"TaBridgeSettlement","operation":"BankTaBridgePort.ingestOutcome","callerKind":"human"},
 ];
+
+/** auth-core compatible operation -> authz metadata table. */
+export const OPERATION_AUTHZ_MAP: Readonly<Record<string, RouteDescriptor>> = Object.fromEntries(
+  DECLARED_ROUTES.map(r => [r.operation, r]),
+);
 
 export interface HttpRouter {
   readonly routes: readonly RouteDescriptor[];
@@ -24,13 +29,30 @@ export interface HttpRouter {
 
 export function createHttpRouter(controllers: HttpRouterControllers, authority: HttpAuthority = allowAllAuthority): HttpRouter {
   const enforceAuth = (routeDesc: RouteDescriptor, req: HttpRequestDto): { ok: true; req: HttpRequestDto } | { ok: false; response: HttpResponseDto } => {
+    if (routeDesc.authzMode === "public") return { ok: true, req };
     const principal = authority.authenticate(req);
     if (!principal) return { ok: false, response: jsonResponse(401, { ok: false, code: "NOT_AUTHENTICATED", route: routeDesc.path }) };
-    if (!authority.authorize(principal, routeDesc)) return { ok: false, response: jsonResponse(403, { ok: false, code: "NOT_AUTHORIZED", route: routeDesc.path }) };
+    const decision = authority.authorizeDetailed
+      ? authority.authorizeDetailed(principal, routeDesc, req)
+      : { allowed: authority.authorize(principal, routeDesc, req), code: "NOT_AUTHORIZED" };
+    if (!decision.allowed) return { ok: false, response: jsonResponse(403, { ok: false, code: decision.code ?? "NOT_AUTHORIZED", route: routeDesc.path }) };
     if (routeDesc.method === "POST" && authority.verifyCsrf && !authority.verifyCsrf(req)) {
       return { ok: false, response: jsonResponse(403, { ok: false, code: "CSRF_INVALID", route: routeDesc.path }) };
     }
-    return { ok: true, req: { ...req, principal } };
+    let boundReq: HttpRequestDto = { ...req, principal };
+    if (routeDesc.bindPrincipal && routeDesc.bindPrincipal.length > 0 && !principal.roles.includes("*")) {
+      const nextBody: Record<string, unknown> = { ...(req.body ?? {}) };
+      const nextQuery: Record<string, string | undefined> = { ...(req.query ?? {}) };
+      for (const bp of routeDesc.bindPrincipal) {
+        const boundVal = resolvePrincipalField(principal, bp.from);
+        if (boundVal !== undefined) {
+          nextBody[bp.param] = boundVal;
+          nextQuery[bp.param] = String(boundVal);
+        }
+      }
+      boundReq = { ...boundReq, body: nextBody, query: nextQuery };
+    }
+    return { ok: true, req: boundReq };
   };
   return {
     routes: DECLARED_ROUTES,
@@ -45,21 +67,21 @@ export function createHttpRouter(controllers: HttpRouterControllers, authority: 
         if (!auth.ok) return auth.response;
         const ctrl = controllers.cashFundPurchase;
         if (!ctrl) return jsonResponse(501, { ok: false, code: "HANDLER_NOT_WIRED", story: "CashFundPurchase" });
-        return ctrl.handleOperation("BankCashSubmitPort.submit", auth.req);
+        return ctrl.handleOperation("BankCashSubmitPort.submit", auth.req, DECLARED_ROUTES[0]);
       }
       if (method === "GET" && path === "/api/v1/bankwealth/bank-order-query/get") {
         const auth = enforceAuth(DECLARED_ROUTES[1], req);
         if (!auth.ok) return auth.response;
         const ctrl = controllers.cashFundPurchase;
         if (!ctrl) return jsonResponse(501, { ok: false, code: "HANDLER_NOT_WIRED", story: "CashFundPurchase" });
-        return ctrl.handleOperation("BankOrderQuery.get", auth.req);
+        return ctrl.handleOperation("BankOrderQuery.get", auth.req, DECLARED_ROUTES[1]);
       }
       if (method === "POST" && path === "/api/v1/bankwealth/bank-ta-bridge-port/ingest-outcome") {
         const auth = enforceAuth(DECLARED_ROUTES[2], req);
         if (!auth.ok) return auth.response;
         const ctrl = controllers.taBridgeSettlement;
         if (!ctrl) return jsonResponse(501, { ok: false, code: "HANDLER_NOT_WIRED", story: "TaBridgeSettlement" });
-        return ctrl.handleOperation("BankTaBridgePort.ingestOutcome", auth.req);
+        return ctrl.handleOperation("BankTaBridgePort.ingestOutcome", auth.req, DECLARED_ROUTES[2]);
       }
       return jsonResponse(404, { ok: false, code: "ROUTE_NOT_FOUND", method, path });
     },

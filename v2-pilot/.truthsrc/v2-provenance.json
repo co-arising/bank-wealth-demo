@@ -15,10 +15,17 @@
     "manifestSha256": "680ace7300a9ebefe34e93dca454adbc5366995bf7c868c62e162121db29265d"
   },
   "tsCheck": {
-    "skipped": true,
+    "skipped": false,
     "passed": true,
-    "exitCode": null,
-    "specFiles": [],
+    "exitCode": 0,
+    "specFiles": [
+      "generated-tests/ts/cash-fund-purchase.ears.spec.ts",
+      "generated-tests/ts/credit-balance-reserve-funds.ears.spec.ts",
+      "generated-tests/ts/fund-order-confirm-tashares.ears.spec.ts",
+      "generated-tests/ts/fund-quota-reserve-subscription-quota.ears.spec.ts",
+      "generated-tests/ts/interfaces-http.ears.spec.ts",
+      "generated-tests/ts/ta-bridge-settlement.ears.spec.ts"
+    ],
     "failedSpecIds": []
   },
   "scalaCheck": {
@@ -110,10 +117,10 @@
     "passed": true,
     "minKillRate": 100,
     "ts": {
-      "skipped": true,
+      "skipped": false,
       "passed": true,
-      "total": 0,
-      "killed": 0,
+      "total": 12,
+      "killed": 12,
       "survived": [],
       "killRate": 100
     },
@@ -127,5 +134,5 @@
     },
     "errors": []
   },
-  "verifiedAt": "2026-11-27T05:45:35.937Z"
+  "verifiedAt": "2026-11-27T05:56:56.569Z"
 }
