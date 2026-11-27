@@ -18,10 +18,17 @@ jobs:
         with:
           path: bank-wealth-demo
 
+      - name: Read pinned metarch-truthsrc commit
+        id: pin
+        run: |
+          PIN_COMMIT=$(node -e "console.log(JSON.parse(require('fs').readFileSync('bank-wealth-demo/.truthsrc-pin.json','utf8')).commit)")
+          echo "commit=$PIN_COMMIT" >> "$GITHUB_OUTPUT"
+
       - name: Checkout metarch-truthsrc
         uses: actions/checkout@v4
         with:
           repository: co-arising/metarch-truthsrc
+          ref: ${{ steps.pin.outputs.commit }}
           path: metarch-truthsrc
 
       - name: Setup Node.js 22
@@ -65,3 +72,4 @@ jobs:
           npm run v2:audit-coverage
           npm run v2:tck
           npm run test:v2
+          npm run v2:release-verify -- --strict-pin

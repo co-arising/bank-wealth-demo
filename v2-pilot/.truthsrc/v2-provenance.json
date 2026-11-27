@@ -12,7 +12,7 @@
     "passed": true,
     "errors": [],
     "verifiedFiles": 17,
-    "manifestSha256": "975243528fd630d61e982f8b21a52b9299c50ef8525166e36750ecdca0bc5228"
+    "manifestSha256": "0df666e92f1bb3967fdd305c3d339cb1a7d2503724c64f9b7775af51ff275c37"
   },
   "tsCheck": {
     "skipped": false,
@@ -45,7 +45,7 @@
       "example.bankwealth.v2.interfaces.http.InterfacesHttpSpec"
     ],
     "failedSpecIds": [],
-    "sbtRuntimeFilesCount": 70
+    "sbtRuntimeFilesCount": 71
   },
   "provenanceCheck": {
     "passed": true,
@@ -92,12 +92,12 @@
   },
   "onionCheck": {
     "passed": true,
-    "checkedCount": 125,
+    "checkedCount": 126,
     "violations": []
   },
   "testabilityCheck": {
     "passed": true,
-    "checkedCount": 22,
+    "checkedCount": 23,
     "violations": []
   },
   "coverageCheck": {
@@ -113,12 +113,26 @@
     "errors": []
   },
   "mutationCheck": {
-    "enabled": false,
+    "enabled": true,
     "passed": true,
     "minKillRate": 100,
-    "ts": null,
-    "scala": null,
+    "ts": {
+      "skipped": false,
+      "passed": true,
+      "total": 12,
+      "killed": 12,
+      "survived": [],
+      "killRate": 100
+    },
+    "scala": {
+      "skipped": false,
+      "passed": true,
+      "total": 7,
+      "killed": 7,
+      "survived": [],
+      "killRate": 100
+    },
     "errors": []
   },
-  "verifiedAt": "2026-11-27T09:47:48.515Z"
+  "verifiedAt": "2026-11-27T11:33:01.588Z"
 }

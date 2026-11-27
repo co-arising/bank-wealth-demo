@@ -1748,6 +1748,26 @@
       "rationale": "Generated self-contained Play AuthEndpointDsl (ApiError, AuthContext, RoleGate, Endpoint)"
     },
     {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/infrastructure/api/ServerSnapshotProvider.scala",
+      "branch": "solution",
+      "tier": "S2",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E3",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated server-side trusted snapshot provider trait for Play controllers"
+    },
+    {
+      "path": "v2-pilot/handwritten/scala/example/bankwealth/v2/infrastructure/api/ServerSnapshotProviderImpl.scala",
+      "branch": "solution",
+      "tier": "S2",
+      "stage": "stage-2-cloze",
+      "evidenceTier": "E3",
+      "contractRef": "v2-handwritten-isolation",
+      "shadowMode": "none",
+      "rationale": "Handwritten server-side trusted snapshot loader isolation zone for Play controllers"
+    },
+    {
       "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/infrastructure/persistence/CashFundPurchaseEffectSerializer.scala",
       "branch": "solution",
       "tier": "S2",

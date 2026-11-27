@@ -36,6 +36,7 @@
     "v2:audit-coverage": "node ../metarch-truthsrc/bin/truthsrc.js audit-coverage-v2 --root . --manifest v2-pilot/governance/coverage-manifest.json --db v2-pilot/.truthsrc/knowledge.sqlite",
     "v2:tck": "node ../metarch-truthsrc/bin/truthsrc.js run-tck-v2 --adapter v2-pilot/handwritten/ta-effect-adapter.ts",
     "v2:view": "node ../metarch-truthsrc/bin/truthsrc.js view-v2 --root v2-pilot --out v2-pilot/workshop.html --path-prefix v2-pilot",
+    "v2:release-verify": "node tools/v2-release-verify.mjs",
     "test:v2": "node --test --test-concurrency=1 test/v2-pilot-e2e.test.mjs"
   }
 }

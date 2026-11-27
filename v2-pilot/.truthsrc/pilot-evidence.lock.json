@@ -1,0 +1,83 @@
+{
+  "schemaVersion": "co-arising.pilot-evidence/v1",
+  "truthsrc": {
+    "pinnedCommit": "9a750c20fc033dd3df677b6026019e14b8f7d064",
+    "pinnedVersion": "2.0.0",
+    "actualCommit": "9a750c20fc033dd3df677b6026019e14b8f7d064",
+    "actualShort": "9a750c2",
+    "pinMatched": true
+  },
+  "bank": {
+    "commit": "c6a2c5ee76109e1dfe86abfd0c3ab0f99beffeaf",
+    "short": "c6a2c5e",
+    "branch": "feat/co-arising-v2-pilot",
+    "canonicalSha256": "963bd7e565d3d814800707a2c0663b997279b108eb72291a6ff6b534de887a22"
+  },
+  "graph": {
+    "nodes": 88,
+    "kinds": 18,
+    "edges": 87,
+    "clozeSlots": 3,
+    "metadataRows": 4
+  },
+  "coverage": {
+    "passed": true,
+    "totalGovernedFiles": 188,
+    "classifiedFiles": 188,
+    "coverageRatio": 1,
+    "countsByTier": {
+      "D1": 28,
+      "D2": 27,
+      "S1": 73,
+      "S2": 58,
+      "S3": 2
+    },
+    "countsByStage": {
+      "stage-0-raw": 21,
+      "stage-1-shadow": 17,
+      "stage-2-cloze": 16,
+      "stage-3-generated": 134
+    },
+    "countsByEvidence": {
+      "E1": 55,
+      "E2": 73,
+      "E3": 58,
+      "E4": 2
+    },
+    "importViolations": 0
+  },
+  "tck": {
+    "protocol": "three-phase-reconcile",
+    "passed": true,
+    "total": 8,
+    "passedCount": 8
+  },
+  "provenance": {
+    "passed": true,
+    "strict": true,
+    "canonicalSha256": "e988b3ce14a251c4bde60d36369b9dba38851b7debccd9ca131961af535067c3",
+    "lockedFiles": 17,
+    "tsSuites": 6,
+    "tsPassed": true,
+    "scalaSuites": 6,
+    "scalaPassed": true,
+    "sbtRuntimeFilesCount": 71,
+    "onionCheckedFiles": 126,
+    "onionViolations": 0,
+    "testabilityCheckedCount": 23,
+    "testabilityViolations": 0,
+    "mutationTs": {
+      "total": 12,
+      "killed": 12,
+      "killRate": 100
+    },
+    "mutationScala": {
+      "total": 7,
+      "killed": 7,
+      "killRate": 100
+    },
+    "verifiedAt": "2026-11-27T11:33:01.588Z"
+  },
+  "evidenceSha256": "aa9914e65ef485ad4a17a257c33bf27b60de42628c5d0601cba72b257bddb382",
+  "capturedAt": "2026-11-27T11:33:03.268Z"
+}

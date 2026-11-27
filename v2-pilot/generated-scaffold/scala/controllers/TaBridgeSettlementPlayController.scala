@@ -5,7 +5,7 @@ package controllers
 
 import javax.inject.{Inject, Singleton}
 import example.bankwealth.v2.application.services.{TaBridgeSettlementEffectsPort, TaBridgeSettlementExternPorts, TaBridgeSettlementHandler, TaBridgeSettlementRequest}
-import example.bankwealth.v2.infrastructure.api.{ApiError, Endpoint, OkReceipt, RoleGate}
+import example.bankwealth.v2.infrastructure.api.{ApiError, AuthContext, Endpoint, OkReceipt, RoleGate, ServerSnapshotProvider}
 import play.api.libs.json.{JsArray, JsBoolean, JsNull, JsNumber, JsObject, JsString, JsValue, Json}
 import play.api.mvc.{AbstractController, Action, AnyContent, ControllerComponents}
 import scala.concurrent.{ExecutionContext, Future}
@@ -16,17 +16,21 @@ final class TaBridgeSettlementPlayController @Inject()(
   api: Endpoint,
   handler: TaBridgeSettlementHandler,
   externs: TaBridgeSettlementExternPorts,
-  effects: TaBridgeSettlementEffectsPort
+  effects: TaBridgeSettlementEffectsPort,
+  snapshots: ServerSnapshotProvider
 )(implicit ec: ExecutionContext) extends AbstractController(cc) {
 
-  private def jsObjToMap(js: JsObject): Map[String, Any] = js.value.map {
-    case (k, JsString(v))  => k -> v
-    case (k, JsNumber(v))  => k -> v
-    case (k, JsBoolean(v)) => k -> v
-    case (k, obj: JsObject) => k -> jsObjToMap(obj)
-    case (k, arr: JsArray)  => k -> arr.value.map(_.toString).toSeq
-    case (k, JsNull)       => k -> ""
-  }.toMap
+  private def jsValueToAny(v: JsValue): Any = v match {
+    case JsString(s)    => s
+    case JsNumber(n)    => n
+    case b: JsBoolean   => b.value
+    case obj: JsObject  => jsObjToMap(obj)
+    case arr: JsArray   => arr.value.map(jsValueToAny).toVector
+    case JsNull         => ""
+  }
+
+  private def jsObjToMap(js: JsObject): Map[String, Any] =
+    js.value.map { case (k, v) => k -> jsValueToAny(v) }.toMap
 
   private def toJsValue(v: Any): JsValue = v match {
     case null               => JsNull
@@ -40,17 +44,27 @@ final class TaBridgeSettlementPlayController @Inject()(
     case other              => JsString(other.toString)
   }
 
+  private def resolvePrincipalBinding(ctx: AuthContext, key: String): Option[Any] =
+    if (key == "id" || key == "principal.id") Some(ctx.userId)
+    else if (key == "tenantId" || key == "principal.tenantId") ctx.tenantId
+    else if (key == "roles" || key == "principal.roles") Some(ctx.roles)
+    else Some(ctx.userId)
+
   // @knowledge source:bank-wealth/bankwealth#/ports/BankTaBridgePort/ingestOutcome
   /** POST /api/v1/bankwealth/bank-ta-bridge-port/ingest-outcome — authz: static-roles (roles=[ta-bridge-service], scope=global) */
   def bankTaBridgePortIngestOutcome(): Action[AnyContent] = api.global.write[JsObject]("ta-bridge-service") { (ctx, body) =>
-    val principal = Some(Map[String, Any]("id" -> ctx.userId, "roles" -> ctx.roles, "tenantId" -> ctx.tenantId.getOrElse("")))
-    val appReq = TaBridgeSettlementRequest(operation = "BankTaBridgePort.ingestOutcome", payload = jsObjToMap(body), principal = principal)
-    Future.successful((handler.handle(appReq, externs, effects) match {
-      case Left(err)  => Left(ApiError.badRequest(s"${err.code}: ${err.message}"))
-      case Right(res) =>
-        val receipt = OkReceipt(id = res.ruleId, ruleId = res.ruleId)
-        Right(Json.obj("ok" -> true, "receipt" -> Json.toJson(receipt), "response" -> toJsValue(res.response), "view" -> toJsValue(res.view)))
-    }): Either[ApiError, JsValue])
+    val sanitized: Map[String, Any] = jsObjToMap(body) -- Set("stateSnapshot", "investorAccountId", "fundCollectionAccountId")
+    val rawPayload: Map[String, Any] = sanitized
+    val principal: Option[Map[String, Any]] = Some(Map[String, Any]("id" -> ctx.userId, "roles" -> ctx.roles, "tenantId" -> ctx.tenantId.getOrElse("")))
+    snapshots.load("BankTaBridgePort.ingestOutcome", rawPayload, principal).map { snap =>
+      val appReq = TaBridgeSettlementRequest(operation = "BankTaBridgePort.ingestOutcome", payload = rawPayload, stateSnapshot = snap, principal = principal)
+      handler.handle(appReq, externs, effects) match {
+        case Left(err)  => Left(ApiError.badRequest(s"${err.code}: ${err.message}"))
+        case Right(res) =>
+          val receipt = OkReceipt(id = res.ruleId, ruleId = res.ruleId)
+          Right(Json.obj("ok" -> true, "receipt" -> Json.toJson(receipt), "response" -> toJsValue(res.response), "view" -> toJsValue(res.view)))
+      }
+    }
   }
 
 }
