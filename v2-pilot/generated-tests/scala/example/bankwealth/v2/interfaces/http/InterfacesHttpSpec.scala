@@ -1,5 +1,5 @@
 // LOCKED EXECUTABLE INTERFACES HTTP ORACLE — 1.0 STRICT-GOVERNANCE ARCHITECTURE (DO NOT MODIFY)
-// canonicalSha256: d07707b84cc37fa766fa7715c962b0b4fbfdd0b5410d0fd638df99748eb1dd9d
+// canonicalSha256: e988b3ce14a251c4bde60d36369b9dba38851b7debccd9ca131961af535067c3
 // layer: interfaces | tests HttpRouter, Controllers, and OnionBootstrap DI composition
 package example.bankwealth.v2.interfaces.http
 
@@ -49,6 +49,102 @@ final class InterfacesHttpSpec extends AnyFunSuite {
     val res = rt.router.route(HttpRequest("POST", "/api/v1/bankwealth/bank-cash-submit-port/submit"))
     assert(res.status == 403)
     assert(res.body.get("code").contains("NOT_AUTHORIZED"))
+  }
+
+  // @CoArisingSpec(id="AUTHZ_BANK_CASH_SUBMIT_PORT_SUBMIT_401", witness="http-authz-401")
+  test("[AUTHZ_BANK_CASH_SUBMIT_PORT_SUBMIT_401] POST /api/v1/bankwealth/bank-cash-submit-port/submit unauthenticated -> 401") {
+    val auth = new RoleBasedAuthority(_ => None)
+    val rt = OnionBootstrap.createRuntime(authority = auth)
+    val res = rt.router.route(HttpRequest("POST", "/api/v1/bankwealth/bank-cash-submit-port/submit", body = Map.empty[String, Any], stateSnapshot = Map.empty[String, Any]))
+    assert(res.status == 401)
+    assert(res.body.get("code").contains("NOT_AUTHENTICATED"))
+  }
+
+  // @CoArisingSpec(id="AUTHZ_BANK_CASH_SUBMIT_PORT_SUBMIT_403_ROLE", witness="http-authz-403-role")
+  test("[AUTHZ_BANK_CASH_SUBMIT_PORT_SUBMIT_403_ROLE] POST /api/v1/bankwealth/bank-cash-submit-port/submit forbidden role -> 403") {
+    val auth = new RoleBasedAuthority(_ => Some(Principal("ok-user", Set("__forbidden_role__"), tenantId = Some("t-1"), attributes = Map.empty, entitlements = Set.empty)))
+    val rt = OnionBootstrap.createRuntime(authority = auth)
+    val res = rt.router.route(HttpRequest("POST", "/api/v1/bankwealth/bank-cash-submit-port/submit", body = Map.empty[String, Any], stateSnapshot = Map.empty[String, Any]))
+    assert(res.status == 403)
+    assert(res.body.get("code").contains("NOT_AUTHORIZED"))
+  }
+
+  // @CoArisingSpec(id="AUTHZ_BANK_CASH_SUBMIT_PORT_SUBMIT_ALLOW_ROLE", witness="http-authz-allow-role")
+  test("[AUTHZ_BANK_CASH_SUBMIT_PORT_SUBMIT_ALLOW_ROLE] POST /api/v1/bankwealth/bank-cash-submit-port/submit allowed role investor passes PEP") {
+    val auth = new RoleBasedAuthority(_ => Some(Principal("ok-user", Set("investor"), tenantId = Some("t-1"), attributes = Map.empty, entitlements = Set.empty)))
+    val rt = OnionBootstrap.createRuntime(authority = auth)
+    val res = rt.router.route(HttpRequest("POST", "/api/v1/bankwealth/bank-cash-submit-port/submit", body = Map.empty[String, Any], stateSnapshot = Map.empty[String, Any]))
+    assert(res.status != 401 && res.status != 403)
+  }
+
+  // @CoArisingSpec(id="AUTHZ_BANK_CASH_SUBMIT_PORT_SUBMIT_403_CSRF", witness="http-authz-csrf")
+  test("[AUTHZ_BANK_CASH_SUBMIT_PORT_SUBMIT_403_CSRF] POST /api/v1/bankwealth/bank-cash-submit-port/submit invalid CSRF -> 403 CSRF_INVALID") {
+    val auth = new RoleBasedAuthority(_ => Some(Principal("ok-user", Set("investor"), tenantId = Some("t-1"), attributes = Map.empty, entitlements = Set.empty)), csrfFn = _ => false)
+    val rt = OnionBootstrap.createRuntime(authority = auth)
+    val res = rt.router.route(HttpRequest("POST", "/api/v1/bankwealth/bank-cash-submit-port/submit", body = Map.empty[String, Any], stateSnapshot = Map.empty[String, Any]))
+    assert(res.status == 403)
+    assert(res.body.get("code").contains("CSRF_INVALID"))
+  }
+
+  // @CoArisingSpec(id="AUTHZ_BANK_ORDER_QUERY_GET_401", witness="http-authz-401")
+  test("[AUTHZ_BANK_ORDER_QUERY_GET_401] GET /api/v1/bankwealth/bank-order-query/get unauthenticated -> 401") {
+    val auth = new RoleBasedAuthority(_ => None)
+    val rt = OnionBootstrap.createRuntime(authority = auth)
+    val res = rt.router.route(HttpRequest("GET", "/api/v1/bankwealth/bank-order-query/get", body = Map.empty[String, Any], stateSnapshot = Map.empty[String, Any]))
+    assert(res.status == 401)
+    assert(res.body.get("code").contains("NOT_AUTHENTICATED"))
+  }
+
+  // @CoArisingSpec(id="AUTHZ_BANK_ORDER_QUERY_GET_403_ROLE", witness="http-authz-403-role")
+  test("[AUTHZ_BANK_ORDER_QUERY_GET_403_ROLE] GET /api/v1/bankwealth/bank-order-query/get forbidden role -> 403") {
+    val auth = new RoleBasedAuthority(_ => Some(Principal("ok-user", Set("__forbidden_role__"), tenantId = Some("t-1"), attributes = Map.empty, entitlements = Set.empty)))
+    val rt = OnionBootstrap.createRuntime(authority = auth)
+    val res = rt.router.route(HttpRequest("GET", "/api/v1/bankwealth/bank-order-query/get", body = Map.empty[String, Any], stateSnapshot = Map.empty[String, Any]))
+    assert(res.status == 403)
+    assert(res.body.get("code").contains("NOT_AUTHORIZED"))
+  }
+
+  // @CoArisingSpec(id="AUTHZ_BANK_ORDER_QUERY_GET_ALLOW_ROLE", witness="http-authz-allow-role")
+  test("[AUTHZ_BANK_ORDER_QUERY_GET_ALLOW_ROLE] GET /api/v1/bankwealth/bank-order-query/get allowed role investor passes PEP") {
+    val auth = new RoleBasedAuthority(_ => Some(Principal("ok-user", Set("investor"), tenantId = Some("t-1"), attributes = Map.empty, entitlements = Set.empty)))
+    val rt = OnionBootstrap.createRuntime(authority = auth)
+    val res = rt.router.route(HttpRequest("GET", "/api/v1/bankwealth/bank-order-query/get", body = Map.empty[String, Any], stateSnapshot = Map.empty[String, Any]))
+    assert(res.status != 401 && res.status != 403)
+  }
+
+  // @CoArisingSpec(id="AUTHZ_BANK_TA_BRIDGE_PORT_INGEST_OUTCOME_401", witness="http-authz-401")
+  test("[AUTHZ_BANK_TA_BRIDGE_PORT_INGEST_OUTCOME_401] POST /api/v1/bankwealth/bank-ta-bridge-port/ingest-outcome unauthenticated -> 401") {
+    val auth = new RoleBasedAuthority(_ => None)
+    val rt = OnionBootstrap.createRuntime(authority = auth)
+    val res = rt.router.route(HttpRequest("POST", "/api/v1/bankwealth/bank-ta-bridge-port/ingest-outcome", body = Map.empty[String, Any], stateSnapshot = Map.empty[String, Any]))
+    assert(res.status == 401)
+    assert(res.body.get("code").contains("NOT_AUTHENTICATED"))
+  }
+
+  // @CoArisingSpec(id="AUTHZ_BANK_TA_BRIDGE_PORT_INGEST_OUTCOME_403_ROLE", witness="http-authz-403-role")
+  test("[AUTHZ_BANK_TA_BRIDGE_PORT_INGEST_OUTCOME_403_ROLE] POST /api/v1/bankwealth/bank-ta-bridge-port/ingest-outcome forbidden role -> 403") {
+    val auth = new RoleBasedAuthority(_ => Some(Principal("ok-user", Set("__forbidden_role__"), tenantId = Some("t-1"), attributes = Map.empty, entitlements = Set.empty)))
+    val rt = OnionBootstrap.createRuntime(authority = auth)
+    val res = rt.router.route(HttpRequest("POST", "/api/v1/bankwealth/bank-ta-bridge-port/ingest-outcome", body = Map.empty[String, Any], stateSnapshot = Map.empty[String, Any]))
+    assert(res.status == 403)
+    assert(res.body.get("code").contains("NOT_AUTHORIZED"))
+  }
+
+  // @CoArisingSpec(id="AUTHZ_BANK_TA_BRIDGE_PORT_INGEST_OUTCOME_ALLOW_ROLE", witness="http-authz-allow-role")
+  test("[AUTHZ_BANK_TA_BRIDGE_PORT_INGEST_OUTCOME_ALLOW_ROLE] POST /api/v1/bankwealth/bank-ta-bridge-port/ingest-outcome allowed role ta-bridge-service passes PEP") {
+    val auth = new RoleBasedAuthority(_ => Some(Principal("ok-user", Set("ta-bridge-service"), tenantId = Some("t-1"), attributes = Map.empty, entitlements = Set.empty)))
+    val rt = OnionBootstrap.createRuntime(authority = auth)
+    val res = rt.router.route(HttpRequest("POST", "/api/v1/bankwealth/bank-ta-bridge-port/ingest-outcome", body = Map.empty[String, Any], stateSnapshot = Map.empty[String, Any]))
+    assert(res.status != 401 && res.status != 403)
+  }
+
+  // @CoArisingSpec(id="AUTHZ_BANK_TA_BRIDGE_PORT_INGEST_OUTCOME_403_CSRF", witness="http-authz-csrf")
+  test("[AUTHZ_BANK_TA_BRIDGE_PORT_INGEST_OUTCOME_403_CSRF] POST /api/v1/bankwealth/bank-ta-bridge-port/ingest-outcome invalid CSRF -> 403 CSRF_INVALID") {
+    val auth = new RoleBasedAuthority(_ => Some(Principal("ok-user", Set("ta-bridge-service"), tenantId = Some("t-1"), attributes = Map.empty, entitlements = Set.empty)), csrfFn = _ => false)
+    val rt = OnionBootstrap.createRuntime(authority = auth)
+    val res = rt.router.route(HttpRequest("POST", "/api/v1/bankwealth/bank-ta-bridge-port/ingest-outcome", body = Map.empty[String, Any], stateSnapshot = Map.empty[String, Any]))
+    assert(res.status == 403)
+    assert(res.body.get("code").contains("CSRF_INVALID"))
   }
 
   // @CoArisingSpec(id="HTTP_US-CFP-01", witness="interfaces-http-us-cfp-01")

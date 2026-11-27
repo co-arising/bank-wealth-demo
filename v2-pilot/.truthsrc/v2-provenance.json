@@ -2,7 +2,7 @@
   "schemaVersion": "co-arising.verify-v2/v1",
   "passed": true,
   "strict": true,
-  "canonicalSha256": "d07707b84cc37fa766fa7715c962b0b4fbfdd0b5410d0fd638df99748eb1dd9d",
+  "canonicalSha256": "e988b3ce14a251c4bde60d36369b9dba38851b7debccd9ca131961af535067c3",
   "expectedClozeRed": {
     "isExpectedTddRed": false,
     "unimplementedCount": 0,
@@ -12,7 +12,7 @@
     "passed": true,
     "errors": [],
     "verifiedFiles": 17,
-    "manifestSha256": "680ace7300a9ebefe34e93dca454adbc5366995bf7c868c62e162121db29265d"
+    "manifestSha256": "83728440ea7ecf7865c118a8301b9a8c922d3eda1bb6a7959e988b92862c2600"
   },
   "tsCheck": {
     "skipped": false,
@@ -45,13 +45,13 @@
       "example.bankwealth.v2.interfaces.http.InterfacesHttpSpec"
     ],
     "failedSpecIds": [],
-    "sbtRuntimeFilesCount": 41
+    "sbtRuntimeFilesCount": 66
   },
   "provenanceCheck": {
     "passed": true,
     "errors": [],
     "provenanceIdCount": 33,
-    "specAnchorCount": 36,
+    "specAnchorCount": 47,
     "clozeSlots": [
       {
         "slotId": "cash-fund-purchase",
@@ -92,7 +92,7 @@
   },
   "onionCheck": {
     "passed": true,
-    "checkedCount": 88,
+    "checkedCount": 121,
     "violations": []
   },
   "testabilityCheck": {
@@ -134,5 +134,5 @@
     },
     "errors": []
   },
-  "verifiedAt": "2026-11-27T05:56:56.569Z"
+  "verifiedAt": "2026-11-27T06:44:45.942Z"
 }

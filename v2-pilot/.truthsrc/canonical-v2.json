@@ -1,9 +1,20 @@
 {
   "schemaVersion": "co-arising.canonical/v2",
   "system": "bank-wealth",
+  "subdomain": "bankwealth",
   "context": "bankwealth",
-  "canonicalSha256": "d07707b84cc37fa766fa7715c962b0b4fbfdd0b5410d0fd638df99748eb1dd9d",
+  "canonicalSha256": "e988b3ce14a251c4bde60d36369b9dba38851b7debccd9ca131961af535067c3",
   "structures": {
+    "roles": [
+      {
+        "name": "investor",
+        "kind": "human"
+      },
+      {
+        "name": "ta-bridge-service",
+        "kind": "human"
+      }
+    ],
     "exactTypes": [
       {
         "name": "AmountDecimal",
@@ -33,6 +44,8 @@
           {
             "name": "replayed",
             "type": "Bool",
+            "enumValues": null,
+            "source": null,
             "resolvedType": {
               "kind": "bool",
               "typeName": "Bool"
@@ -41,6 +54,8 @@
           {
             "name": "accepted",
             "type": "Bool",
+            "enumValues": null,
+            "source": null,
             "resolvedType": {
               "kind": "bool",
               "typeName": "Bool"
@@ -59,6 +74,7 @@
               "refund_dispatched",
               "pending_reconcile"
             ],
+            "source": null,
             "resolvedType": {
               "kind": "string",
               "typeName": "String",
@@ -86,6 +102,8 @@
             "name": "minPurchase",
             "type": "AmountDecimal",
             "defaultValue": "0.00",
+            "enumValues": null,
+            "source": null,
             "resolvedType": {
               "kind": "decimal",
               "typeName": "AmountDecimal",
@@ -96,6 +114,8 @@
             "name": "maxSingleLimit",
             "type": "AmountDecimal",
             "defaultValue": "0.00",
+            "enumValues": null,
+            "source": null,
             "resolvedType": {
               "kind": "decimal",
               "typeName": "AmountDecimal",
@@ -106,6 +126,8 @@
             "name": "fundTotalUsed",
             "type": "AmountDecimal",
             "defaultValue": "0.00",
+            "enumValues": null,
+            "source": null,
             "resolvedType": {
               "kind": "decimal",
               "typeName": "AmountDecimal",
@@ -116,6 +138,8 @@
             "name": "fundTotalCap",
             "type": "AmountDecimal",
             "defaultValue": "0.00",
+            "enumValues": null,
+            "source": null,
             "resolvedType": {
               "kind": "decimal",
               "typeName": "AmountDecimal",
@@ -126,6 +150,8 @@
             "name": "perAccountCap",
             "type": "AmountDecimal",
             "defaultValue": "0.00",
+            "enumValues": null,
+            "source": null,
             "resolvedType": {
               "kind": "decimal",
               "typeName": "AmountDecimal",
@@ -136,11 +162,14 @@
             "name": "accountUsed",
             "type": "Map[AccountId, AmountDecimal]",
             "defaultValue": [],
+            "enumValues": null,
+            "source": null,
             "resolvedType": {
               "kind": "map",
               "key": {
                 "kind": "string",
-                "typeName": "AccountId"
+                "typeName": "AccountId",
+                "nominal": true
               },
               "value": {
                 "kind": "decimal",
@@ -157,14 +186,19 @@
               {
                 "name": "accountId",
                 "type": "AccountId",
+                "enumValues": null,
+                "source": null,
                 "resolvedType": {
                   "kind": "string",
-                  "typeName": "AccountId"
+                  "typeName": "AccountId",
+                  "nominal": true
                 }
               },
               {
                 "name": "amount",
                 "type": "AmountDecimal",
+                "enumValues": null,
+                "source": null,
                 "resolvedType": {
                   "kind": "decimal",
                   "typeName": "AmountDecimal",
@@ -184,14 +218,19 @@
               {
                 "name": "accountId",
                 "type": "AccountId",
+                "enumValues": null,
+                "source": null,
                 "resolvedType": {
                   "kind": "string",
-                  "typeName": "AccountId"
+                  "typeName": "AccountId",
+                  "nominal": true
                 }
               },
               {
                 "name": "amount",
                 "type": "AmountDecimal",
+                "enumValues": null,
+                "source": null,
                 "resolvedType": {
                   "kind": "decimal",
                   "typeName": "AmountDecimal",
@@ -220,6 +259,8 @@
             "name": "netAmount",
             "type": "AmountDecimal",
             "defaultValue": "0.00",
+            "enumValues": null,
+            "source": null,
             "resolvedType": {
               "kind": "decimal",
               "typeName": "AmountDecimal",
@@ -235,6 +276,7 @@
               "succeeded",
               "failed"
             ],
+            "source": null,
             "resolvedType": {
               "kind": "string",
               "typeName": "String",
@@ -254,6 +296,7 @@
               "confirmed",
               "rejected"
             ],
+            "source": null,
             "resolvedType": {
               "kind": "string",
               "typeName": "String",
@@ -272,30 +315,41 @@
               {
                 "name": "principal",
                 "type": "PrincipalId",
+                "enumValues": null,
+                "source": null,
                 "resolvedType": {
                   "kind": "string",
-                  "typeName": "PrincipalId"
+                  "typeName": "PrincipalId",
+                  "nominal": true
                 }
               },
               {
                 "name": "clientRequestId",
                 "type": "ClientRequestId",
+                "enumValues": null,
+                "source": null,
                 "resolvedType": {
                   "kind": "string",
-                  "typeName": "ClientRequestId"
+                  "typeName": "ClientRequestId",
+                  "nominal": true
                 }
               },
               {
                 "name": "fundCode",
                 "type": "FundCode",
+                "enumValues": null,
+                "source": null,
                 "resolvedType": {
                   "kind": "string",
-                  "typeName": "FundCode"
+                  "typeName": "FundCode",
+                  "nominal": true
                 }
               },
               {
                 "name": "amount",
                 "type": "Money",
+                "enumValues": null,
+                "source": null,
                 "resolvedType": {
                   "kind": "record",
                   "typeName": "Money",
@@ -325,30 +379,41 @@
               {
                 "name": "principal",
                 "type": "PrincipalId",
+                "enumValues": null,
+                "source": null,
                 "resolvedType": {
                   "kind": "string",
-                  "typeName": "PrincipalId"
+                  "typeName": "PrincipalId",
+                  "nominal": true
                 }
               },
               {
                 "name": "clientRequestId",
                 "type": "ClientRequestId",
+                "enumValues": null,
+                "source": null,
                 "resolvedType": {
                   "kind": "string",
-                  "typeName": "ClientRequestId"
+                  "typeName": "ClientRequestId",
+                  "nominal": true
                 }
               },
               {
                 "name": "fundCode",
                 "type": "FundCode",
+                "enumValues": null,
+                "source": null,
                 "resolvedType": {
                   "kind": "string",
-                  "typeName": "FundCode"
+                  "typeName": "FundCode",
+                  "nominal": true
                 }
               },
               {
                 "name": "amount",
                 "type": "Money",
+                "enumValues": null,
+                "source": null,
                 "resolvedType": {
                   "kind": "record",
                   "typeName": "Money",
@@ -378,6 +443,8 @@
               {
                 "name": "shares",
                 "type": "Int",
+                "enumValues": null,
+                "source": null,
                 "resolvedType": {
                   "kind": "int",
                   "typeName": "Int"
@@ -386,6 +453,8 @@
               {
                 "name": "nav",
                 "type": "NavDecimal",
+                "enumValues": null,
+                "source": null,
                 "resolvedType": {
                   "kind": "decimal",
                   "typeName": "NavDecimal",
@@ -403,9 +472,12 @@
               {
                 "name": "orderId",
                 "type": "OrderId",
+                "enumValues": null,
+                "source": null,
                 "resolvedType": {
                   "kind": "string",
-                  "typeName": "OrderId"
+                  "typeName": "OrderId",
+                  "nominal": true
                 }
               }
             ],
@@ -421,17 +493,23 @@
               {
                 "name": "principal",
                 "type": "PrincipalId",
+                "enumValues": null,
+                "source": null,
                 "resolvedType": {
                   "kind": "string",
-                  "typeName": "PrincipalId"
+                  "typeName": "PrincipalId",
+                  "nominal": true
                 }
               },
               {
                 "name": "clientRequestId",
                 "type": "ClientRequestId",
+                "enumValues": null,
+                "source": null,
                 "resolvedType": {
                   "kind": "string",
-                  "typeName": "ClientRequestId"
+                  "typeName": "ClientRequestId",
+                  "nominal": true
                 }
               }
             ]
@@ -442,17 +520,23 @@
               {
                 "name": "principal",
                 "type": "PrincipalId",
+                "enumValues": null,
+                "source": null,
                 "resolvedType": {
                   "kind": "string",
-                  "typeName": "PrincipalId"
+                  "typeName": "PrincipalId",
+                  "nominal": true
                 }
               },
               {
                 "name": "clientRequestId",
                 "type": "ClientRequestId",
+                "enumValues": null,
+                "source": null,
                 "resolvedType": {
                   "kind": "string",
-                  "typeName": "ClientRequestId"
+                  "typeName": "ClientRequestId",
+                  "nominal": true
                 }
               }
             ]
@@ -463,6 +547,11 @@
               {
                 "name": "shares",
                 "type": "Int",
+                "enumValues": null,
+                "source": null,
+                "waiveLineage": {
+                  "reason": "audit-only"
+                },
                 "resolvedType": {
                   "kind": "int",
                   "typeName": "Int"
@@ -471,6 +560,11 @@
               {
                 "name": "nav",
                 "type": "NavDecimal",
+                "enumValues": null,
+                "source": null,
+                "waiveLineage": {
+                  "reason": "audit-only"
+                },
                 "resolvedType": {
                   "kind": "decimal",
                   "typeName": "NavDecimal",
@@ -485,9 +579,12 @@
               {
                 "name": "orderId",
                 "type": "OrderId",
+                "enumValues": null,
+                "source": null,
                 "resolvedType": {
                   "kind": "string",
-                  "typeName": "OrderId"
+                  "typeName": "OrderId",
+                  "nominal": true
                 }
               }
             ]
@@ -513,6 +610,8 @@
             "name": "availableAmount",
             "type": "AmountDecimal",
             "defaultValue": "0.00",
+            "enumValues": null,
+            "source": null,
             "resolvedType": {
               "kind": "decimal",
               "typeName": "AmountDecimal",
@@ -523,6 +622,8 @@
             "name": "reservedTotal",
             "type": "AmountDecimal",
             "defaultValue": "0.00",
+            "enumValues": null,
+            "source": null,
             "resolvedType": {
               "kind": "decimal",
               "typeName": "AmountDecimal",
@@ -533,11 +634,14 @@
             "name": "reservedByTx",
             "type": "Map[TxId, AmountDecimal]",
             "defaultValue": [],
+            "enumValues": null,
+            "source": null,
             "resolvedType": {
               "kind": "map",
               "key": {
                 "kind": "string",
-                "typeName": "TxId"
+                "typeName": "TxId",
+                "nominal": true
               },
               "value": {
                 "kind": "decimal",
@@ -554,14 +658,19 @@
               {
                 "name": "txId",
                 "type": "TxId",
+                "enumValues": null,
+                "source": null,
                 "resolvedType": {
                   "kind": "string",
-                  "typeName": "TxId"
+                  "typeName": "TxId",
+                  "nominal": true
                 }
               },
               {
                 "name": "amount",
                 "type": "AmountDecimal",
+                "enumValues": null,
+                "source": null,
                 "resolvedType": {
                   "kind": "decimal",
                   "typeName": "AmountDecimal",
@@ -581,14 +690,19 @@
               {
                 "name": "txId",
                 "type": "TxId",
+                "enumValues": null,
+                "source": null,
                 "resolvedType": {
                   "kind": "string",
-                  "typeName": "TxId"
+                  "typeName": "TxId",
+                  "nominal": true
                 }
               },
               {
                 "name": "amount",
                 "type": "AmountDecimal",
+                "enumValues": null,
+                "source": null,
                 "resolvedType": {
                   "kind": "decimal",
                   "typeName": "AmountDecimal",
@@ -609,10 +723,35 @@
     "readModels": [
       {
         "name": "bank-order-view",
+        "sourceAggregate": "FundOrder",
         "fields": [
+          {
+            "name": "principal",
+            "type": "PrincipalId",
+            "enumValues": null,
+            "source": "eventField:FundOrder.CashRequestSourceRecorded.principal",
+            "resolvedType": {
+              "kind": "string",
+              "typeName": "PrincipalId",
+              "nominal": true
+            }
+          },
+          {
+            "name": "clientRequestId",
+            "type": "ClientRequestId",
+            "enumValues": null,
+            "source": "eventField:FundOrder.CashRequestSourceRecorded.clientRequestId",
+            "resolvedType": {
+              "kind": "string",
+              "typeName": "ClientRequestId",
+              "nominal": true
+            }
+          },
           {
             "name": "paymentCompleted",
             "type": "Bool",
+            "enumValues": null,
+            "source": "derived:paymentOutcome-succeeded",
             "resolvedType": {
               "kind": "bool",
               "typeName": "Bool"
@@ -621,6 +760,8 @@
           {
             "name": "taFinalized",
             "type": "Bool",
+            "enumValues": null,
+            "source": "derived:taStatus-confirmed",
             "resolvedType": {
               "kind": "bool",
               "typeName": "Bool"
@@ -639,30 +780,41 @@
               {
                 "name": "principal",
                 "type": "PrincipalId",
+                "enumValues": null,
+                "source": null,
                 "resolvedType": {
                   "kind": "string",
-                  "typeName": "PrincipalId"
+                  "typeName": "PrincipalId",
+                  "nominal": true
                 }
               },
               {
                 "name": "clientRequestId",
                 "type": "ClientRequestId",
+                "enumValues": null,
+                "source": null,
                 "resolvedType": {
                   "kind": "string",
-                  "typeName": "ClientRequestId"
+                  "typeName": "ClientRequestId",
+                  "nominal": true
                 }
               },
               {
                 "name": "fundCode",
                 "type": "FundCode",
+                "enumValues": null,
+                "source": null,
                 "resolvedType": {
                   "kind": "string",
-                  "typeName": "FundCode"
+                  "typeName": "FundCode",
+                  "nominal": true
                 }
               },
               {
                 "name": "amount",
                 "type": "Money",
+                "enumValues": null,
+                "source": null,
                 "resolvedType": {
                   "kind": "record",
                   "typeName": "Money",
@@ -682,7 +834,30 @@
                 }
               }
             ],
-            "returns": "BankCashAcknowledgement"
+            "returns": "BankCashAcknowledgement",
+            "returnsResolvedType": {
+              "kind": "record",
+              "typeName": "BankCashAcknowledgement",
+              "fields": {
+                "replayed": {
+                  "kind": "bool",
+                  "typeName": "Bool"
+                },
+                "accepted": {
+                  "kind": "bool",
+                  "typeName": "Bool"
+                }
+              }
+            },
+            "callerKind": "human",
+            "authz": {
+              "mode": "static-roles",
+              "action": "bankwealth:BankCashSubmitPort:submit",
+              "scope": "tenant",
+              "allowedRoles": [
+                "investor"
+              ]
+            }
           }
         ],
         "callerContract": null
@@ -696,13 +871,29 @@
               {
                 "name": "orderId",
                 "type": "OrderId",
+                "enumValues": null,
+                "source": null,
                 "resolvedType": {
                   "kind": "string",
-                  "typeName": "OrderId"
+                  "typeName": "OrderId",
+                  "nominal": true
                 }
               }
             ],
-            "returns": "bank-order-view"
+            "returns": "bank-order-view",
+            "returnsResolvedType": {
+              "kind": "read-model",
+              "typeName": "bank-order-view"
+            },
+            "callerKind": "human",
+            "authz": {
+              "mode": "static-roles",
+              "action": "bankwealth:BankOrderQuery:get",
+              "scope": "tenant",
+              "allowedRoles": [
+                "investor"
+              ]
+            }
           }
         ],
         "callerContract": null
@@ -716,13 +907,40 @@
               {
                 "name": "orderId",
                 "type": "OrderId",
+                "enumValues": null,
+                "source": null,
                 "resolvedType": {
                   "kind": "string",
-                  "typeName": "OrderId"
+                  "typeName": "OrderId",
+                  "nominal": true
                 }
               }
             ],
-            "returns": "TaBridgeAcknowledgement"
+            "returns": "TaBridgeAcknowledgement",
+            "returnsResolvedType": {
+              "kind": "record",
+              "typeName": "TaBridgeAcknowledgement",
+              "fields": {
+                "state": {
+                  "kind": "string",
+                  "typeName": "String",
+                  "enumValues": [
+                    "confirmed",
+                    "refund_dispatched",
+                    "pending_reconcile"
+                  ]
+                }
+              }
+            },
+            "callerKind": "webhook",
+            "authz": {
+              "mode": "static-roles",
+              "action": "bankwealth:BankTaBridgePort:ingestOutcome",
+              "scope": "global",
+              "allowedRoles": [
+                "ta-bridge-service"
+              ]
+            }
           }
         ],
         "callerContract": null
@@ -794,19 +1012,30 @@
           {
             "name": "principal",
             "type": "PrincipalId",
+            "enumValues": null,
+            "source": null,
             "resolvedType": {
               "kind": "string",
-              "typeName": "PrincipalId"
+              "typeName": "PrincipalId",
+              "nominal": true
             }
           }
         ],
         "returns": "Bool",
+        "returnsResolvedType": {
+          "kind": "bool",
+          "typeName": "Bool"
+        },
         "ownerPort": "BankCashSubmitPort"
       },
       {
         "name": "originAndCsrfValid",
         "params": [],
         "returns": "Bool",
+        "returnsResolvedType": {
+          "kind": "bool",
+          "typeName": "Bool"
+        },
         "ownerPort": "BankCashSubmitPort"
       },
       {
@@ -815,13 +1044,20 @@
           {
             "name": "fundCode",
             "type": "FundCode",
+            "enumValues": null,
+            "source": null,
             "resolvedType": {
               "kind": "string",
-              "typeName": "FundCode"
+              "typeName": "FundCode",
+              "nominal": true
             }
           }
         ],
         "returns": "Bool",
+        "returnsResolvedType": {
+          "kind": "bool",
+          "typeName": "Bool"
+        },
         "ownerPort": "BankCashSubmitPort"
       },
       {
@@ -830,21 +1066,31 @@
           {
             "name": "principal",
             "type": "PrincipalId",
+            "enumValues": null,
+            "source": null,
             "resolvedType": {
               "kind": "string",
-              "typeName": "PrincipalId"
+              "typeName": "PrincipalId",
+              "nominal": true
             }
           },
           {
             "name": "clientRequestId",
             "type": "ClientRequestId",
+            "enumValues": null,
+            "source": null,
             "resolvedType": {
               "kind": "string",
-              "typeName": "ClientRequestId"
+              "typeName": "ClientRequestId",
+              "nominal": true
             }
           }
         ],
         "returns": "Bool",
+        "returnsResolvedType": {
+          "kind": "bool",
+          "typeName": "Bool"
+        },
         "ownerPort": "BankCashSubmitPort"
       },
       {
@@ -853,30 +1099,41 @@
           {
             "name": "principal",
             "type": "PrincipalId",
+            "enumValues": null,
+            "source": null,
             "resolvedType": {
               "kind": "string",
-              "typeName": "PrincipalId"
+              "typeName": "PrincipalId",
+              "nominal": true
             }
           },
           {
             "name": "clientRequestId",
             "type": "ClientRequestId",
+            "enumValues": null,
+            "source": null,
             "resolvedType": {
               "kind": "string",
-              "typeName": "ClientRequestId"
+              "typeName": "ClientRequestId",
+              "nominal": true
             }
           },
           {
             "name": "fundCode",
             "type": "FundCode",
+            "enumValues": null,
+            "source": null,
             "resolvedType": {
               "kind": "string",
-              "typeName": "FundCode"
+              "typeName": "FundCode",
+              "nominal": true
             }
           },
           {
             "name": "amount",
             "type": "Money",
+            "enumValues": null,
+            "source": null,
             "resolvedType": {
               "kind": "record",
               "typeName": "Money",
@@ -897,6 +1154,10 @@
           }
         ],
         "returns": "Bool",
+        "returnsResolvedType": {
+          "kind": "bool",
+          "typeName": "Bool"
+        },
         "ownerPort": "BankCashSubmitPort"
       },
       {
@@ -905,13 +1166,20 @@
           {
             "name": "orderId",
             "type": "OrderId",
+            "enumValues": null,
+            "source": null,
             "resolvedType": {
               "kind": "string",
-              "typeName": "OrderId"
+              "typeName": "OrderId",
+              "nominal": true
             }
           }
         ],
         "returns": "Bool",
+        "returnsResolvedType": {
+          "kind": "bool",
+          "typeName": "Bool"
+        },
         "ownerPort": "BankTaBridgePort"
       },
       {
@@ -920,13 +1188,20 @@
           {
             "name": "orderId",
             "type": "OrderId",
+            "enumValues": null,
+            "source": null,
             "resolvedType": {
               "kind": "string",
-              "typeName": "OrderId"
+              "typeName": "OrderId",
+              "nominal": true
             }
           }
         ],
         "returns": "Bool",
+        "returnsResolvedType": {
+          "kind": "bool",
+          "typeName": "Bool"
+        },
         "ownerPort": "BankTaBridgePort"
       },
       {
@@ -935,13 +1210,20 @@
           {
             "name": "orderId",
             "type": "OrderId",
+            "enumValues": null,
+            "source": null,
             "resolvedType": {
               "kind": "string",
-              "typeName": "OrderId"
+              "typeName": "OrderId",
+              "nominal": true
             }
           }
         ],
         "returns": "Bool",
+        "returnsResolvedType": {
+          "kind": "bool",
+          "typeName": "Bool"
+        },
         "ownerPort": "BankTaBridgePort"
       },
       {
@@ -950,13 +1232,20 @@
           {
             "name": "orderId",
             "type": "OrderId",
+            "enumValues": null,
+            "source": null,
             "resolvedType": {
               "kind": "string",
-              "typeName": "OrderId"
+              "typeName": "OrderId",
+              "nominal": true
             }
           }
         ],
         "returns": "Bool",
+        "returnsResolvedType": {
+          "kind": "bool",
+          "typeName": "Bool"
+        },
         "ownerPort": "BankTaBridgePort"
       },
       {
@@ -965,13 +1254,20 @@
           {
             "name": "orderId",
             "type": "OrderId",
+            "enumValues": null,
+            "source": null,
             "resolvedType": {
               "kind": "string",
-              "typeName": "OrderId"
+              "typeName": "OrderId",
+              "nominal": true
             }
           }
         ],
         "returns": "Bool",
+        "returnsResolvedType": {
+          "kind": "bool",
+          "typeName": "Bool"
+        },
         "ownerPort": "BankTaBridgePort"
       }
     ]
@@ -3659,12 +3955,34 @@
               "eventField": "txId",
               "source": "@PROPAGATED",
               "paramName": "txId",
+              "stateField": null,
+              "sourceType": {
+                "kind": "string",
+                "typeName": "TxId",
+                "nominal": true
+              },
+              "eventFieldType": {
+                "kind": "string",
+                "typeName": "TxId",
+                "nominal": true
+              },
               "type": "TxId"
             },
             {
               "eventField": "amount",
               "source": "@PROPAGATED",
               "paramName": "amount",
+              "stateField": null,
+              "sourceType": {
+                "kind": "decimal",
+                "typeName": "AmountDecimal",
+                "scale": 2
+              },
+              "eventFieldType": {
+                "kind": "decimal",
+                "typeName": "AmountDecimal",
+                "scale": 2
+              },
               "type": "AmountDecimal"
             }
           ]
@@ -4354,12 +4672,32 @@
               "eventField": "shares",
               "source": "@PROPAGATED",
               "paramName": "shares",
+              "stateField": null,
+              "sourceType": {
+                "kind": "int",
+                "typeName": "Int"
+              },
+              "eventFieldType": {
+                "kind": "int",
+                "typeName": "Int"
+              },
               "type": "Int"
             },
             {
               "eventField": "nav",
               "source": "@PROPAGATED",
               "paramName": "nav",
+              "stateField": null,
+              "sourceType": {
+                "kind": "decimal",
+                "typeName": "NavDecimal",
+                "scale": 4
+              },
+              "eventFieldType": {
+                "kind": "decimal",
+                "typeName": "NavDecimal",
+                "scale": 4
+              },
               "type": "NavDecimal"
             }
           ]
@@ -5071,12 +5409,34 @@
               "eventField": "accountId",
               "source": "@PROPAGATED",
               "paramName": "accountId",
+              "stateField": null,
+              "sourceType": {
+                "kind": "string",
+                "typeName": "AccountId",
+                "nominal": true
+              },
+              "eventFieldType": {
+                "kind": "string",
+                "typeName": "AccountId",
+                "nominal": true
+              },
               "type": "AccountId"
             },
             {
               "eventField": "amount",
               "source": "@PROPAGATED",
               "paramName": "amount",
+              "stateField": null,
+              "sourceType": {
+                "kind": "decimal",
+                "typeName": "AmountDecimal",
+                "scale": 2
+              },
+              "eventFieldType": {
+                "kind": "decimal",
+                "typeName": "AmountDecimal",
+                "scale": 2
+              },
               "type": "AmountDecimal"
             }
           ]
@@ -5596,6 +5956,217 @@
       ]
     }
   ],
+  "lineage": {
+    "schemaVersion": "co-arising.lineage/v2",
+    "dispatches": [
+      {
+        "story": "CashFundPurchase",
+        "ruleId": "US-CFP-03",
+        "trigger": "BankCashSubmitPort.submit",
+        "target": "FundOrder.RecordCashRequestSource",
+        "bindings": [
+          {
+            "param": "principal",
+            "source": "@PROPAGATED",
+            "sourceType": "PrincipalId",
+            "targetType": "PrincipalId"
+          },
+          {
+            "param": "clientRequestId",
+            "source": "@PROPAGATED",
+            "sourceType": "ClientRequestId",
+            "targetType": "ClientRequestId"
+          },
+          {
+            "param": "fundCode",
+            "source": "@PROPAGATED",
+            "sourceType": "FundCode",
+            "targetType": "FundCode"
+          },
+          {
+            "param": "amount",
+            "source": "@PROPAGATED",
+            "sourceType": "Money",
+            "targetType": "Money"
+          }
+        ]
+      },
+      {
+        "story": "CashFundPurchase",
+        "ruleId": "US-CFP-03",
+        "trigger": "BankCashSubmitPort.submit",
+        "target": "FundOrder.RequestFundPurchaseSettlement",
+        "bindings": [
+          {
+            "param": "principal",
+            "source": "@PROPAGATED",
+            "sourceType": "PrincipalId",
+            "targetType": "PrincipalId"
+          },
+          {
+            "param": "clientRequestId",
+            "source": "@PROPAGATED",
+            "sourceType": "ClientRequestId",
+            "targetType": "ClientRequestId"
+          },
+          {
+            "param": "fundCode",
+            "source": "@PROPAGATED",
+            "sourceType": "FundCode",
+            "targetType": "FundCode"
+          },
+          {
+            "param": "amount",
+            "source": "@PROPAGATED",
+            "sourceType": "Money",
+            "targetType": "Money"
+          }
+        ]
+      },
+      {
+        "story": "TaBridgeSettlement",
+        "ruleId": "TA-BR-03",
+        "trigger": "BankTaBridgePort.ingestOutcome",
+        "target": "FundOrder.RecordFundTAConfirmed",
+        "bindings": [
+          {
+            "param": "shares",
+            "source": "unbound",
+            "targetType": "Int"
+          },
+          {
+            "param": "nav",
+            "source": "unbound",
+            "targetType": "NavDecimal"
+          }
+        ]
+      },
+      {
+        "story": "TaBridgeSettlement",
+        "ruleId": "TA-BR-04",
+        "trigger": "BankTaBridgePort.ingestOutcome",
+        "target": "FundOrder.RequestIndependentRefund",
+        "bindings": [
+          {
+            "param": "orderId",
+            "source": "@PROPAGATED",
+            "sourceType": "OrderId",
+            "targetType": "OrderId"
+          }
+        ]
+      }
+    ],
+    "readModels": [
+      {
+        "name": "bank-order-view",
+        "sourceAggregate": "FundOrder",
+        "sourceEvents": [],
+        "fields": [
+          {
+            "name": "principal",
+            "type": "PrincipalId",
+            "source": "eventField:FundOrder.CashRequestSourceRecorded.principal"
+          },
+          {
+            "name": "clientRequestId",
+            "type": "ClientRequestId",
+            "source": "eventField:FundOrder.CashRequestSourceRecorded.clientRequestId"
+          },
+          {
+            "name": "paymentCompleted",
+            "type": "Bool",
+            "source": "derived:paymentOutcome-succeeded"
+          },
+          {
+            "name": "taFinalized",
+            "type": "Bool",
+            "source": "derived:taStatus-confirmed"
+          }
+        ]
+      }
+    ],
+    "authzMatrix": [
+      {
+        "operation": "BankCashSubmitPort.submit",
+        "callerKind": "human",
+        "mode": "static-roles",
+        "action": "bankwealth:BankCashSubmitPort:submit",
+        "scope": "tenant",
+        "allowedRoles": [
+          "investor"
+        ],
+        "policyRef": null,
+        "contextParams": []
+      },
+      {
+        "operation": "BankOrderQuery.get",
+        "callerKind": "human",
+        "mode": "static-roles",
+        "action": "bankwealth:BankOrderQuery:get",
+        "scope": "tenant",
+        "allowedRoles": [
+          "investor"
+        ],
+        "policyRef": null,
+        "contextParams": []
+      },
+      {
+        "operation": "BankTaBridgePort.ingestOutcome",
+        "callerKind": "webhook",
+        "mode": "static-roles",
+        "action": "bankwealth:BankTaBridgePort:ingestOutcome",
+        "scope": "global",
+        "allowedRoles": [
+          "ta-bridge-service"
+        ],
+        "policyRef": null,
+        "contextParams": []
+      }
+    ],
+    "coverage": {
+      "unspecifiedCommands": [
+        "FundOrder.RecordCashRequestSource",
+        "FundOrder.RequestFundPurchaseSettlement",
+        "FundOrder.RequestIndependentRefund"
+      ],
+      "unemittedEvents": [
+        "FundOrder.CashRequestSourceRecorded",
+        "FundOrder.FundPurchaseSettlementRequested",
+        "FundOrder.IndependentRefundRequested"
+      ],
+      "unusedProduces": [],
+      "unconsumedEventFields": [
+        "FundOrder.FundPurchaseSettlementRequested.principal",
+        "FundOrder.FundPurchaseSettlementRequested.clientRequestId",
+        "FundOrder.IndependentRefundRequested.orderId"
+      ],
+      "unconsumedNumericEventFields": [],
+      "deadStateFields": [],
+      "writeOnlyStateFields": [],
+      "unwrittenStateFields": [
+        "FundQuota.minPurchase",
+        "FundQuota.maxSingleLimit",
+        "FundQuota.fundTotalCap",
+        "FundQuota.perAccountCap",
+        "FundOrder.netAmount",
+        "FundOrder.paymentOutcome"
+      ],
+      "unsourcedReadModelFields": [],
+      "undeclaredAuthzOperations": []
+    },
+    "waivers": [
+      {
+        "target": "FundOrder.FundTASharesConfirmed.shares",
+        "kind": "event-field",
+        "reason": "audit-only"
+      },
+      {
+        "target": "FundOrder.FundTASharesConfirmed.nav",
+        "kind": "event-field",
+        "reason": "audit-only"
+      }
+    ]
+  },
   "clozeSlots": [
     {
       "slotId": "cash-fund-purchase",

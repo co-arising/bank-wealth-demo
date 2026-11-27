@@ -64,9 +64,9 @@
     },
     {
       "path": "scala/example/bankwealth/v2/interfaces/http/InterfacesHttpSpec.scala",
-      "sha256": "afd1d1d551645c49b2ce59fb95518bbc528763dc3dc3206f84fa08445c14e1f5",
+      "sha256": "42a699f34775e8cfd3145f95fa92af3e5fe353c6791a9e0cf16b6ec0a2d542a1",
       "sourceFile": "interfaces/http",
-      "sourceSha256": "d07707b84cc37fa766fa7715c962b0b4fbfdd0b5410d0fd638df99748eb1dd9d"
+      "sourceSha256": "e988b3ce14a251c4bde60d36369b9dba38851b7debccd9ca131961af535067c3"
     },
     {
       "path": "ts/cash-fund-purchase.ears.spec.ts",
@@ -94,9 +94,9 @@
     },
     {
       "path": "ts/interfaces-http.ears.spec.ts",
-      "sha256": "67a9d11ba71883aefc18a810fb1cafe51eb5af38b62a87c1a2b879b012329c0c",
+      "sha256": "e443a218d78ac28b44c8786215e5bec2371c284470b6e5b4eb4d2de9e5fc74e8",
       "sourceFile": "interfaces/http",
-      "sourceSha256": "d07707b84cc37fa766fa7715c962b0b4fbfdd0b5410d0fd638df99748eb1dd9d"
+      "sourceSha256": "e988b3ce14a251c4bde60d36369b9dba38851b7debccd9ca131961af535067c3"
     },
     {
       "path": "ts/ta-bridge-settlement.ears.spec.ts",

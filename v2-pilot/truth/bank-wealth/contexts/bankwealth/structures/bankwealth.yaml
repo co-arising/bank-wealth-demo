@@ -1,6 +1,10 @@
 system: bank-wealth
 context: bankwealth
 
+roles:
+  - name: investor
+  - name: ta-bridge-service
+
 exactTypes:
   - name: AmountDecimal
     form: decimal
@@ -28,14 +32,30 @@ valueObjects:
 
 readModels:
   - name: bank-order-view
+    sourceAggregate: FundOrder
     fields:
-      - paymentCompleted: Bool
-      - taFinalized: Bool
+      - name: principal
+        type: PrincipalId
+        source: eventField:FundOrder.CashRequestSourceRecorded.principal
+      - name: clientRequestId
+        type: ClientRequestId
+        source: eventField:FundOrder.CashRequestSourceRecorded.clientRequestId
+      - name: paymentCompleted
+        type: Bool
+        source: derived:paymentOutcome-succeeded
+      - name: taFinalized
+        type: Bool
+        source: derived:taStatus-confirmed
 
 ports:
   - name: BankCashSubmitPort
     operations:
       - name: submit
+        callerKind: human
+        authz:
+          mode: static-roles
+          scope: tenant
+          allowedRoles: [investor]
         parameters:
           - principal: PrincipalId
           - clientRequestId: ClientRequestId
@@ -45,12 +65,22 @@ ports:
   - name: BankOrderQuery
     operations:
       - name: get
+        callerKind: human
+        authz:
+          mode: static-roles
+          scope: tenant
+          allowedRoles: [investor]
         parameters:
           - orderId: OrderId
         returns: bank-order-view
   - name: BankTaBridgePort
     operations:
       - name: ingestOutcome
+        callerKind: webhook
+        authz:
+          mode: static-roles
+          scope: global
+          allowedRoles: [ta-bridge-service]
         parameters:
           - orderId: OrderId
         returns: TaBridgeAcknowledgement
@@ -173,8 +203,12 @@ aggregates:
           - clientRequestId: ClientRequestId
       - name: FundTASharesConfirmed
         fields:
-          - shares: Int
-          - nav: NavDecimal
+          - name: shares
+            type: Int
+            waiveLineage: audit-only
+          - name: nav
+            type: NavDecimal
+            waiveLineage: audit-only
       - name: IndependentRefundRequested
         fields:
           - orderId: OrderId
