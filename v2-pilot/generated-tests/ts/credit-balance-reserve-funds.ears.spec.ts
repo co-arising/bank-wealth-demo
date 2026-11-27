@@ -85,6 +85,9 @@ test("[BAL_FUNDS_RESERVED] (primary) ReserveFunds -> emit FundsReserved", () => 
     const nextState = replayCreditBalance(initialState, outcome.events);
     const axiomResult = checkCreditBalanceAxioms(nextState);
     assert.equal(axiomResult.ok, true, `axiom violation: ${axiomResult.violated.join(", ")}`);
+    assert.deepEqual(nextState.availableAmount, "0.00");
+    assert.deepEqual(nextState.reservedTotal, "0.01");
+    assert.deepEqual(nextState.reservedByTx[""], "0.01");
   }
 });
 
@@ -99,5 +102,8 @@ test("[BAL_FUNDS_RESERVED] (secondary) ReserveFunds -> emit FundsReserved", () =
     const nextState = replayCreditBalance(initialState, outcome.events);
     const axiomResult = checkCreditBalanceAxioms(nextState);
     assert.equal(axiomResult.ok, true, `axiom violation: ${axiomResult.violated.join(", ")}`);
+    assert.deepEqual(nextState.availableAmount, "0.00");
+    assert.deepEqual(nextState.reservedTotal, "0.03");
+    assert.deepEqual(nextState.reservedByTx[""], "0.02");
   }
 });

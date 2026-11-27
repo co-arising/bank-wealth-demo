@@ -107,6 +107,8 @@ test("[QUOTA_RESERVED] (primary) ReserveSubscriptionQuota -> emit SubscriptionQu
     const nextState = replayFundQuota(initialState, outcome.events);
     const axiomResult = checkFundQuotaAxioms(nextState);
     assert.equal(axiomResult.ok, true, `axiom violation: ${axiomResult.violated.join(", ")}`);
+    assert.deepEqual(nextState.fundTotalUsed, "0.00");
+    assert.deepEqual(nextState.accountUsed["id_2"], "0.00");
   }
 });
 
@@ -121,5 +123,7 @@ test("[QUOTA_RESERVED] (secondary) ReserveSubscriptionQuota -> emit Subscription
     const nextState = replayFundQuota(initialState, outcome.events);
     const axiomResult = checkFundQuotaAxioms(nextState);
     assert.equal(axiomResult.ok, true, `axiom violation: ${axiomResult.violated.join(", ")}`);
+    assert.deepEqual(nextState.fundTotalUsed, "0.02");
+    assert.deepEqual(nextState.accountUsed["id_2"], "0.01");
   }
 });

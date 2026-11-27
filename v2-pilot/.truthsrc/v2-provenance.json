@@ -3,24 +3,22 @@
   "passed": true,
   "strict": true,
   "canonicalSha256": "d07707b84cc37fa766fa7715c962b0b4fbfdd0b5410d0fd638df99748eb1dd9d",
+  "expectedClozeRed": {
+    "isExpectedTddRed": false,
+    "unimplementedCount": 0,
+    "slots": []
+  },
   "manifestCheck": {
     "passed": true,
     "errors": [],
     "verifiedFiles": 17,
-    "manifestSha256": "54bceab4f333bfb04f41906332c099362cc9ef32314adaac6720a5d6e1ece334"
+    "manifestSha256": "680ace7300a9ebefe34e93dca454adbc5366995bf7c868c62e162121db29265d"
   },
   "tsCheck": {
-    "skipped": false,
+    "skipped": true,
     "passed": true,
-    "exitCode": 0,
-    "specFiles": [
-      "generated-tests/ts/cash-fund-purchase.ears.spec.ts",
-      "generated-tests/ts/credit-balance-reserve-funds.ears.spec.ts",
-      "generated-tests/ts/fund-order-confirm-tashares.ears.spec.ts",
-      "generated-tests/ts/fund-quota-reserve-subscription-quota.ears.spec.ts",
-      "generated-tests/ts/interfaces-http.ears.spec.ts",
-      "generated-tests/ts/ta-bridge-settlement.ears.spec.ts"
-    ],
+    "exitCode": null,
+    "specFiles": [],
     "failedSpecIds": []
   },
   "scalaCheck": {
@@ -32,14 +30,15 @@
     "classpathSource": "cache:/Users/zhongdj/Library/Caches/Coursier/v1/https/repo1.maven.org/maven2",
     "exitCode": 0,
     "suiteClasses": [
-      "example.bankwealth.v2.CashFundPurchaseEarsSpec",
-      "example.bankwealth.v2.CreditBalanceReserveFundsEarsSpec",
-      "example.bankwealth.v2.FundOrderConfirmTASharesEarsSpec",
-      "example.bankwealth.v2.FundQuotaReserveSubscriptionQuotaEarsSpec",
-      "example.bankwealth.v2.InterfacesHttpSpec",
-      "example.bankwealth.v2.TaBridgeSettlementEarsSpec"
+      "example.bankwealth.v2.application.services.CashFundPurchaseEarsSpec",
+      "example.bankwealth.v2.application.services.TaBridgeSettlementEarsSpec",
+      "example.bankwealth.v2.domain.invariants.CreditBalanceReserveFundsEarsSpec",
+      "example.bankwealth.v2.domain.invariants.FundOrderConfirmTASharesEarsSpec",
+      "example.bankwealth.v2.domain.invariants.FundQuotaReserveSubscriptionQuotaEarsSpec",
+      "example.bankwealth.v2.interfaces.http.InterfacesHttpSpec"
     ],
-    "failedSpecIds": []
+    "failedSpecIds": [],
+    "sbtRuntimeFilesCount": 41
   },
   "provenanceCheck": {
     "passed": true,
@@ -69,25 +68,64 @@
       },
       {
         "slotId": "cash-fund-purchase",
-        "file": "handwritten/scala/example/bankwealth/v2/CashFundPurchaseCloze.scala",
-        "unimplemented": false
-      },
-      {
-        "slotId": "fund-order-confirm-tashares",
-        "file": "handwritten/scala/example/bankwealth/v2/FundOrderConfirmTASharesCloze.scala",
+        "file": "handwritten/scala/example/bankwealth/v2/application/services/CashFundPurchaseImpl.scala",
         "unimplemented": false
       },
       {
         "slotId": "ta-bridge-settlement",
-        "file": "handwritten/scala/example/bankwealth/v2/TaBridgeSettlementCloze.scala",
+        "file": "handwritten/scala/example/bankwealth/v2/application/services/TaBridgeSettlementImpl.scala",
+        "unimplemented": false
+      },
+      {
+        "slotId": "fund-order-confirm-tashares",
+        "file": "handwritten/scala/example/bankwealth/v2/domain/services/impl/FundOrderConfirmTASharesImpl.scala",
         "unimplemented": false
       }
     ]
   },
   "onionCheck": {
     "passed": true,
-    "checkedCount": 30,
+    "checkedCount": 88,
     "violations": []
   },
-  "verifiedAt": "2026-11-26T09:59:02.717Z"
+  "testabilityCheck": {
+    "passed": true,
+    "checkedCount": 14,
+    "violations": []
+  },
+  "coverageCheck": {
+    "passed": true,
+    "minLineCoverage": null,
+    "minBranchCoverage": null,
+    "tsLinePct": null,
+    "tsBranchPct": null,
+    "scalaStatementPct": null,
+    "scalaBranchPct": null,
+    "scoveragePath": null,
+    "sbtCoverageRun": null,
+    "errors": []
+  },
+  "mutationCheck": {
+    "enabled": true,
+    "passed": true,
+    "minKillRate": 100,
+    "ts": {
+      "skipped": true,
+      "passed": true,
+      "total": 0,
+      "killed": 0,
+      "survived": [],
+      "killRate": 100
+    },
+    "scala": {
+      "skipped": false,
+      "passed": true,
+      "total": 7,
+      "killed": 7,
+      "survived": [],
+      "killRate": 100
+    },
+    "errors": []
+  },
+  "verifiedAt": "2026-11-27T05:45:35.937Z"
 }

@@ -33,40 +33,40 @@
       "sourceSha256": "cc348b961d4970a106bf7af29984ea1b43246e79d5bbdb59085b10247f3571cc"
     },
     {
-      "path": "scala/example/bankwealth/v2/CashFundPurchaseEarsSpec.scala",
-      "sha256": "ec4acd9c6939691fb9cff97fafb4312d4c702b3d575916644b1e0c55d4d098f6",
+      "path": "scala/example/bankwealth/v2/application/services/CashFundPurchaseEarsSpec.scala",
+      "sha256": "90dd2e4690b255d65f4354e974dc324006459b2cbf70f9d350d138e934782b13",
       "sourceFile": "cash-fund-purchase.story.ears",
       "sourceSha256": "b5628bbaabd7037df8435d400c454b1ce8f007af14956b2ee46c562919d7cc41"
     },
     {
-      "path": "scala/example/bankwealth/v2/CreditBalanceReserveFundsEarsSpec.scala",
-      "sha256": "e99c26e383322ac3e305734c26e3466fa2c346d09ee21504f464a759e4411070",
+      "path": "scala/example/bankwealth/v2/application/services/TaBridgeSettlementEarsSpec.scala",
+      "sha256": "c8974bca2cfbe634fbc4076f4164fef67dd9becbd2b0cf8b55663f42fc1bace8",
+      "sourceFile": "ta-bridge-settlement.integration.ears",
+      "sourceSha256": "cc348b961d4970a106bf7af29984ea1b43246e79d5bbdb59085b10247f3571cc"
+    },
+    {
+      "path": "scala/example/bankwealth/v2/domain/invariants/CreditBalanceReserveFundsEarsSpec.scala",
+      "sha256": "1fe360c6b3b549d3272c00fa450891b05d49e0c1c7e5857440b37dc4203e0124",
       "sourceFile": "credit-balance-reserve.ears",
       "sourceSha256": "4a27de06154edb214dccdb4c71cf2c9d0bbd37b1639f267417d115fa23d29987"
     },
     {
-      "path": "scala/example/bankwealth/v2/FundOrderConfirmTASharesEarsSpec.scala",
-      "sha256": "b1f6b39b6b77d9a001f924cdb73e9deefb2985042d1d7a7e10c0a5d22647f6a1",
+      "path": "scala/example/bankwealth/v2/domain/invariants/FundOrderConfirmTASharesEarsSpec.scala",
+      "sha256": "c1b08431f1214b25cbf657c8f6a684ffe0b0df35eee1f6082090dd5ee802779a",
       "sourceFile": "fund-order-confirm-ta-shares.ears",
       "sourceSha256": "a55b5c5edf689d583eb7828f71b641c406dd2de053ff089b8a0b8447c058c809"
     },
     {
-      "path": "scala/example/bankwealth/v2/FundQuotaReserveSubscriptionQuotaEarsSpec.scala",
-      "sha256": "ea08093c08ad48c2f04ede1e3f03017f593c76d19eabd81e33a3fd24392024c9",
+      "path": "scala/example/bankwealth/v2/domain/invariants/FundQuotaReserveSubscriptionQuotaEarsSpec.scala",
+      "sha256": "b6dc7acf09c3350335c6bc76a59a104ef6ee474bf50c9d6a848183bf5f26e672",
       "sourceFile": "fund-quota-reserve.ears",
       "sourceSha256": "61537682db1ba6f366b990ce0f5b318be3dab788013c007d2f11dbf1d9539198"
     },
     {
-      "path": "scala/example/bankwealth/v2/InterfacesHttpSpec.scala",
-      "sha256": "cd1fa4f72010fd1b7f1ff58f0b38b8d2bee7ae5674d85dd46aded46c549095d6",
+      "path": "scala/example/bankwealth/v2/interfaces/http/InterfacesHttpSpec.scala",
+      "sha256": "afd1d1d551645c49b2ce59fb95518bbc528763dc3dc3206f84fa08445c14e1f5",
       "sourceFile": "interfaces/http",
       "sourceSha256": "d07707b84cc37fa766fa7715c962b0b4fbfdd0b5410d0fd638df99748eb1dd9d"
-    },
-    {
-      "path": "scala/example/bankwealth/v2/TaBridgeSettlementEarsSpec.scala",
-      "sha256": "c108a634ef1575f30ccb51fdb32627c13c94cf66d7b89e0fe51d7f5c62780d3a",
-      "sourceFile": "ta-bridge-settlement.integration.ears",
-      "sourceSha256": "cc348b961d4970a106bf7af29984ea1b43246e79d5bbdb59085b10247f3571cc"
     },
     {
       "path": "ts/cash-fund-purchase.ears.spec.ts",
@@ -76,25 +76,25 @@
     },
     {
       "path": "ts/credit-balance-reserve-funds.ears.spec.ts",
-      "sha256": "053607e52d970fa94273b6cdb85ff1f4aaf0abc009b58c7dbd02d774ad254e22",
+      "sha256": "eb0358c8d42ebd4322226da0848ef5b78e40bd0c0beda0c58e02a618d52e536b",
       "sourceFile": "credit-balance-reserve.ears",
       "sourceSha256": "4a27de06154edb214dccdb4c71cf2c9d0bbd37b1639f267417d115fa23d29987"
     },
     {
       "path": "ts/fund-order-confirm-tashares.ears.spec.ts",
-      "sha256": "c23cea49513453a3ca61d84f12fc79d82175cf7e9e635cab5226a332d0abc6c7",
+      "sha256": "089d25d7afadc054a1c6dd6e8f401980ad5638d55d4ef86eb06222b366ffc043",
       "sourceFile": "fund-order-confirm-ta-shares.ears",
       "sourceSha256": "a55b5c5edf689d583eb7828f71b641c406dd2de053ff089b8a0b8447c058c809"
     },
     {
       "path": "ts/fund-quota-reserve-subscription-quota.ears.spec.ts",
-      "sha256": "4e636e7e9f75a4667b0af44de14190be2051fb66d78164062c1bf8cd5aaee5a8",
+      "sha256": "abb83ef071c76d51b1aadc67c1f83ffc8a9075d545a8d94fdcfc7e458ab12eca",
       "sourceFile": "fund-quota-reserve.ears",
       "sourceSha256": "61537682db1ba6f366b990ce0f5b318be3dab788013c007d2f11dbf1d9539198"
     },
     {
       "path": "ts/interfaces-http.ears.spec.ts",
-      "sha256": "bd1942c3fe8161af9bb18e908cd6dcb63f923aebdb90ef48d877b97eda1119b0",
+      "sha256": "67a9d11ba71883aefc18a810fb1cafe51eb5af38b62a87c1a2b879b012329c0c",
       "sourceFile": "interfaces/http",
       "sourceSha256": "d07707b84cc37fa766fa7715c962b0b4fbfdd0b5410d0fd638df99748eb1dd9d"
     },

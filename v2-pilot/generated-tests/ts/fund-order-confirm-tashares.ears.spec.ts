@@ -130,7 +130,7 @@ test("[TA_CONFIRMED] (primary) RecordFundTAConfirmed -> transition -> confirmed 
     const nextState = replayFundOrder(initialState, outcome.events);
     const axiomResult = checkFundOrderAxioms(nextState);
     assert.equal(axiomResult.ok, true, `axiom violation: ${axiomResult.violated.join(", ")}`);
-    assert.equal(nextState.taStatus, "confirmed");
+    assert.deepEqual(nextState.taStatus, "confirmed");
   }
 });
 
@@ -145,6 +145,6 @@ test("[TA_CONFIRMED] (secondary) RecordFundTAConfirmed -> transition -> confirme
     const nextState = replayFundOrder(initialState, outcome.events);
     const axiomResult = checkFundOrderAxioms(nextState);
     assert.equal(axiomResult.ok, true, `axiom violation: ${axiomResult.violated.join(", ")}`);
-    assert.equal(nextState.taStatus, "confirmed");
+    assert.deepEqual(nextState.taStatus, "confirmed");
   }
 });
