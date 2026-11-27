@@ -46,7 +46,7 @@
     },
     {
       "path": "scala/example/bankwealth/v2/domain/invariants/CreditBalanceReserveFundsEarsSpec.scala",
-      "sha256": "1fe360c6b3b549d3272c00fa450891b05d49e0c1c7e5857440b37dc4203e0124",
+      "sha256": "4d35db056e5eefdf42008b5e702f3b31740329f45fc6c50ff580d16bdcb37eac",
       "sourceFile": "credit-balance-reserve.ears",
       "sourceSha256": "4a27de06154edb214dccdb4c71cf2c9d0bbd37b1639f267417d115fa23d29987"
     },
@@ -58,7 +58,7 @@
     },
     {
       "path": "scala/example/bankwealth/v2/domain/invariants/FundQuotaReserveSubscriptionQuotaEarsSpec.scala",
-      "sha256": "b6dc7acf09c3350335c6bc76a59a104ef6ee474bf50c9d6a848183bf5f26e672",
+      "sha256": "6477162dd1660800c63f63e4bf277067d89da6fe68b66d5ac8f4a4455bde40ec",
       "sourceFile": "fund-quota-reserve.ears",
       "sourceSha256": "61537682db1ba6f366b990ce0f5b318be3dab788013c007d2f11dbf1d9539198"
     },

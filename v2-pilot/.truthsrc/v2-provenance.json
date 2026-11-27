@@ -12,7 +12,7 @@
     "passed": true,
     "errors": [],
     "verifiedFiles": 17,
-    "manifestSha256": "83728440ea7ecf7865c118a8301b9a8c922d3eda1bb6a7959e988b92862c2600"
+    "manifestSha256": "bb2353564f4d1ea7eb16fea18daa32354284071fe3c2b1f1260440cba74a17ab"
   },
   "tsCheck": {
     "skipped": false,
@@ -50,7 +50,7 @@
   "provenanceCheck": {
     "passed": true,
     "errors": [],
-    "provenanceIdCount": 33,
+    "provenanceIdCount": 35,
     "specAnchorCount": 47,
     "clozeSlots": [
       {
@@ -92,12 +92,12 @@
   },
   "onionCheck": {
     "passed": true,
-    "checkedCount": 121,
+    "checkedCount": 120,
     "violations": []
   },
   "testabilityCheck": {
     "passed": true,
-    "checkedCount": 14,
+    "checkedCount": 22,
     "violations": []
   },
   "coverageCheck": {
@@ -134,5 +134,5 @@
     },
     "errors": []
   },
-  "verifiedAt": "2026-11-27T06:54:06.297Z"
+  "verifiedAt": "2026-11-27T07:55:22.370Z"
 }

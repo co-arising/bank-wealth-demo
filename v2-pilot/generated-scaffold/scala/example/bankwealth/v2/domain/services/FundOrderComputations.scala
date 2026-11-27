@@ -2,9 +2,14 @@
 // @canonical-v2 e988b3ce14a251c4bde60d36369b9dba38851b7debccd9ca131961af535067c3
 package example.bankwealth.v2.domain.services
 
-import net.imadz.common.CommonTypes.DomainService
+import example.bankwealth.v2.domain.entities.FundOrderEntity.{Event, State}
+import example.bankwealth.v2.domain.invariants.params.FundOrderRuleParams._
+import net.imadz.common.CommonTypes.{DomainService, iMadzError}
 
-trait FundOrderComputations extends DomainService
-object FundOrderComputations {
-  val Noop: FundOrderComputations = new FundOrderComputations {}
+// Non-deterministic / L2 domain computation port (bound to FundOrderComputationsImpl in DI).
+trait FundOrderComputations extends DomainService {
+  def recordCashRequestSource(state: State, p: RecordCashRequestSourceParams): Either[iMadzError, List[Event]]
+  def requestFundPurchaseSettlement(state: State, p: RequestFundPurchaseSettlementParams): Either[iMadzError, List[Event]]
+  def recordFundTAConfirmed(state: State, p: RecordFundTAConfirmedParams): Either[iMadzError, List[Event]]
+  def requestIndependentRefund(state: State, p: RequestIndependentRefundParams): Either[iMadzError, List[Event]]
 }
