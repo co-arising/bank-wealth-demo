@@ -3,7 +3,12 @@
 // @knowledge source:bank-wealth/bankwealth#/service/bindings
 package example.bankwealth.v2.modules
 
-import com.google.inject.AbstractModule
+import com.google.inject.{AbstractModule, Provides}
+import javax.inject.Singleton
+import example.bankwealth.v2.application.connectors.OutboundConnectorsPort
+import example.bankwealth.v2.infrastructure.connectors.DefaultOutboundConnectors
+import example.bankwealth.v2.infrastructure.persistence.InMemoryStore
+import example.bankwealth.v2.interfaces.http.{HttpRouter, CashFundPurchaseController, TaBridgeSettlementController}
 import example.bankwealth.v2.domain.services.FundQuotaComputations
 import example.bankwealth.v2.domain.services.FundOrderComputations
 import example.bankwealth.v2.domain.services.impl.FundOrderComputationsImpl
@@ -19,14 +24,15 @@ import example.bankwealth.v2.application.process.CashFundPurchaseEffectFace
 import example.bankwealth.v2.infrastructure.effects.CashFundPurchaseEffectPortImpl
 import example.bankwealth.v2.application.process.TaBridgeSettlementEffectFace
 import example.bankwealth.v2.infrastructure.effects.TaBridgeSettlementEffectPortImpl
-import example.bankwealth.v2.application.services.{CashFundPurchaseHandler, CashFundPurchaseImpl}
-import example.bankwealth.v2.application.services.{TaBridgeSettlementHandler, TaBridgeSettlementImpl}
+import example.bankwealth.v2.application.services.{CashFundPurchaseEffectsPort, CashFundPurchaseExternPorts, CashFundPurchaseHandler, CashFundPurchaseImpl}
+import example.bankwealth.v2.application.services.{TaBridgeSettlementEffectsPort, TaBridgeSettlementExternPorts, TaBridgeSettlementHandler, TaBridgeSettlementImpl}
 import example.bankwealth.v2.infrastructure.bootstrap.SagaCoordinatorBootstrap
 
-/** Generated default Guice bindings for domain Computations, ReadSide projections, ToolGates, Story *Impl handlers, and SagaCoordinatorBootstrap.
+/** Generated default Guice bindings for domain Computations, ReadSide projections, ToolGates, Story *Impl handlers, HttpRouter, and SagaCoordinatorBootstrap.
   * Installed by handwritten/scala/<pkg>/modules/HandwrittenBindingsModule.scala (which BootstrapModule loads automatically). */
 final class GeneratedBindingsModule extends AbstractModule {
   override def configure(): Unit = {
+    bind(classOf[OutboundConnectorsPort]).to(classOf[DefaultOutboundConnectors])
     bind(classOf[FundQuotaComputations]).toInstance(FundQuotaComputations.Noop) // L1-only: 0 abstract methods
     bind(classOf[FundOrderComputations]).to(classOf[FundOrderComputationsImpl])
     bind(classOf[CreditBalanceComputations]).toInstance(CreditBalanceComputations.Noop) // L1-only: 0 abstract methods
@@ -40,4 +46,30 @@ final class GeneratedBindingsModule extends AbstractModule {
     bind(classOf[TaBridgeSettlementHandler]).toInstance(TaBridgeSettlementImpl)
     bind(classOf[SagaCoordinatorBootstrap]).asEagerSingleton()
   }
+
+  @Provides @Singleton
+  def provideInMemoryStore(): InMemoryStore = new InMemoryStore()
+
+  @Provides @Singleton
+  def provideOutboundConnectors(store: InMemoryStore): DefaultOutboundConnectors =
+    new DefaultOutboundConnectors(store)
+
+  @Provides @Singleton
+  def provideCashFundPurchaseExternPorts(connectors: DefaultOutboundConnectors): CashFundPurchaseExternPorts = connectors.cashFundPurchaseExterns
+
+  @Provides @Singleton
+  def provideCashFundPurchaseEffectsPort(connectors: DefaultOutboundConnectors): CashFundPurchaseEffectsPort = connectors.cashFundPurchaseEffects
+
+  @Provides @Singleton
+  def provideTaBridgeSettlementExternPorts(connectors: DefaultOutboundConnectors): TaBridgeSettlementExternPorts = connectors.taBridgeSettlementExterns
+
+  @Provides @Singleton
+  def provideTaBridgeSettlementEffectsPort(connectors: DefaultOutboundConnectors): TaBridgeSettlementEffectsPort = connectors.taBridgeSettlementEffects
+
+  @Provides @Singleton
+  def provideHttpRouter(connectors: DefaultOutboundConnectors): HttpRouter =
+    new HttpRouter(
+      cashFundPurchaseController = Some(new CashFundPurchaseController(CashFundPurchaseImpl, connectors.cashFundPurchaseExterns, connectors.cashFundPurchaseEffects)),
+      taBridgeSettlementController = Some(new TaBridgeSettlementController(TaBridgeSettlementImpl, connectors.taBridgeSettlementExterns, connectors.taBridgeSettlementEffects))
+    )
 }

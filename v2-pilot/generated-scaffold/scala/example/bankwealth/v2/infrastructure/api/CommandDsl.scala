@@ -4,8 +4,8 @@
 package example.bankwealth.v2.infrastructure.api
 
 import java.time.Instant
-import net.imadz.common.CommonTypes.Id
-import net.imadz.common.auth.ApiError
+import java.util.UUID
+import net.imadz.common.Id
 import play.api.libs.json.{Json, JsValue, OFormat, OWrites, Writes}
 import scala.util.Try
 
@@ -25,11 +25,14 @@ object ViewListDto {
 }
 
 object IdGuard {
-  def parse(raw: String, field: String = "id"): Either[ApiError, Id] = {
+  def parse(raw: String, field: String = "id"): Either[ApiError, String] = {
     val trimmed = Option(raw).map(_.trim).getOrElse("")
     if (trimmed.isEmpty) Left(ApiError.badRequest(s"$field must not be blank"))
-    else Right(Id(trimmed))
+    else Right(trimmed)
   }
+
+  def parseUuid(raw: String, field: String = "id"): Either[ApiError, UUID] =
+    Try(Id.of(raw)).toEither.left.map(_ => ApiError.badRequest(s"invalid UUID $field: $raw"))
 }
 
 object InstantGuard {

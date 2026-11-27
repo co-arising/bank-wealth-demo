@@ -24,6 +24,16 @@ export interface BootstrapOptions {
   readonly authority?: HttpAuthority;
   readonly store?: InMemoryStore;
   readonly port?: number;
+  /** Test-only escape hatch: NEVER enable in production HTTP exposure. */
+  readonly allowRequestStateSnapshot?: boolean;
+  /** Trusted server-side loader resolving aggregate/readmodel snapshots from repositories. */
+  readonly loadStateSnapshot?: (ctx: {
+    readonly method: string;
+    readonly path: string;
+    readonly query: Readonly<Record<string, string>>;
+    readonly body: Readonly<Record<string, unknown>>;
+    readonly headers: Readonly<Record<string, string | undefined>>;
+  }) => Readonly<Record<string, unknown>> | undefined;
 }
 
 export interface OnionApp {
@@ -53,16 +63,17 @@ export function createHttpServer(options: BootstrapOptions = {}): { app: OnionAp
       const query: Record<string, string> = {};
       for (const [k, v] of url.searchParams.entries()) query[k] = v;
       let body: Record<string, unknown> = {};
-      let stateSnapshot: Record<string, unknown> | undefined;
+      let clientStateSnapshot: Record<string, unknown> | undefined;
       const raw = Buffer.concat(chunks).toString("utf8").trim();
       if (raw) {
         try {
           const parsed = JSON.parse(raw) as Record<string, unknown>;
           if (parsed && typeof parsed === "object") {
-            if (parsed.stateSnapshot && typeof parsed.stateSnapshot === "object") {
-              stateSnapshot = parsed.stateSnapshot as Record<string, unknown>;
+            const { stateSnapshot: rawSnap, ...restBody } = parsed;
+            if (rawSnap && typeof rawSnap === "object") {
+              clientStateSnapshot = rawSnap as Record<string, unknown>;
             }
-            body = parsed;
+            body = restBody;
           }
         } catch {
           res.writeHead(400, { "content-type": "application/json; charset=utf-8" });
@@ -72,7 +83,11 @@ export function createHttpServer(options: BootstrapOptions = {}): { app: OnionAp
       }
       const headers: Record<string, string | undefined> = {};
       for (const [k, v] of Object.entries(req.headers)) headers[k] = Array.isArray(v) ? v[0] : v;
-      const out = app.router.route({ method: req.method ?? "GET", path: url.pathname, headers, query, body, stateSnapshot });
+      const method = req.method ?? "GET";
+      const stateSnapshot = options.allowRequestStateSnapshot === true
+        ? clientStateSnapshot
+        : options.loadStateSnapshot?.({ method, path: url.pathname, query, body, headers });
+      const out = app.router.route({ method, path: url.pathname, headers, query, body, stateSnapshot });
       res.writeHead(out.status, out.headers);
       res.end(JSON.stringify(out.body));
     });

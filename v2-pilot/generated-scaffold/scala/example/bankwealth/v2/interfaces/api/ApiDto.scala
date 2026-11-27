@@ -2,6 +2,9 @@
 // @canonical-v2 e988b3ce14a251c4bde60d36369b9dba38851b7debccd9ca131961af535067c3
 package example.bankwealth.v2.interfaces.api
 
+/** Marker object imported by 1.0 ProtoConverters for API acknowledgement extensions. */
+object ApiAcknowledgements {}
+
 final case class Principal(
   id: String,
   roles: Set[String] = Set.empty,

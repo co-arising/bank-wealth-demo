@@ -3,14 +3,14 @@
 // @knowledge source:bank-wealth/bankwealth#/sagas/TaBridgeSettlement
 package example.bankwealth.v2.application.process
 
-import net.imadz.infra.saga.strict.StrictDurable
+import net.imadz.common.CborSerializable
 
 object TaBridgeSettlementSagaModule {
   val FlowName: String = "TaBridgeSettlement"
   val TriggerEvent: String = "TaBridgeSettlementInitiated"
   val OrderedSteps: Vector[String] = Vector("FundOrder.RecordFundTAConfirmed", "FundOrder.RequestIndependentRefund")
 
-  sealed trait SagaEvent extends StrictDurable
+  sealed trait SagaEvent extends CborSerializable
   final case class Started(correlationId: String) extends SagaEvent
   final case class StepCompleted(correlationId: String, step: String) extends SagaEvent
   final case class Compensated(correlationId: String, failedStep: String, reason: String) extends SagaEvent

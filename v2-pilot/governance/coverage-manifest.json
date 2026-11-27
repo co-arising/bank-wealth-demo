@@ -4,48 +4,328 @@
   "context": "bankwealth",
   "effectBindingFile": "v2-pilot/truth/bank-wealth/contexts/bankwealth/bindings/bankwealth-effects.yaml",
   "governedRoots": [
-    { "root": "handwritten/scala", "extensions": [".scala"] },
-    { "root": "v2-pilot/generated-scaffold", "extensions": [".ts", ".scala"] },
-    { "root": "v2-pilot/handwritten", "extensions": [".ts", ".scala"] }
+    {
+      "root": "handwritten/scala",
+      "extensions": [
+        ".scala"
+      ]
+    },
+    {
+      "root": "v2-pilot/generated-scaffold",
+      "extensions": [
+        ".ts",
+        ".scala"
+      ]
+    },
+    {
+      "root": "v2-pilot/handwritten",
+      "extensions": [
+        ".ts",
+        ".scala"
+      ]
+    }
   ],
   "files": [
-    { "path": "handwritten/scala/example/bankwealth/domain/services/impl/BankBalanceComputations.scala", "branch": "problem", "tier": "D1", "stage": "stage-1-shadow", "evidenceTier": "E1", "contractRef": "CreditBalance.ReserveFunds", "shadowMode": "sidecar", "rationale": "Pure L1 balance arithmetic shadowed and graduated to CreditBalanceBehavior in v2-pilot (Stage 3)" },
-    { "path": "handwritten/scala/example/bankwealth/domain/services/impl/StableOrderIdentity.scala", "branch": "problem", "tier": "D2", "stage": "stage-1-shadow", "evidenceTier": "E1", "contractRef": "@host(stableOrderIdentity)", "shadowMode": "sidecar", "rationale": "Deterministic identity derivation port (@host contract)" },
-    { "path": "handwritten/scala/example/bankwealth/domain/services/impl/StableSipIdentity.scala", "branch": "problem", "tier": "D2", "stage": "stage-1-shadow", "evidenceTier": "E1", "contractRef": "@host(stableSipIdentity)", "shadowMode": "sidecar", "rationale": "Deterministic SIP occurrence identity port (@host contract); v1 frozen file carries legacy unused interfaces/application wildcard imports flagged for v2 cleanup" },
-
-    { "path": "handwritten/scala/example/bankwealth/application/services/BankCashRequests.scala", "branch": "problem", "tier": "D2", "stage": "stage-1-shadow", "evidenceTier": "E1", "contractRef": "CashFundPurchase", "shadowMode": "sidecar", "rationale": "Cash purchase intake idempotency shadowed by CashFundPurchase.story.ears" },
-    { "path": "handwritten/scala/example/bankwealth/application/services/BankTrustedAdmission.scala", "branch": "problem", "tier": "D2", "stage": "stage-1-shadow", "evidenceTier": "E1", "contractRef": "CashFundPurchase", "shadowMode": "sidecar", "rationale": "Trusted principal/account admission shadowed by CashFundPurchase AX-APP-1" },
-    { "path": "handwritten/scala/example/bankwealth/application/services/BankApplicationPorts.scala", "branch": "solution", "tier": "S2", "stage": "stage-0-raw", "evidenceTier": "E3", "contractRef": "service-endpoints-ports", "shadowMode": "none", "rationale": "Internal application port trait facade verified by actor/runtime integration suites" },
-    { "path": "handwritten/scala/example/bankwealth/application/services/BankRequestIdentity.scala", "branch": "solution", "tier": "S2", "stage": "stage-0-raw", "evidenceTier": "E3", "contractRef": "namespace-persistence-id", "shadowMode": "none", "rationale": "Namespace persistence-id encoding helper verified by runtime tests" },
-    { "path": "handwritten/scala/example/bankwealth/application/process/sip/BankSipApplication.scala", "branch": "solution", "tier": "S1", "stage": "stage-1-shadow", "evidenceTier": "E2", "contractRef": "SipPlan.StreamBatch", "shadowMode": "sidecar", "rationale": "Multi-step SIP application orchestration; shadow-queued for S1 TCK + application BMC" },
-    { "path": "handwritten/scala/example/bankwealth/application/process/ta/BankTaRefundApplication.scala", "branch": "solution", "tier": "S1", "stage": "stage-1-shadow", "evidenceTier": "E2", "contractRef": "BankTaSubmissionEffect", "shadowMode": "sidecar", "rationale": "TA/refund bootstrap discovery & absence-proof orchestration shadowed by TaBridgeSettlement + S1 TCK" },
-
-    { "path": "handwritten/scala/example/bankwealth/infrastructure/connectors/BankSipDispatchBindings.scala", "branch": "solution", "tier": "S1", "stage": "stage-1-shadow", "evidenceTier": "E2", "contractRef": "BankCashAdmissionEffect", "shadowMode": "sidecar", "rationale": "SIP occurrence dispatch effect binding under S1 protocol contract" },
-    { "path": "handwritten/scala/example/bankwealth/infrastructure/connectors/BankTaBridge.scala", "branch": "solution", "tier": "S1", "stage": "stage-1-shadow", "evidenceTier": "E2", "contractRef": "TaBridgeSettlement", "shadowMode": "sidecar", "rationale": "TA receipt ingestion & rejection-to-refund bridge shadowed by TaBridgeSettlement + S1 TCK" },
-    { "path": "handwritten/scala/example/bankwealth/infrastructure/connectors/BankTaEffectBindings.scala", "branch": "solution", "tier": "S1", "stage": "stage-1-shadow", "evidenceTier": "E2", "contractRef": "BankTaSubmissionEffect", "shadowMode": "sidecar", "rationale": "Three-phase execute/query/reconcile TA effect bindings governed by S1 TCK" },
-    { "path": "handwritten/scala/example/bankwealth/infrastructure/connectors/MockTAClient.scala", "branch": "solution", "tier": "S2", "stage": "stage-0-raw", "evidenceTier": "E3", "contractRef": "ta-http-wire-v1", "shadowMode": "none", "rationale": "Simulated external TA HTTP worker transport verified by test:runtime-verifier" },
-
-    { "path": "handwritten/scala/example/bankwealth/infrastructure/process/BankPaymentBindings.scala", "branch": "solution", "tier": "S1", "stage": "stage-1-shadow", "evidenceTier": "E2", "contractRef": "BankCashAdmissionEffect", "shadowMode": "sidecar", "rationale": "Payment SagaHost phase authority & retry bindings under S1 TCK" },
-    { "path": "handwritten/scala/example/bankwealth/infrastructure/process/BankRefundBindings.scala", "branch": "solution", "tier": "S1", "stage": "stage-1-shadow", "evidenceTier": "E2", "contractRef": "BankTaSubmissionEffect", "shadowMode": "sidecar", "rationale": "Independent refund SagaHost reverse-principal bindings under S1 TCK" },
-    { "path": "handwritten/scala/example/bankwealth/infrastructure/process/BankSipTerminalBridge.scala", "branch": "solution", "tier": "S1", "stage": "stage-1-shadow", "evidenceTier": "E2", "contractRef": "SipPlan.StreamBatch", "shadowMode": "sidecar", "rationale": "Correlated journal-evidenced first-terminal bridge from FundOrder to SipPlan" },
-
-    { "path": "handwritten/scala/example/bankwealth/infrastructure/recovery/BankRecovery.scala", "branch": "solution", "tier": "S1", "stage": "stage-1-shadow", "evidenceTier": "E2", "contractRef": "BankTaSubmissionEffect", "shadowMode": "sidecar", "rationale": "Authorized recovery governed by TCK-07 zero-new-authorization invariant" },
-    { "path": "handwritten/scala/example/bankwealth/infrastructure/recovery/BankRecoveryLoop.scala", "branch": "solution", "tier": "S1", "stage": "stage-1-shadow", "evidenceTier": "E2", "contractRef": "BankTaSubmissionEffect", "shadowMode": "sidecar", "rationale": "Journal discovery & recovery loop governed by TCK-07 crash-recovery invariant" },
-
-    { "path": "handwritten/scala/example/bankwealth/infrastructure/persistence/BankReadside.scala", "branch": "problem", "tier": "D2", "stage": "stage-1-shadow", "evidenceTier": "E1", "contractRef": "CashFundPurchase", "shadowMode": "sidecar", "rationale": "Principal authorization & business view projection shadowed by US-CFP-06..08" },
-    { "path": "handwritten/scala/example/bankwealth/infrastructure/persistence/BankJdbcDataSource.scala", "branch": "solution", "tier": "S2", "stage": "stage-0-raw", "evidenceTier": "E3", "contractRef": "jdbc-datasource-v1", "shadowMode": "none", "rationale": "JDBC DriverManager adapter verified by readside/runtime integration tests" },
-    { "path": "handwritten/scala/example/bankwealth/infrastructure/persistence/BankJournal.scala", "branch": "solution", "tier": "S2", "stage": "stage-0-raw", "evidenceTier": "E3", "contractRef": "journal-adapter-v1", "shadowMode": "none", "rationale": "Application journal abstraction verified by runtime integration tests" },
-    { "path": "handwritten/scala/example/bankwealth/infrastructure/persistence/BankPersistenceJournal.scala", "branch": "solution", "tier": "S2", "stage": "stage-0-raw", "evidenceTier": "E3", "contractRef": "akka-persistence-query-v1", "shadowMode": "none", "rationale": "Akka persistence query driver verified by runtime integration tests" },
-    { "path": "handwritten/scala/example/bankwealth/infrastructure/persistence/BankReadsideSchema.scala", "branch": "solution", "tier": "S2", "stage": "stage-0-raw", "evidenceTier": "E3", "contractRef": "readside-ddl-v1", "shadowMode": "none", "rationale": "Read-side schema facade delegating to generated JDBC schema" },
-    { "path": "handwritten/scala/example/bankwealth/infrastructure/persistence/BankResourceCleanup.scala", "branch": "solution", "tier": "S2", "stage": "stage-0-raw", "evidenceTier": "E3", "contractRef": "lifecycle-cleanup-v1", "shadowMode": "none", "rationale": "Resource lifecycle shutdown helper verified by runtime tests" },
-
-    { "path": "handwritten/scala/example/bankwealth/infrastructure/bootstrap/BankRuntime.scala", "branch": "solution", "tier": "S2", "stage": "stage-0-raw", "evidenceTier": "E3", "contractRef": "bootstrap-runtime-v1", "shadowMode": "none", "rationale": "Single-process actor runtime assembly verified by test:runtime-verifier" },
-    { "path": "handwritten/scala/example/bankwealth/infrastructure/bootstrap/BankRuntimeDirectory.scala", "branch": "solution", "tier": "S2", "stage": "stage-0-raw", "evidenceTier": "E3", "contractRef": "bootstrap-directory-v1", "shadowMode": "none", "rationale": "Actor handle directory interfaces for bootstrap assembly" },
-    { "path": "handwritten/scala/example/bankwealth/infrastructure/bootstrap/BankServiceFactory.scala", "branch": "solution", "tier": "S2", "stage": "stage-0-raw", "evidenceTier": "E3", "contractRef": "bootstrap-factory-v1", "shadowMode": "none", "rationale": "Service bootstrap implementation factory verified by runtime smoke" },
-    { "path": "handwritten/scala/example/bankwealth/infrastructure/clock/BankBusinessClock.scala", "branch": "solution", "tier": "S2", "stage": "stage-0-raw", "evidenceTier": "E3", "contractRef": "clock-adapter-v1", "shadowMode": "none", "rationale": "Operator business-clock adapter verified by runtime/TA tests" },
-    { "path": "handwritten/scala/example/bankwealth/infrastructure/security/BankDemoAuthority.scala", "branch": "problem", "tier": "D2", "stage": "stage-1-shadow", "evidenceTier": "E1", "contractRef": "CashFundPurchase", "shadowMode": "sidecar", "rationale": "Session & Origin/CSRF guard shadowed by US-CFP-01" },
-    { "path": "handwritten/scala/example/bankwealth/infrastructure/security/BankSeedAuthority.scala", "branch": "solution", "tier": "S2", "stage": "stage-0-raw", "evidenceTier": "E3", "contractRef": "seed-bootstrap-v1", "shadowMode": "none", "rationale": "Demo account seed initialization adapter verified by runtime smoke" },
-
+    {
+      "path": "handwritten/scala/example/bankwealth/domain/services/impl/BankBalanceComputations.scala",
+      "branch": "problem",
+      "tier": "D1",
+      "stage": "stage-1-shadow",
+      "evidenceTier": "E1",
+      "contractRef": "CreditBalance.ReserveFunds",
+      "shadowMode": "sidecar",
+      "rationale": "Pure L1 balance arithmetic shadowed and graduated to CreditBalanceBehavior in v2-pilot (Stage 3)"
+    },
+    {
+      "path": "handwritten/scala/example/bankwealth/domain/services/impl/StableOrderIdentity.scala",
+      "branch": "problem",
+      "tier": "D2",
+      "stage": "stage-1-shadow",
+      "evidenceTier": "E1",
+      "contractRef": "@host(stableOrderIdentity)",
+      "shadowMode": "sidecar",
+      "rationale": "Deterministic identity derivation port (@host contract)"
+    },
+    {
+      "path": "handwritten/scala/example/bankwealth/domain/services/impl/StableSipIdentity.scala",
+      "branch": "problem",
+      "tier": "D2",
+      "stage": "stage-1-shadow",
+      "evidenceTier": "E1",
+      "contractRef": "@host(stableSipIdentity)",
+      "shadowMode": "sidecar",
+      "rationale": "Deterministic SIP occurrence identity port (@host contract); v1 frozen file carries legacy unused interfaces/application wildcard imports flagged for v2 cleanup"
+    },
+    {
+      "path": "handwritten/scala/example/bankwealth/application/services/BankCashRequests.scala",
+      "branch": "problem",
+      "tier": "D2",
+      "stage": "stage-1-shadow",
+      "evidenceTier": "E1",
+      "contractRef": "CashFundPurchase",
+      "shadowMode": "sidecar",
+      "rationale": "Cash purchase intake idempotency shadowed by CashFundPurchase.story.ears"
+    },
+    {
+      "path": "handwritten/scala/example/bankwealth/application/services/BankTrustedAdmission.scala",
+      "branch": "problem",
+      "tier": "D2",
+      "stage": "stage-1-shadow",
+      "evidenceTier": "E1",
+      "contractRef": "CashFundPurchase",
+      "shadowMode": "sidecar",
+      "rationale": "Trusted principal/account admission shadowed by CashFundPurchase AX-APP-1"
+    },
+    {
+      "path": "handwritten/scala/example/bankwealth/application/services/BankApplicationPorts.scala",
+      "branch": "solution",
+      "tier": "S2",
+      "stage": "stage-0-raw",
+      "evidenceTier": "E3",
+      "contractRef": "service-endpoints-ports",
+      "shadowMode": "none",
+      "rationale": "Internal application port trait facade verified by actor/runtime integration suites"
+    },
+    {
+      "path": "handwritten/scala/example/bankwealth/application/services/BankRequestIdentity.scala",
+      "branch": "solution",
+      "tier": "S2",
+      "stage": "stage-0-raw",
+      "evidenceTier": "E3",
+      "contractRef": "namespace-persistence-id",
+      "shadowMode": "none",
+      "rationale": "Namespace persistence-id encoding helper verified by runtime tests"
+    },
+    {
+      "path": "handwritten/scala/example/bankwealth/application/process/sip/BankSipApplication.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-1-shadow",
+      "evidenceTier": "E2",
+      "contractRef": "SipPlan.StreamBatch",
+      "shadowMode": "sidecar",
+      "rationale": "Multi-step SIP application orchestration; shadow-queued for S1 TCK + application BMC"
+    },
+    {
+      "path": "handwritten/scala/example/bankwealth/application/process/ta/BankTaRefundApplication.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-1-shadow",
+      "evidenceTier": "E2",
+      "contractRef": "BankTaSubmissionEffect",
+      "shadowMode": "sidecar",
+      "rationale": "TA/refund bootstrap discovery & absence-proof orchestration shadowed by TaBridgeSettlement + S1 TCK"
+    },
+    {
+      "path": "handwritten/scala/example/bankwealth/infrastructure/connectors/BankSipDispatchBindings.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-1-shadow",
+      "evidenceTier": "E2",
+      "contractRef": "BankCashAdmissionEffect",
+      "shadowMode": "sidecar",
+      "rationale": "SIP occurrence dispatch effect binding under S1 protocol contract"
+    },
+    {
+      "path": "handwritten/scala/example/bankwealth/infrastructure/connectors/BankTaBridge.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-1-shadow",
+      "evidenceTier": "E2",
+      "contractRef": "TaBridgeSettlement",
+      "shadowMode": "sidecar",
+      "rationale": "TA receipt ingestion & rejection-to-refund bridge shadowed by TaBridgeSettlement + S1 TCK"
+    },
+    {
+      "path": "handwritten/scala/example/bankwealth/infrastructure/connectors/BankTaEffectBindings.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-1-shadow",
+      "evidenceTier": "E2",
+      "contractRef": "BankTaSubmissionEffect",
+      "shadowMode": "sidecar",
+      "rationale": "Three-phase execute/query/reconcile TA effect bindings governed by S1 TCK"
+    },
+    {
+      "path": "handwritten/scala/example/bankwealth/infrastructure/connectors/MockTAClient.scala",
+      "branch": "solution",
+      "tier": "S2",
+      "stage": "stage-0-raw",
+      "evidenceTier": "E3",
+      "contractRef": "ta-http-wire-v1",
+      "shadowMode": "none",
+      "rationale": "Simulated external TA HTTP worker transport verified by test:runtime-verifier"
+    },
+    {
+      "path": "handwritten/scala/example/bankwealth/infrastructure/process/BankPaymentBindings.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-1-shadow",
+      "evidenceTier": "E2",
+      "contractRef": "BankCashAdmissionEffect",
+      "shadowMode": "sidecar",
+      "rationale": "Payment SagaHost phase authority & retry bindings under S1 TCK"
+    },
+    {
+      "path": "handwritten/scala/example/bankwealth/infrastructure/process/BankRefundBindings.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-1-shadow",
+      "evidenceTier": "E2",
+      "contractRef": "BankTaSubmissionEffect",
+      "shadowMode": "sidecar",
+      "rationale": "Independent refund SagaHost reverse-principal bindings under S1 TCK"
+    },
+    {
+      "path": "handwritten/scala/example/bankwealth/infrastructure/process/BankSipTerminalBridge.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-1-shadow",
+      "evidenceTier": "E2",
+      "contractRef": "SipPlan.StreamBatch",
+      "shadowMode": "sidecar",
+      "rationale": "Correlated journal-evidenced first-terminal bridge from FundOrder to SipPlan"
+    },
+    {
+      "path": "handwritten/scala/example/bankwealth/infrastructure/recovery/BankRecovery.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-1-shadow",
+      "evidenceTier": "E2",
+      "contractRef": "BankTaSubmissionEffect",
+      "shadowMode": "sidecar",
+      "rationale": "Authorized recovery governed by TCK-07 zero-new-authorization invariant"
+    },
+    {
+      "path": "handwritten/scala/example/bankwealth/infrastructure/recovery/BankRecoveryLoop.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-1-shadow",
+      "evidenceTier": "E2",
+      "contractRef": "BankTaSubmissionEffect",
+      "shadowMode": "sidecar",
+      "rationale": "Journal discovery & recovery loop governed by TCK-07 crash-recovery invariant"
+    },
+    {
+      "path": "handwritten/scala/example/bankwealth/infrastructure/persistence/BankReadside.scala",
+      "branch": "problem",
+      "tier": "D2",
+      "stage": "stage-1-shadow",
+      "evidenceTier": "E1",
+      "contractRef": "CashFundPurchase",
+      "shadowMode": "sidecar",
+      "rationale": "Principal authorization & business view projection shadowed by US-CFP-06..08"
+    },
+    {
+      "path": "handwritten/scala/example/bankwealth/infrastructure/persistence/BankJdbcDataSource.scala",
+      "branch": "solution",
+      "tier": "S2",
+      "stage": "stage-0-raw",
+      "evidenceTier": "E3",
+      "contractRef": "jdbc-datasource-v1",
+      "shadowMode": "none",
+      "rationale": "JDBC DriverManager adapter verified by readside/runtime integration tests"
+    },
+    {
+      "path": "handwritten/scala/example/bankwealth/infrastructure/persistence/BankJournal.scala",
+      "branch": "solution",
+      "tier": "S2",
+      "stage": "stage-0-raw",
+      "evidenceTier": "E3",
+      "contractRef": "journal-adapter-v1",
+      "shadowMode": "none",
+      "rationale": "Application journal abstraction verified by runtime integration tests"
+    },
+    {
+      "path": "handwritten/scala/example/bankwealth/infrastructure/persistence/BankPersistenceJournal.scala",
+      "branch": "solution",
+      "tier": "S2",
+      "stage": "stage-0-raw",
+      "evidenceTier": "E3",
+      "contractRef": "akka-persistence-query-v1",
+      "shadowMode": "none",
+      "rationale": "Akka persistence query driver verified by runtime integration tests"
+    },
+    {
+      "path": "handwritten/scala/example/bankwealth/infrastructure/persistence/BankReadsideSchema.scala",
+      "branch": "solution",
+      "tier": "S2",
+      "stage": "stage-0-raw",
+      "evidenceTier": "E3",
+      "contractRef": "readside-ddl-v1",
+      "shadowMode": "none",
+      "rationale": "Read-side schema facade delegating to generated JDBC schema"
+    },
+    {
+      "path": "handwritten/scala/example/bankwealth/infrastructure/persistence/BankResourceCleanup.scala",
+      "branch": "solution",
+      "tier": "S2",
+      "stage": "stage-0-raw",
+      "evidenceTier": "E3",
+      "contractRef": "lifecycle-cleanup-v1",
+      "shadowMode": "none",
+      "rationale": "Resource lifecycle shutdown helper verified by runtime tests"
+    },
+    {
+      "path": "handwritten/scala/example/bankwealth/infrastructure/bootstrap/BankRuntime.scala",
+      "branch": "solution",
+      "tier": "S2",
+      "stage": "stage-0-raw",
+      "evidenceTier": "E3",
+      "contractRef": "bootstrap-runtime-v1",
+      "shadowMode": "none",
+      "rationale": "Single-process actor runtime assembly verified by test:runtime-verifier"
+    },
+    {
+      "path": "handwritten/scala/example/bankwealth/infrastructure/bootstrap/BankRuntimeDirectory.scala",
+      "branch": "solution",
+      "tier": "S2",
+      "stage": "stage-0-raw",
+      "evidenceTier": "E3",
+      "contractRef": "bootstrap-directory-v1",
+      "shadowMode": "none",
+      "rationale": "Actor handle directory interfaces for bootstrap assembly"
+    },
+    {
+      "path": "handwritten/scala/example/bankwealth/infrastructure/bootstrap/BankServiceFactory.scala",
+      "branch": "solution",
+      "tier": "S2",
+      "stage": "stage-0-raw",
+      "evidenceTier": "E3",
+      "contractRef": "bootstrap-factory-v1",
+      "shadowMode": "none",
+      "rationale": "Service bootstrap implementation factory verified by runtime smoke"
+    },
+    {
+      "path": "handwritten/scala/example/bankwealth/infrastructure/clock/BankBusinessClock.scala",
+      "branch": "solution",
+      "tier": "S2",
+      "stage": "stage-0-raw",
+      "evidenceTier": "E3",
+      "contractRef": "clock-adapter-v1",
+      "shadowMode": "none",
+      "rationale": "Operator business-clock adapter verified by runtime/TA tests"
+    },
+    {
+      "path": "handwritten/scala/example/bankwealth/infrastructure/security/BankDemoAuthority.scala",
+      "branch": "problem",
+      "tier": "D2",
+      "stage": "stage-1-shadow",
+      "evidenceTier": "E1",
+      "contractRef": "CashFundPurchase",
+      "shadowMode": "sidecar",
+      "rationale": "Session & Origin/CSRF guard shadowed by US-CFP-01"
+    },
+    {
+      "path": "handwritten/scala/example/bankwealth/infrastructure/security/BankSeedAuthority.scala",
+      "branch": "solution",
+      "tier": "S2",
+      "stage": "stage-0-raw",
+      "evidenceTier": "E3",
+      "contractRef": "seed-bootstrap-v1",
+      "shadowMode": "none",
+      "rationale": "Demo account seed initialization adapter verified by runtime smoke"
+    },
     {
       "path": "handwritten/scala/example/bankwealth/interfaces/web/BankBrowserPages.scala",
       "branch": "solution",
@@ -60,7 +340,11 @@
         "reviewer": "architecture-owner",
         "fileSha256": "7fabb186d388227ac4a2efbb7f0c39d0c1d61fbe15ad4b2b45f2b61eee7b5e7b",
         "signedAt": "2026-11-26T05:45:00Z",
-        "checklist": ["html-escaping-verified", "csrf-header-present", "consumes-typed-readmodels-only"]
+        "checklist": [
+          "html-escaping-verified",
+          "csrf-header-present",
+          "consumes-typed-readmodels-only"
+        ]
       }
     },
     {
@@ -77,55 +361,1551 @@
         "reviewer": "architecture-owner",
         "fileSha256": "6f1f3766f59063cee3c67448070a01596be85c46ef59ab639c77fb3557e220fd",
         "signedAt": "2026-11-26T05:45:00Z",
-        "checklist": ["controller-routes-audited", "no-direct-domain-mutation"]
+        "checklist": [
+          "controller-routes-audited",
+          "no-direct-domain-mutation"
+        ]
       }
     },
-    { "path": "handwritten/scala/example/bankwealth/interfaces/web/BankQueryController.scala", "branch": "solution", "tier": "S2", "stage": "stage-0-raw", "evidenceTier": "E3", "contractRef": "query-http-wire-v1", "shadowMode": "none", "rationale": "HTTP query controller over typed query facades verified by runtime-http tests" },
-    { "path": "handwritten/scala/example/bankwealth/interfaces/web/BankServiceEndpoints.scala", "branch": "solution", "tier": "S2", "stage": "stage-0-raw", "evidenceTier": "E3", "contractRef": "service-endpoints-wire-v1", "shadowMode": "none", "rationale": "Endpoint facade verified by test:runtime-verifier" },
-    { "path": "handwritten/scala/example/bankwealth/interfaces/web/BankServiceJson.scala", "branch": "solution", "tier": "S2", "stage": "stage-0-raw", "evidenceTier": "E3", "contractRef": "service-json-codec-v1", "shadowMode": "none", "rationale": "Strict JSON DTO wire codec verified by runtime-http/controller tests" },
-    { "path": "handwritten/scala/example/bankwealth/modules/HandwrittenBindingsModule.scala", "branch": "solution", "tier": "S2", "stage": "stage-0-raw", "evidenceTier": "E3", "contractRef": "guice-di-wiring-v1", "shadowMode": "none", "rationale": "Guice DI module wiring verified by runtime boot" },
-
-    { "path": "v2-pilot/generated-scaffold/ts/exact.ts", "branch": "problem", "tier": "D1", "stage": "stage-3-generated", "evidenceTier": "E1", "contractRef": "exact-decimal-runtime", "shadowMode": "none", "rationale": "Generated zero-token BigInt fixed-point runtime" },
-    { "path": "v2-pilot/generated-scaffold/ts/types.ts", "branch": "problem", "tier": "D1", "stage": "stage-3-generated", "evidenceTier": "E1", "contractRef": "bankwealth-types", "shadowMode": "none", "rationale": "Generated value objects, exact types, and read-model views" },
-    { "path": "v2-pilot/generated-scaffold/ts/fund-quota.behavior.ts", "branch": "problem", "tier": "D1", "stage": "stage-3-generated", "evidenceTier": "E1", "contractRef": "FundQuota.ReserveSubscriptionQuota", "shadowMode": "none", "rationale": "Channel 4A zero-token deterministic L1 aggregate behavior + replay oracle" },
-    { "path": "v2-pilot/generated-scaffold/ts/credit-balance.behavior.ts", "branch": "problem", "tier": "D1", "stage": "stage-3-generated", "evidenceTier": "E1", "contractRef": "CreditBalance.ReserveFunds", "shadowMode": "none", "rationale": "Graduated Stage 3 Channel 4A zero-token L1 behavior replacing BankBalanceComputations" },
-    { "path": "v2-pilot/generated-scaffold/ts/fund-order.behavior.ts", "branch": "problem", "tier": "D2", "stage": "stage-3-generated", "evidenceTier": "E1", "contractRef": "FundOrder.ConfirmTAShares", "shadowMode": "none", "rationale": "Generated aggregate host & event fold delegating L2 QF_NIA command to @cloze" },
-    { "path": "v2-pilot/generated-scaffold/ts/cash-fund-purchase.port.ts", "branch": "problem", "tier": "D2", "stage": "stage-3-generated", "evidenceTier": "E1", "contractRef": "CashFundPurchase", "shadowMode": "none", "rationale": "Generated typed application port & caller contract" },
-    { "path": "v2-pilot/generated-scaffold/ts/ta-bridge-settlement.port.ts", "branch": "problem", "tier": "D2", "stage": "stage-3-generated", "evidenceTier": "E1", "contractRef": "TaBridgeSettlement", "shadowMode": "none", "rationale": "Generated typed TA bridge Assume-Guarantee application port" },
-    { "path": "v2-pilot/generated-scaffold/ts/domain/index.ts", "branch": "problem", "tier": "D1", "stage": "stage-3-generated", "evidenceTier": "E1", "contractRef": "bankwealth.domain", "shadowMode": "none", "rationale": "Generated Onion domain layer barrel (zero outer imports)" },
-    { "path": "v2-pilot/generated-scaffold/ts/application/connectors.ts", "branch": "problem", "tier": "D2", "stage": "stage-3-generated", "evidenceTier": "E1", "contractRef": "bankwealth.application.connectors", "shadowMode": "none", "rationale": "Generated outbound external-system connector ports" },
-    { "path": "v2-pilot/generated-scaffold/ts/application/index.ts", "branch": "problem", "tier": "D2", "stage": "stage-3-generated", "evidenceTier": "E1", "contractRef": "bankwealth.application", "shadowMode": "none", "rationale": "Generated Onion application layer barrel" },
-    { "path": "v2-pilot/generated-scaffold/ts/interfaces/api/dto.ts", "branch": "solution", "tier": "S2", "stage": "stage-3-generated", "evidenceTier": "E3", "contractRef": "bankwealth.interfaces.api", "shadowMode": "none", "rationale": "Generated inbound HTTP DTOs, HttpAuthority/Principal contract, and rejection status mapper" },
-    { "path": "v2-pilot/generated-scaffold/ts/interfaces/http/cash-fund-purchase.controller.ts", "branch": "solution", "tier": "S2", "stage": "stage-3-generated", "evidenceTier": "E3", "contractRef": "CashFundPurchase", "shadowMode": "none", "rationale": "Generated inbound HTTP controller for CashFundPurchase" },
-    { "path": "v2-pilot/generated-scaffold/ts/interfaces/http/ta-bridge-settlement.controller.ts", "branch": "solution", "tier": "S2", "stage": "stage-3-generated", "evidenceTier": "E3", "contractRef": "TaBridgeSettlement", "shadowMode": "none", "rationale": "Generated inbound HTTP controller for TaBridgeSettlement" },
-    { "path": "v2-pilot/generated-scaffold/ts/interfaces/http/router.ts", "branch": "solution", "tier": "S2", "stage": "stage-3-generated", "evidenceTier": "E3", "contractRef": "bankwealth.interfaces.http", "shadowMode": "none", "rationale": "Generated inbound HTTP router with Authority gate (401/403/CSRF)" },
-    { "path": "v2-pilot/generated-scaffold/ts/infrastructure/persistence/in-memory-store.ts", "branch": "solution", "tier": "S1", "stage": "stage-3-generated", "evidenceTier": "E2", "contractRef": "bankwealth.infrastructure.persistence", "shadowMode": "none", "rationale": "Generated in-memory persistence and idempotency pin store" },
-    { "path": "v2-pilot/generated-scaffold/ts/infrastructure/connectors/effect-adapters.ts", "branch": "solution", "tier": "S1", "stage": "stage-3-generated", "evidenceTier": "E2", "contractRef": "bankwealth.infrastructure.connectors", "shadowMode": "none", "rationale": "Generated outbound effect adapter wiring" },
-    { "path": "v2-pilot/generated-scaffold/ts/modules/bootstrap.ts", "branch": "solution", "tier": "S2", "stage": "stage-3-generated", "evidenceTier": "E3", "contractRef": "bankwealth.modules.bootstrap", "shadowMode": "none", "rationale": "Generated DI composition root and runnable node:http server" },
-
-    { "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/DomainTypes.scala", "branch": "problem", "tier": "D1", "stage": "stage-3-generated", "evidenceTier": "E1", "contractRef": "bankwealth-types", "shadowMode": "none", "rationale": "Generated Scala exact domain types" },
-    { "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/FundQuotaBehavior.scala", "branch": "problem", "tier": "D1", "stage": "stage-3-generated", "evidenceTier": "E1", "contractRef": "FundQuota.ReserveSubscriptionQuota", "shadowMode": "none", "rationale": "Channel 4A zero-token deterministic Scala L1 aggregate behavior" },
-    { "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/CreditBalanceBehavior.scala", "branch": "problem", "tier": "D1", "stage": "stage-3-generated", "evidenceTier": "E1", "contractRef": "CreditBalance.ReserveFunds", "shadowMode": "none", "rationale": "Graduated Stage 3 zero-token Scala L1 CreditBalance behavior" },
-    { "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/FundOrderBehavior.scala", "branch": "problem", "tier": "D2", "stage": "stage-3-generated", "evidenceTier": "E1", "contractRef": "FundOrder.ConfirmTAShares", "shadowMode": "none", "rationale": "Generated Scala aggregate host delegating L2 QF_NIA command to @cloze" },
-    { "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/CashFundPurchasePort.scala", "branch": "problem", "tier": "D2", "stage": "stage-3-generated", "evidenceTier": "E1", "contractRef": "CashFundPurchase", "shadowMode": "none", "rationale": "Generated Scala typed application port & caller contract" },
-    { "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/TaBridgeSettlementPort.scala", "branch": "problem", "tier": "D2", "stage": "stage-3-generated", "evidenceTier": "E1", "contractRef": "TaBridgeSettlement", "shadowMode": "none", "rationale": "Generated Scala typed TA bridge Assume-Guarantee application port" },
-    { "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/domain/DomainFacade.scala", "branch": "problem", "tier": "D1", "stage": "stage-3-generated", "evidenceTier": "E1", "contractRef": "bankwealth.domain", "shadowMode": "none", "rationale": "Generated Scala Onion domain facade (zero framework imports)" },
-    { "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/application/Connectors.scala", "branch": "problem", "tier": "D2", "stage": "stage-3-generated", "evidenceTier": "E1", "contractRef": "bankwealth.application.connectors", "shadowMode": "none", "rationale": "Generated Scala outbound connector ports" },
-    { "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/interfaces/api/ApiDto.scala", "branch": "solution", "tier": "S2", "stage": "stage-3-generated", "evidenceTier": "E3", "contractRef": "bankwealth.interfaces.api", "shadowMode": "none", "rationale": "Generated Scala inbound HTTP DTOs, Principal/HttpAuthority, and status mapper" },
-    { "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/interfaces/http/CashFundPurchaseController.scala", "branch": "solution", "tier": "S2", "stage": "stage-3-generated", "evidenceTier": "E3", "contractRef": "CashFundPurchase", "shadowMode": "none", "rationale": "Generated Scala inbound HTTP controller for CashFundPurchase" },
-    { "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/interfaces/http/TaBridgeSettlementController.scala", "branch": "solution", "tier": "S2", "stage": "stage-3-generated", "evidenceTier": "E3", "contractRef": "TaBridgeSettlement", "shadowMode": "none", "rationale": "Generated Scala inbound HTTP controller for TaBridgeSettlement" },
-    { "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/interfaces/http/HttpRouter.scala", "branch": "solution", "tier": "S2", "stage": "stage-3-generated", "evidenceTier": "E3", "contractRef": "bankwealth.interfaces.http", "shadowMode": "none", "rationale": "Generated Scala inbound HTTP router with HttpAuthority gate (401/403/CSRF)" },
-    { "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/infrastructure/persistence/InMemoryStore.scala", "branch": "solution", "tier": "S1", "stage": "stage-3-generated", "evidenceTier": "E2", "contractRef": "bankwealth.infrastructure.persistence", "shadowMode": "none", "rationale": "Generated Scala in-memory persistence and idempotency pin store" },
-    { "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/infrastructure/connectors/EffectAdapters.scala", "branch": "solution", "tier": "S1", "stage": "stage-3-generated", "evidenceTier": "E2", "contractRef": "bankwealth.infrastructure.connectors", "shadowMode": "none", "rationale": "Generated Scala outbound effect adapter wiring" },
-    { "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/modules/BootstrapModule.scala", "branch": "solution", "tier": "S2", "stage": "stage-3-generated", "evidenceTier": "E3", "contractRef": "bankwealth.modules.bootstrap", "shadowMode": "none", "rationale": "Generated Scala DI composition root" },
-
-    { "path": "v2-pilot/handwritten/fund-order-confirm-tashares.cloze.ts", "branch": "problem", "tier": "D2", "stage": "stage-2-cloze", "evidenceTier": "E1", "contractRef": "FundOrder.ConfirmTAShares", "shadowMode": "none", "rationale": "L2 QF_NIA @cloze implementation verified by locked TS BDD oracles + boundary mutation kill + blind review" },
-    { "path": "v2-pilot/handwritten/scala/example/bankwealth/v2/FundOrderConfirmTASharesCloze.scala", "branch": "problem", "tier": "D2", "stage": "stage-2-cloze", "evidenceTier": "E1", "contractRef": "FundOrder.ConfirmTAShares", "shadowMode": "none", "rationale": "L2 QF_NIA Scala @cloze implementation verified by locked ScalaTest oracles + blind review" },
-    { "path": "v2-pilot/handwritten/cash-fund-purchase.cloze.ts", "branch": "problem", "tier": "D2", "stage": "stage-2-cloze", "evidenceTier": "E1", "contractRef": "CashFundPurchase", "shadowMode": "none", "rationale": "Application story @cloze verified by locked BDD oracles + mutation kill + blind review" },
-    { "path": "v2-pilot/handwritten/scala/example/bankwealth/v2/CashFundPurchaseCloze.scala", "branch": "problem", "tier": "D2", "stage": "stage-2-cloze", "evidenceTier": "E1", "contractRef": "CashFundPurchase", "shadowMode": "none", "rationale": "Scala application story @cloze verified by locked ScalaTest oracles" },
-    { "path": "v2-pilot/handwritten/ta-bridge-settlement.cloze.ts", "branch": "problem", "tier": "D2", "stage": "stage-2-cloze", "evidenceTier": "E1", "contractRef": "TaBridgeSettlement", "shadowMode": "none", "rationale": "Assume-Guarantee TA bridge @cloze verified by locked BDD oracles" },
-    { "path": "v2-pilot/handwritten/scala/example/bankwealth/v2/TaBridgeSettlementCloze.scala", "branch": "problem", "tier": "D2", "stage": "stage-2-cloze", "evidenceTier": "E1", "contractRef": "TaBridgeSettlement", "shadowMode": "none", "rationale": "Scala Assume-Guarantee TA bridge @cloze verified by locked ScalaTest oracles" },
-    { "path": "v2-pilot/handwritten/ta-effect-adapter.ts", "branch": "solution", "tier": "S1", "stage": "stage-2-cloze", "evidenceTier": "E2", "contractRef": "BankTaSubmissionEffect", "shadowMode": "inline-marker", "rationale": "S1 three-phase-reconcile effect adapter verified by 8-scenario fault-injection TCK (TCK-01..08)" },
-    { "path": "v2-pilot/handwritten/server.ts", "branch": "solution", "tier": "S2", "stage": "stage-0-raw", "evidenceTier": "E3", "contractRef": "bankwealth.server", "shadowMode": "none", "rationale": "Runnable HTTP server entrypoint wiring @cloze handlers into BootstrapModule" }
+    {
+      "path": "handwritten/scala/example/bankwealth/interfaces/web/BankQueryController.scala",
+      "branch": "solution",
+      "tier": "S2",
+      "stage": "stage-0-raw",
+      "evidenceTier": "E3",
+      "contractRef": "query-http-wire-v1",
+      "shadowMode": "none",
+      "rationale": "HTTP query controller over typed query facades verified by runtime-http tests"
+    },
+    {
+      "path": "handwritten/scala/example/bankwealth/interfaces/web/BankServiceEndpoints.scala",
+      "branch": "solution",
+      "tier": "S2",
+      "stage": "stage-0-raw",
+      "evidenceTier": "E3",
+      "contractRef": "service-endpoints-wire-v1",
+      "shadowMode": "none",
+      "rationale": "Endpoint facade verified by test:runtime-verifier"
+    },
+    {
+      "path": "handwritten/scala/example/bankwealth/interfaces/web/BankServiceJson.scala",
+      "branch": "solution",
+      "tier": "S2",
+      "stage": "stage-0-raw",
+      "evidenceTier": "E3",
+      "contractRef": "service-json-codec-v1",
+      "shadowMode": "none",
+      "rationale": "Strict JSON DTO wire codec verified by runtime-http/controller tests"
+    },
+    {
+      "path": "handwritten/scala/example/bankwealth/modules/HandwrittenBindingsModule.scala",
+      "branch": "solution",
+      "tier": "S2",
+      "stage": "stage-0-raw",
+      "evidenceTier": "E3",
+      "contractRef": "guice-di-wiring-v1",
+      "shadowMode": "none",
+      "rationale": "Guice DI module wiring verified by runtime boot"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/ts/exact.ts",
+      "branch": "problem",
+      "tier": "D1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E1",
+      "contractRef": "exact-decimal-runtime",
+      "shadowMode": "none",
+      "rationale": "Generated zero-token BigInt fixed-point runtime"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/ts/types.ts",
+      "branch": "problem",
+      "tier": "D1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E1",
+      "contractRef": "bankwealth-types",
+      "shadowMode": "none",
+      "rationale": "Generated value objects, exact types, and read-model views"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/ts/fund-quota.behavior.ts",
+      "branch": "problem",
+      "tier": "D1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E1",
+      "contractRef": "FundQuota.ReserveSubscriptionQuota",
+      "shadowMode": "none",
+      "rationale": "Channel 4A zero-token deterministic L1 aggregate behavior + replay oracle"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/ts/credit-balance.behavior.ts",
+      "branch": "problem",
+      "tier": "D1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E1",
+      "contractRef": "CreditBalance.ReserveFunds",
+      "shadowMode": "none",
+      "rationale": "Graduated Stage 3 Channel 4A zero-token L1 behavior replacing BankBalanceComputations"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/ts/fund-order.behavior.ts",
+      "branch": "problem",
+      "tier": "D2",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E1",
+      "contractRef": "FundOrder.ConfirmTAShares",
+      "shadowMode": "none",
+      "rationale": "Generated aggregate host & event fold delegating L2 QF_NIA command to @cloze"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/ts/cash-fund-purchase.port.ts",
+      "branch": "problem",
+      "tier": "D2",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E1",
+      "contractRef": "CashFundPurchase",
+      "shadowMode": "none",
+      "rationale": "Generated typed application port & caller contract"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/ts/ta-bridge-settlement.port.ts",
+      "branch": "problem",
+      "tier": "D2",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E1",
+      "contractRef": "TaBridgeSettlement",
+      "shadowMode": "none",
+      "rationale": "Generated typed TA bridge Assume-Guarantee application port"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/ts/domain/index.ts",
+      "branch": "problem",
+      "tier": "D1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E1",
+      "contractRef": "bankwealth.domain",
+      "shadowMode": "none",
+      "rationale": "Generated Onion domain layer barrel (zero outer imports)"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/ts/application/connectors.ts",
+      "branch": "problem",
+      "tier": "D2",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E1",
+      "contractRef": "bankwealth.application.connectors",
+      "shadowMode": "none",
+      "rationale": "Generated outbound external-system connector ports"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/ts/application/index.ts",
+      "branch": "problem",
+      "tier": "D2",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E1",
+      "contractRef": "bankwealth.application",
+      "shadowMode": "none",
+      "rationale": "Generated Onion application layer barrel"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/ts/interfaces/api/dto.ts",
+      "branch": "solution",
+      "tier": "S2",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E3",
+      "contractRef": "bankwealth.interfaces.api",
+      "shadowMode": "none",
+      "rationale": "Generated inbound HTTP DTOs, HttpAuthority/Principal contract, and rejection status mapper"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/ts/interfaces/http/cash-fund-purchase.controller.ts",
+      "branch": "solution",
+      "tier": "S2",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E3",
+      "contractRef": "CashFundPurchase",
+      "shadowMode": "none",
+      "rationale": "Generated inbound HTTP controller for CashFundPurchase"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/ts/interfaces/http/ta-bridge-settlement.controller.ts",
+      "branch": "solution",
+      "tier": "S2",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E3",
+      "contractRef": "TaBridgeSettlement",
+      "shadowMode": "none",
+      "rationale": "Generated inbound HTTP controller for TaBridgeSettlement"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/ts/interfaces/http/router.ts",
+      "branch": "solution",
+      "tier": "S2",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E3",
+      "contractRef": "bankwealth.interfaces.http",
+      "shadowMode": "none",
+      "rationale": "Generated inbound HTTP router with Authority gate (401/403/CSRF)"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/ts/infrastructure/persistence/in-memory-store.ts",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E2",
+      "contractRef": "bankwealth.infrastructure.persistence",
+      "shadowMode": "none",
+      "rationale": "Generated in-memory persistence and idempotency pin store"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/ts/infrastructure/connectors/effect-adapters.ts",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E2",
+      "contractRef": "bankwealth.infrastructure.connectors",
+      "shadowMode": "none",
+      "rationale": "Generated outbound effect adapter wiring"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/ts/modules/bootstrap.ts",
+      "branch": "solution",
+      "tier": "S2",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E3",
+      "contractRef": "bankwealth.modules.bootstrap",
+      "shadowMode": "none",
+      "rationale": "Generated DI composition root and runnable node:http server"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/interfaces/api/ApiDto.scala",
+      "branch": "solution",
+      "tier": "S2",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E3",
+      "contractRef": "bankwealth.interfaces.api",
+      "shadowMode": "none",
+      "rationale": "Generated Scala inbound HTTP DTOs, Principal/HttpAuthority, and status mapper"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/interfaces/http/CashFundPurchaseController.scala",
+      "branch": "solution",
+      "tier": "S2",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E3",
+      "contractRef": "CashFundPurchase",
+      "shadowMode": "none",
+      "rationale": "Generated Scala inbound HTTP controller for CashFundPurchase"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/interfaces/http/TaBridgeSettlementController.scala",
+      "branch": "solution",
+      "tier": "S2",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E3",
+      "contractRef": "TaBridgeSettlement",
+      "shadowMode": "none",
+      "rationale": "Generated Scala inbound HTTP controller for TaBridgeSettlement"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/interfaces/http/HttpRouter.scala",
+      "branch": "solution",
+      "tier": "S2",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E3",
+      "contractRef": "bankwealth.interfaces.http",
+      "shadowMode": "none",
+      "rationale": "Generated Scala inbound HTTP router with HttpAuthority gate (401/403/CSRF)"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/infrastructure/persistence/InMemoryStore.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E2",
+      "contractRef": "bankwealth.infrastructure.persistence",
+      "shadowMode": "none",
+      "rationale": "Generated Scala in-memory persistence and idempotency pin store"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/modules/BootstrapModule.scala",
+      "branch": "solution",
+      "tier": "S2",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E3",
+      "contractRef": "bankwealth.modules.bootstrap",
+      "shadowMode": "none",
+      "rationale": "Generated Scala DI composition root"
+    },
+    {
+      "path": "v2-pilot/handwritten/fund-order-confirm-tashares.cloze.ts",
+      "branch": "problem",
+      "tier": "D2",
+      "stage": "stage-2-cloze",
+      "evidenceTier": "E1",
+      "contractRef": "FundOrder.ConfirmTAShares",
+      "shadowMode": "none",
+      "rationale": "L2 QF_NIA @cloze implementation verified by locked TS BDD oracles + boundary mutation kill + blind review"
+    },
+    {
+      "path": "v2-pilot/handwritten/cash-fund-purchase.cloze.ts",
+      "branch": "problem",
+      "tier": "D2",
+      "stage": "stage-2-cloze",
+      "evidenceTier": "E1",
+      "contractRef": "CashFundPurchase",
+      "shadowMode": "none",
+      "rationale": "Application story @cloze verified by locked BDD oracles + mutation kill + blind review"
+    },
+    {
+      "path": "v2-pilot/handwritten/ta-bridge-settlement.cloze.ts",
+      "branch": "problem",
+      "tier": "D2",
+      "stage": "stage-2-cloze",
+      "evidenceTier": "E1",
+      "contractRef": "TaBridgeSettlement",
+      "shadowMode": "none",
+      "rationale": "Assume-Guarantee TA bridge @cloze verified by locked BDD oracles"
+    },
+    {
+      "path": "v2-pilot/handwritten/ta-effect-adapter.ts",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-2-cloze",
+      "evidenceTier": "E2",
+      "contractRef": "BankTaSubmissionEffect",
+      "shadowMode": "inline-marker",
+      "rationale": "S1 three-phase-reconcile effect adapter verified by 8-scenario fault-injection TCK (TCK-01..08)"
+    },
+    {
+      "path": "v2-pilot/handwritten/server.ts",
+      "branch": "solution",
+      "tier": "S2",
+      "stage": "stage-0-raw",
+      "evidenceTier": "E3",
+      "contractRef": "bankwealth.server",
+      "shadowMode": "none",
+      "rationale": "Runnable HTTP server entrypoint wiring @cloze handlers into BootstrapModule"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/controllers/AggregateStateApiController.scala",
+      "branch": "solution",
+      "tier": "S2",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E3",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Play controller, CommandDsl, bootstrap, DI module, or common wire support"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/controllers/CashFundPurchasePlayController.scala",
+      "branch": "solution",
+      "tier": "S2",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E3",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Play controller, CommandDsl, bootstrap, DI module, or common wire support"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/controllers/TaBridgeSettlementPlayController.scala",
+      "branch": "solution",
+      "tier": "S2",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E3",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Play controller, CommandDsl, bootstrap, DI module, or common wire support"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/application/aggregates/CreditBalanceAggregate.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E2",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Akka Persistence, Saga/Effect, ReadSide projection, or repository implementation"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/application/aggregates/CreditBalanceProtocol.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E2",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Akka Persistence, Saga/Effect, ReadSide projection, or repository implementation"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/application/aggregates/FundOrderAggregate.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E2",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Akka Persistence, Saga/Effect, ReadSide projection, or repository implementation"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/application/aggregates/FundOrderProtocol.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E2",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Akka Persistence, Saga/Effect, ReadSide projection, or repository implementation"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/application/aggregates/FundQuotaAggregate.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E2",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Akka Persistence, Saga/Effect, ReadSide projection, or repository implementation"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/application/aggregates/FundQuotaProtocol.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E2",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Akka Persistence, Saga/Effect, ReadSide projection, or repository implementation"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/application/aggregates/behaviors/CreditBalanceBehaviors.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E2",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Akka Persistence, Saga/Effect, ReadSide projection, or repository implementation"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/application/aggregates/behaviors/CreditBalanceCommandHelpers.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E2",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Akka Persistence, Saga/Effect, ReadSide projection, or repository implementation"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/application/aggregates/behaviors/FundOrderBehaviors.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E2",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Akka Persistence, Saga/Effect, ReadSide projection, or repository implementation"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/application/aggregates/behaviors/FundOrderCommandHelpers.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E2",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Akka Persistence, Saga/Effect, ReadSide projection, or repository implementation"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/application/aggregates/behaviors/FundQuotaBehaviors.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E2",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Akka Persistence, Saga/Effect, ReadSide projection, or repository implementation"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/application/aggregates/behaviors/FundQuotaCommandHelpers.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E2",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Akka Persistence, Saga/Effect, ReadSide projection, or repository implementation"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/application/aggregates/factories/CreditBalanceAggregateFactory.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E2",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Akka Persistence, Saga/Effect, ReadSide projection, or repository implementation"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/application/aggregates/factories/FundOrderAggregateFactory.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E2",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Akka Persistence, Saga/Effect, ReadSide projection, or repository implementation"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/application/aggregates/factories/FundQuotaAggregateFactory.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E2",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Akka Persistence, Saga/Effect, ReadSide projection, or repository implementation"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/application/aggregates/repository/CreditBalanceRepository.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E2",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Akka Persistence, Saga/Effect, ReadSide projection, or repository implementation"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/application/aggregates/repository/FundOrderRepository.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E2",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Akka Persistence, Saga/Effect, ReadSide projection, or repository implementation"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/application/aggregates/repository/FundQuotaRepository.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E2",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Akka Persistence, Saga/Effect, ReadSide projection, or repository implementation"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/application/connectors/OutboundConnectors.scala",
+      "branch": "problem",
+      "tier": "D2",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E1",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated Scala L2/application port, connector port, or read-model query contract"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/application/process/CashFundPurchaseCompositionHost.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E2",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Akka Persistence, Saga/Effect, ReadSide projection, or repository implementation"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/application/process/CashFundPurchaseEffectFace.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E2",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Akka Persistence, Saga/Effect, ReadSide projection, or repository implementation"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/application/process/CashFundPurchaseFixtureHost.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E2",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Akka Persistence, Saga/Effect, ReadSide projection, or repository implementation"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/application/process/CashFundPurchaseInvocationFace.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E2",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Akka Persistence, Saga/Effect, ReadSide projection, or repository implementation"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/application/process/CashFundPurchaseSagaModule.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E2",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Akka Persistence, Saga/Effect, ReadSide projection, or repository implementation"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/application/process/TaBridgeSettlementCompositionHost.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E2",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Akka Persistence, Saga/Effect, ReadSide projection, or repository implementation"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/application/process/TaBridgeSettlementEffectFace.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E2",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Akka Persistence, Saga/Effect, ReadSide projection, or repository implementation"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/application/process/TaBridgeSettlementFixtureHost.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E2",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Akka Persistence, Saga/Effect, ReadSide projection, or repository implementation"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/application/process/TaBridgeSettlementInvocationFace.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E2",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Akka Persistence, Saga/Effect, ReadSide projection, or repository implementation"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/application/process/TaBridgeSettlementSagaModule.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E2",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Akka Persistence, Saga/Effect, ReadSide projection, or repository implementation"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/application/projection/handlers/BankOrderApplyEvent.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E2",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Akka Persistence, Saga/Effect, ReadSide projection, or repository implementation"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/application/projection/handlers/BankOrderApplyEventSemantics.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E2",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Akka Persistence, Saga/Effect, ReadSide projection, or repository implementation"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/application/projection/repository/BankOrderTable.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E2",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Akka Persistence, Saga/Effect, ReadSide projection, or repository implementation"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/application/readmodels/bank_order_readside/BankOrderReadsideProjection.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E2",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Akka Persistence, Saga/Effect, ReadSide projection, or repository implementation"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/application/readmodels/bank_order_readside/BankOrderReadsideProjectionHandler.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E2",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Akka Persistence, Saga/Effect, ReadSide projection, or repository implementation"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/application/readmodels/bank_order_readside/BankOrderView.scala",
+      "branch": "problem",
+      "tier": "D2",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E1",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated Scala L2/application port, connector port, or read-model query contract"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/application/readmodels/bank_order_readside/BankOrderViewQueryService.scala",
+      "branch": "problem",
+      "tier": "D2",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E1",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated Scala L2/application port, connector port, or read-model query contract"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/application/readmodels/bank_order_readside/repository/BankOrderReadsideRepository.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E2",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Akka Persistence, Saga/Effect, ReadSide projection, or repository implementation"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/application/services/CallerContractSpec.scala",
+      "branch": "problem",
+      "tier": "D2",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E1",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated Scala L2/application port, connector port, or read-model query contract"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/application/services/CashFundPurchasePort.scala",
+      "branch": "problem",
+      "tier": "D2",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E1",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated Scala L2/application port, connector port, or read-model query contract"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/application/services/TaBridgeSettlementPort.scala",
+      "branch": "problem",
+      "tier": "D2",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E1",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated Scala L2/application port, connector port, or read-model query contract"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/application/toolgates/BankCashSubmitPortConnectorPort.scala",
+      "branch": "problem",
+      "tier": "D2",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E1",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated Scala L2/application port, connector port, or read-model query contract"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/application/toolgates/BankTaBridgePortConnectorPort.scala",
+      "branch": "problem",
+      "tier": "D2",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E1",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated Scala L2/application port, connector port, or read-model query contract"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/domain/entities/CreditBalanceAxioms.scala",
+      "branch": "problem",
+      "tier": "D1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E1",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated zero-token Scala L1 domain value/entity/rule/computation under strict Onion domain purity"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/domain/entities/CreditBalanceEntity.scala",
+      "branch": "problem",
+      "tier": "D1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E1",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated zero-token Scala L1 domain value/entity/rule/computation under strict Onion domain purity"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/domain/entities/FundOrderAxioms.scala",
+      "branch": "problem",
+      "tier": "D1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E1",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated zero-token Scala L1 domain value/entity/rule/computation under strict Onion domain purity"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/domain/entities/FundOrderEntity.scala",
+      "branch": "problem",
+      "tier": "D1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E1",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated zero-token Scala L1 domain value/entity/rule/computation under strict Onion domain purity"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/domain/entities/FundQuotaAxioms.scala",
+      "branch": "problem",
+      "tier": "D1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E1",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated zero-token Scala L1 domain value/entity/rule/computation under strict Onion domain purity"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/domain/entities/FundQuotaEntity.scala",
+      "branch": "problem",
+      "tier": "D1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E1",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated zero-token Scala L1 domain value/entity/rule/computation under strict Onion domain purity"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/domain/entities/behaviors/CreditBalanceEventHandler.scala",
+      "branch": "problem",
+      "tier": "D1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E1",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated zero-token Scala L1 domain value/entity/rule/computation under strict Onion domain purity"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/domain/entities/behaviors/FundOrderEventHandler.scala",
+      "branch": "problem",
+      "tier": "D1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E1",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated zero-token Scala L1 domain value/entity/rule/computation under strict Onion domain purity"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/domain/entities/behaviors/FundQuotaEventHandler.scala",
+      "branch": "problem",
+      "tier": "D1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E1",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated zero-token Scala L1 domain value/entity/rule/computation under strict Onion domain purity"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/domain/invariants/CreditBalanceRules.scala",
+      "branch": "problem",
+      "tier": "D1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E1",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated zero-token Scala L1 domain value/entity/rule/computation under strict Onion domain purity"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/domain/invariants/FundOrderRules.scala",
+      "branch": "problem",
+      "tier": "D1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E1",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated zero-token Scala L1 domain value/entity/rule/computation under strict Onion domain purity"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/domain/invariants/FundQuotaRules.scala",
+      "branch": "problem",
+      "tier": "D1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E1",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated zero-token Scala L1 domain value/entity/rule/computation under strict Onion domain purity"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/domain/invariants/params/CreditBalanceRuleParams.scala",
+      "branch": "problem",
+      "tier": "D1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E1",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated zero-token Scala L1 domain value/entity/rule/computation under strict Onion domain purity"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/domain/invariants/params/FundOrderRuleParams.scala",
+      "branch": "problem",
+      "tier": "D1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E1",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated zero-token Scala L1 domain value/entity/rule/computation under strict Onion domain purity"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/domain/invariants/params/FundQuotaRuleParams.scala",
+      "branch": "problem",
+      "tier": "D1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E1",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated zero-token Scala L1 domain value/entity/rule/computation under strict Onion domain purity"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/domain/services/CreditBalanceComputations.scala",
+      "branch": "problem",
+      "tier": "D1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E1",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated zero-token Scala L1 domain value/entity/rule/computation under strict Onion domain purity"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/domain/services/FundOrderComputations.scala",
+      "branch": "problem",
+      "tier": "D2",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E1",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated Scala L2/application port, connector port, or read-model query contract"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/domain/services/FundQuotaComputations.scala",
+      "branch": "problem",
+      "tier": "D1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E1",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated zero-token Scala L1 domain value/entity/rule/computation under strict Onion domain purity"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/domain/values/AmountDecimal.scala",
+      "branch": "problem",
+      "tier": "D1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E1",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated zero-token Scala L1 domain value/entity/rule/computation under strict Onion domain purity"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/domain/values/BankCashAcknowledgement.scala",
+      "branch": "problem",
+      "tier": "D1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E1",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated zero-token Scala L1 domain value/entity/rule/computation under strict Onion domain purity"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/domain/values/Money.scala",
+      "branch": "problem",
+      "tier": "D1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E1",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated zero-token Scala L1 domain value/entity/rule/computation under strict Onion domain purity"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/domain/values/NavDecimal.scala",
+      "branch": "problem",
+      "tier": "D1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E1",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated zero-token Scala L1 domain value/entity/rule/computation under strict Onion domain purity"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/domain/values/TaBridgeAcknowledgement.scala",
+      "branch": "problem",
+      "tier": "D1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E1",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated zero-token Scala L1 domain value/entity/rule/computation under strict Onion domain purity"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/infrastructure/api/CommandDsl.scala",
+      "branch": "solution",
+      "tier": "S2",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E3",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Play controller, CommandDsl, bootstrap, DI module, or common wire support"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/infrastructure/bootstrap/ApplicationBootstrap.scala",
+      "branch": "solution",
+      "tier": "S2",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E3",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Play controller, CommandDsl, bootstrap, DI module, or common wire support"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/infrastructure/bootstrap/BankOrderReadsideBootstrap.scala",
+      "branch": "solution",
+      "tier": "S2",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E3",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Play controller, CommandDsl, bootstrap, DI module, or common wire support"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/infrastructure/bootstrap/BankwealthProjectionModule.scala",
+      "branch": "solution",
+      "tier": "S2",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E3",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Play controller, CommandDsl, bootstrap, DI module, or common wire support"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/infrastructure/bootstrap/BankwealthServiceConfiguration.scala",
+      "branch": "solution",
+      "tier": "S2",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E3",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Play controller, CommandDsl, bootstrap, DI module, or common wire support"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/infrastructure/bootstrap/BankwealthServiceContract.scala",
+      "branch": "solution",
+      "tier": "S2",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E3",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Play controller, CommandDsl, bootstrap, DI module, or common wire support"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/infrastructure/bootstrap/BankwealthServiceLoader.scala",
+      "branch": "solution",
+      "tier": "S2",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E3",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Play controller, CommandDsl, bootstrap, DI module, or common wire support"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/infrastructure/bootstrap/CashFundPurchaseEffectBootstrap.scala",
+      "branch": "solution",
+      "tier": "S2",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E3",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Play controller, CommandDsl, bootstrap, DI module, or common wire support"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/infrastructure/bootstrap/CashFundPurchaseProcessBootstrap.scala",
+      "branch": "solution",
+      "tier": "S2",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E3",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Play controller, CommandDsl, bootstrap, DI module, or common wire support"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/infrastructure/bootstrap/CreditBalanceBootstrap.scala",
+      "branch": "solution",
+      "tier": "S2",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E3",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Play controller, CommandDsl, bootstrap, DI module, or common wire support"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/infrastructure/bootstrap/FundOrderBootstrap.scala",
+      "branch": "solution",
+      "tier": "S2",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E3",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Play controller, CommandDsl, bootstrap, DI module, or common wire support"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/infrastructure/bootstrap/FundQuotaBootstrap.scala",
+      "branch": "solution",
+      "tier": "S2",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E3",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Play controller, CommandDsl, bootstrap, DI module, or common wire support"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/infrastructure/bootstrap/SagaCoordinatorBootstrap.scala",
+      "branch": "solution",
+      "tier": "S2",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E3",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Play controller, CommandDsl, bootstrap, DI module, or common wire support"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/infrastructure/bootstrap/TaBridgeSettlementEffectBootstrap.scala",
+      "branch": "solution",
+      "tier": "S2",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E3",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Play controller, CommandDsl, bootstrap, DI module, or common wire support"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/infrastructure/bootstrap/TaBridgeSettlementProcessBootstrap.scala",
+      "branch": "solution",
+      "tier": "S2",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E3",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Play controller, CommandDsl, bootstrap, DI module, or common wire support"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/infrastructure/connectors/DefaultOutboundConnectors.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E2",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Akka Persistence, Saga/Effect, ReadSide projection, or repository implementation"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/infrastructure/persistence/CreditBalanceEventAdapter.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E2",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Akka Persistence, Saga/Effect, ReadSide projection, or repository implementation"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/infrastructure/persistence/CreditBalanceSnapshotAdapter.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E2",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Akka Persistence, Saga/Effect, ReadSide projection, or repository implementation"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/infrastructure/persistence/DomainProtoSerializer.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E2",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Akka Persistence, Saga/Effect, ReadSide projection, or repository implementation"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/infrastructure/persistence/FundOrderEventAdapter.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E2",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Akka Persistence, Saga/Effect, ReadSide projection, or repository implementation"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/infrastructure/persistence/FundOrderSnapshotAdapter.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E2",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Akka Persistence, Saga/Effect, ReadSide projection, or repository implementation"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/infrastructure/persistence/FundQuotaEventAdapter.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E2",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Akka Persistence, Saga/Effect, ReadSide projection, or repository implementation"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/infrastructure/persistence/FundQuotaSnapshotAdapter.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E2",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Akka Persistence, Saga/Effect, ReadSide projection, or repository implementation"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/infrastructure/persistence/converters/CreditBalanceProtoConverters.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E2",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Akka Persistence, Saga/Effect, ReadSide projection, or repository implementation"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/infrastructure/persistence/converters/DomainConverters.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E2",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Akka Persistence, Saga/Effect, ReadSide projection, or repository implementation"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/infrastructure/persistence/converters/FundOrderProtoConverters.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E2",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Akka Persistence, Saga/Effect, ReadSide projection, or repository implementation"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/infrastructure/persistence/converters/FundQuotaProtoConverters.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E2",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Akka Persistence, Saga/Effect, ReadSide projection, or repository implementation"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/infrastructure/persistence/converters/SharedValueProtoConverters.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E2",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Akka Persistence, Saga/Effect, ReadSide projection, or repository implementation"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/infrastructure/repositories/aggregate/CreditBalanceRepositoryImpl.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E2",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Akka Persistence, Saga/Effect, ReadSide projection, or repository implementation"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/infrastructure/repositories/aggregate/FundOrderRepositoryImpl.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E2",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Akka Persistence, Saga/Effect, ReadSide projection, or repository implementation"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/infrastructure/repositories/aggregate/FundQuotaRepositoryImpl.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E2",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Akka Persistence, Saga/Effect, ReadSide projection, or repository implementation"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/infrastructure/repositories/projection/BankOrderReadsideRepositoryImpl.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E2",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Akka Persistence, Saga/Effect, ReadSide projection, or repository implementation"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/infrastructure/repositories/projection/BankOrderReadsideSchema.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E2",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Akka Persistence, Saga/Effect, ReadSide projection, or repository implementation"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/interfaces/web/PlayHttpBridge.scala",
+      "branch": "solution",
+      "tier": "S2",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E3",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Play controller, CommandDsl, bootstrap, DI module, or common wire support"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/modules/GeneratedBindingsModule.scala",
+      "branch": "solution",
+      "tier": "S2",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E3",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Play controller, CommandDsl, bootstrap, DI module, or common wire support"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/modules/OnionBootstrap.scala",
+      "branch": "solution",
+      "tier": "S2",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E3",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Play controller, CommandDsl, bootstrap, DI module, or common wire support"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/modules/OrchestrationModule.scala",
+      "branch": "solution",
+      "tier": "S2",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E3",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated 54-family Scala Play controller, CommandDsl, bootstrap, DI module, or common wire support"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/infrastructure/api/AuthEndpointDsl.scala",
+      "branch": "solution",
+      "tier": "S2",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E3",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated self-contained Play AuthEndpointDsl (ApiError, AuthContext, RoleGate, Endpoint)"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/infrastructure/persistence/CashFundPurchaseEffectSerializer.scala",
+      "branch": "solution",
+      "tier": "S2",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E3",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated Akka SerializerWithStringManifest with unique ID for CashFundPurchase EffectEvent"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/infrastructure/persistence/CashFundPurchaseHostSerializer.scala",
+      "branch": "solution",
+      "tier": "S2",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E3",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated Akka SerializerWithStringManifest with unique ID for CashFundPurchase SagaEvent"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/infrastructure/persistence/TaBridgeSettlementEffectSerializer.scala",
+      "branch": "solution",
+      "tier": "S2",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E3",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated Akka SerializerWithStringManifest with unique ID for TaBridgeSettlement EffectEvent"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/infrastructure/persistence/TaBridgeSettlementHostSerializer.scala",
+      "branch": "solution",
+      "tier": "S2",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E3",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated Akka SerializerWithStringManifest with unique ID for TaBridgeSettlement SagaEvent"
+    },
+    {
+      "path": "v2-pilot/handwritten/effects/cash-fund-purchase.effect-adapter.ts",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-2-cloze",
+      "evidenceTier": "E2",
+      "contractRef": "v2-handwritten-isolation",
+      "shadowMode": "none",
+      "rationale": "Handwritten S1 side-effect adapter isolation skeleton for CashFundPurchase (verified via truthsrc run-tck-v2)"
+    },
+    {
+      "path": "v2-pilot/handwritten/effects/ta-bridge-settlement.effect-adapter.ts",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-2-cloze",
+      "evidenceTier": "E2",
+      "contractRef": "v2-handwritten-isolation",
+      "shadowMode": "none",
+      "rationale": "Handwritten S1 side-effect adapter isolation skeleton for TaBridgeSettlement (verified via truthsrc run-tck-v2)"
+    },
+    {
+      "path": "v2-pilot/handwritten/scala/example/bankwealth/v2/application/services/CashFundPurchaseImpl.scala",
+      "branch": "problem",
+      "tier": "D2",
+      "stage": "stage-2-cloze",
+      "evidenceTier": "E1",
+      "contractRef": "v2-handwritten-isolation",
+      "shadowMode": "none",
+      "rationale": "Strict-governance handwritten Scala isolation implementation (*Impl.scala) verified by locked ScalaTest specs"
+    },
+    {
+      "path": "v2-pilot/handwritten/scala/example/bankwealth/v2/application/services/TaBridgeSettlementImpl.scala",
+      "branch": "problem",
+      "tier": "D2",
+      "stage": "stage-2-cloze",
+      "evidenceTier": "E1",
+      "contractRef": "v2-handwritten-isolation",
+      "shadowMode": "none",
+      "rationale": "Strict-governance handwritten Scala isolation implementation (*Impl.scala) verified by locked ScalaTest specs"
+    },
+    {
+      "path": "v2-pilot/handwritten/scala/example/bankwealth/v2/domain/services/impl/FundOrderComputationsImpl.scala",
+      "branch": "problem",
+      "tier": "D2",
+      "stage": "stage-2-cloze",
+      "evidenceTier": "E1",
+      "contractRef": "v2-handwritten-isolation",
+      "shadowMode": "none",
+      "rationale": "Strict-governance handwritten Scala isolation implementation (*Impl.scala) verified by locked ScalaTest specs"
+    },
+    {
+      "path": "v2-pilot/handwritten/scala/example/bankwealth/v2/domain/services/impl/FundOrderConfirmTASharesImpl.scala",
+      "branch": "problem",
+      "tier": "D2",
+      "stage": "stage-2-cloze",
+      "evidenceTier": "E1",
+      "contractRef": "v2-handwritten-isolation",
+      "shadowMode": "none",
+      "rationale": "Strict-governance handwritten Scala isolation implementation (*Impl.scala) verified by locked ScalaTest specs"
+    },
+    {
+      "path": "v2-pilot/handwritten/scala/example/bankwealth/v2/infrastructure/connectors/BankCashSubmitPortConnectorImpl.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-2-cloze",
+      "evidenceTier": "E2",
+      "contractRef": "v2-handwritten-adapter",
+      "shadowMode": "none",
+      "rationale": "Strict-governance handwritten Scala connector/effect/projection isolation implementation"
+    },
+    {
+      "path": "v2-pilot/handwritten/scala/example/bankwealth/v2/infrastructure/connectors/BankTaBridgePortConnectorImpl.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-2-cloze",
+      "evidenceTier": "E2",
+      "contractRef": "v2-handwritten-adapter",
+      "shadowMode": "none",
+      "rationale": "Strict-governance handwritten Scala connector/effect/projection isolation implementation"
+    },
+    {
+      "path": "v2-pilot/handwritten/scala/example/bankwealth/v2/infrastructure/effects/CashFundPurchaseEffectPortImpl.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-2-cloze",
+      "evidenceTier": "E2",
+      "contractRef": "v2-handwritten-adapter",
+      "shadowMode": "none",
+      "rationale": "Strict-governance handwritten Scala connector/effect/projection isolation implementation"
+    },
+    {
+      "path": "v2-pilot/handwritten/scala/example/bankwealth/v2/infrastructure/effects/TaBridgeSettlementEffectPortImpl.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-2-cloze",
+      "evidenceTier": "E2",
+      "contractRef": "v2-handwritten-adapter",
+      "shadowMode": "none",
+      "rationale": "Strict-governance handwritten Scala connector/effect/projection isolation implementation"
+    },
+    {
+      "path": "v2-pilot/handwritten/scala/example/bankwealth/v2/infrastructure/projection/BankOrderApplyEventSemanticsImpl.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-2-cloze",
+      "evidenceTier": "E2",
+      "contractRef": "v2-handwritten-adapter",
+      "shadowMode": "none",
+      "rationale": "Strict-governance handwritten Scala connector/effect/projection isolation implementation"
+    },
+    {
+      "path": "v2-pilot/handwritten/scala/example/bankwealth/v2/modules/HandwrittenBindingsModule.scala",
+      "branch": "solution",
+      "tier": "S2",
+      "stage": "stage-0-raw",
+      "evidenceTier": "E3",
+      "contractRef": "guice-di-wiring-v2",
+      "shadowMode": "none",
+      "rationale": "Handwritten Guice DI bindings module wiring strict-governance isolation zones"
+    }
   ]
 }

@@ -23,7 +23,7 @@ final class BankOrderReadsideRepositoryImpl @Inject()(implicit ec: ExecutionCont
     DB.readOnly { implicit session =>
       sql"SELECT principal, client_request_id, payment_completed, ta_finalized FROM bankwealth_bank_order_view WHERE principal = $principal"
         .map(fromResultSet)
-        .single
+        .single()
         .apply()
     }
   }
@@ -33,7 +33,7 @@ final class BankOrderReadsideRepositoryImpl @Inject()(implicit ec: ExecutionCont
     DB.readOnly { implicit session =>
       sql"SELECT principal, client_request_id, payment_completed, ta_finalized FROM bankwealth_bank_order_view ORDER BY principal LIMIT $$pageSize OFFSET $$offset"
         .map(fromResultSet)
-        .list
+        .list()
         .apply()
     }
   }
@@ -42,14 +42,14 @@ final class BankOrderReadsideRepositoryImpl @Inject()(implicit ec: ExecutionCont
     DB.localTx { implicit session =>
       sql"""|INSERT INTO bankwealth_bank_order_view (principal, client_request_id, payment_completed, ta_finalized)
             |VALUES (${row.principal}, ${row.clientRequestId}, ${row.paymentCompleted}, ${row.taFinalized})
-            |ON CONFLICT (principal) DO UPDATE SET client_request_id = EXCLUDED.client_request_id, payment_completed = EXCLUDED.payment_completed, ta_finalized = EXCLUDED.ta_finalized""".stripMargin.update.apply()
+            |ON CONFLICT (principal) DO UPDATE SET client_request_id = EXCLUDED.client_request_id, payment_completed = EXCLUDED.payment_completed, ta_finalized = EXCLUDED.ta_finalized""".stripMargin.update().apply()
       ()
     }
   }
 
   override def deleteById(principal: String): Future[Unit] = Future {
     DB.localTx { implicit session =>
-      sql"DELETE FROM bankwealth_bank_order_view WHERE principal = $principal".update.apply()
+      sql"DELETE FROM bankwealth_bank_order_view WHERE principal = $principal".update().apply()
       ()
     }
   }

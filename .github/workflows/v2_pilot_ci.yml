@@ -57,11 +57,11 @@ jobs:
         working-directory: bank-wealth-demo
         run: npm run validate
 
-      - name: Run co-arising 2.0 pilot compile, strict verify (5 TS + 5 Scala), coverage (100%), S1 TCK, and mutation kill E2E
+      - name: Run co-arising 2.0 pilot compile, strict verify (6 TS + 6 Scala + Mutation Gate), coverage (100%), S1 TCK, and mutation kill E2E
         working-directory: bank-wealth-demo
         run: |
           npm run v2:compile
-          node ../metarch-truthsrc/bin/truthsrc.js verify-v2 --root v2-pilot --target typescript,scala --canonical v2-pilot/.truthsrc/canonical-v2.json --db v2-pilot/.truthsrc/knowledge.sqlite --strict
+          node ../metarch-truthsrc/bin/truthsrc.js verify-v2 --root v2-pilot --target typescript,scala --canonical v2-pilot/.truthsrc/canonical-v2.json --db v2-pilot/.truthsrc/knowledge.sqlite --strict --mutation-gate
           npm run v2:audit-coverage
           npm run v2:tck
           npm run test:v2

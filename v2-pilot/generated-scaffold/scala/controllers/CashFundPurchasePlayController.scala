@@ -4,9 +4,8 @@
 package controllers
 
 import javax.inject.{Inject, Singleton}
-import net.imadz.common.auth.{ApiError, Endpoint, RoleGate}
 import example.bankwealth.v2.application.services.{CashFundPurchaseEffectsPort, CashFundPurchaseExternPorts, CashFundPurchaseHandler, CashFundPurchaseRequest}
-import example.bankwealth.v2.infrastructure.api.OkReceipt
+import example.bankwealth.v2.infrastructure.api.{ApiError, Endpoint, OkReceipt, RoleGate}
 import play.api.libs.json.{JsArray, JsBoolean, JsNull, JsNumber, JsObject, JsString, JsValue, Json}
 import play.api.mvc.{AbstractController, Action, AnyContent, ControllerComponents}
 import scala.concurrent.{ExecutionContext, Future}
@@ -46,12 +45,12 @@ final class CashFundPurchasePlayController @Inject()(
   def bankCashSubmitPortSubmit(): Action[AnyContent] = api.tenant.write[JsObject]("investor") { (ctx, body) =>
     val principal = Some(Map[String, Any]("id" -> ctx.userId, "roles" -> ctx.roles, "tenantId" -> ctx.tenantId.getOrElse("")))
     val appReq = CashFundPurchaseRequest(operation = "BankCashSubmitPort.submit", payload = jsObjToMap(body), principal = principal)
-    Future.successful(handler.handle(appReq, externs, effects) match {
+    Future.successful((handler.handle(appReq, externs, effects) match {
       case Left(err)  => Left(ApiError.badRequest(s"${err.code}: ${err.message}"))
       case Right(res) =>
         val receipt = OkReceipt(id = res.ruleId, ruleId = res.ruleId)
         Right(Json.obj("ok" -> true, "receipt" -> Json.toJson(receipt), "response" -> toJsValue(res.response), "view" -> toJsValue(res.view)))
-    })
+    }): Either[ApiError, JsValue])
   }
 
   // @knowledge source:bank-wealth/bankwealth#/ports/BankOrderQuery/get
@@ -60,12 +59,12 @@ final class CashFundPurchasePlayController @Inject()(
     val payload: Map[String, Any] = req.queryString.collect { case (k, v) if v.nonEmpty => k -> (v.head: Any) }
     val principal = Some(Map[String, Any]("id" -> ctx.userId, "roles" -> ctx.roles, "tenantId" -> ctx.tenantId.getOrElse("")))
     val appReq = CashFundPurchaseRequest(operation = "BankOrderQuery.get", payload = payload, principal = principal)
-    Future.successful(handler.handle(appReq, externs, effects) match {
+    Future.successful((handler.handle(appReq, externs, effects) match {
       case Left(err)  => Left(ApiError.badRequest(s"${err.code}: ${err.message}"))
       case Right(res) =>
         val receipt = OkReceipt(id = res.ruleId, ruleId = res.ruleId)
         Right(Json.obj("ok" -> true, "receipt" -> Json.toJson(receipt), "response" -> toJsValue(res.response), "view" -> toJsValue(res.view)))
-    })
+    }): Either[ApiError, JsValue])
   }
 
 }

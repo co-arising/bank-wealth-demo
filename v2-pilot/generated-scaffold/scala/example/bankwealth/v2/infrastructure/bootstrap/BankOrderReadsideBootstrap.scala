@@ -18,7 +18,7 @@ trait BankOrderReadsideBootstrap {
     repository: BankOrderReadsideRepository,
     bindings: BankOrderReadsideProjectionHandler.Bindings
   )(implicit ec: ExecutionContext): Unit = {
-    if (tags.nonEmpty) {
+    if (tags.nonEmpty && readJournalPluginId.nonEmpty && readJournalPluginId != "disabled") {
       ShardedDaemonProcess(system).init[ProjectionBehavior.Command](
         name = BankOrderReadsideProjection.ProjectionName,
         numberOfInstances = tags.size,
@@ -26,8 +26,7 @@ trait BankOrderReadsideBootstrap {
           val tag = tags(idx)
           val _ = BankOrderReadsideProjection.sourceProvider(system, readJournalPluginId, tag)
           val _ = BankOrderReadsideProjection.createHandler(repository, bindings)
-          ProjectionBehavior.stopMessage
-          akka.actor.typed.scaladsl.Behaviors.empty
+          akka.actor.typed.scaladsl.Behaviors.empty[ProjectionBehavior.Command]
         },
         stopMessage = ProjectionBehavior.Stop
       )

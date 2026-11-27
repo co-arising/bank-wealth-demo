@@ -3,14 +3,14 @@
 // @knowledge source:bank-wealth/bankwealth#/sagas/CashFundPurchase
 package example.bankwealth.v2.application.process
 
-import net.imadz.infra.saga.strict.StrictDurable
+import net.imadz.common.CborSerializable
 
 object CashFundPurchaseSagaModule {
   val FlowName: String = "CashFundPurchase"
   val TriggerEvent: String = "CashFundPurchaseInitiated"
   val OrderedSteps: Vector[String] = Vector("FundOrder.RecordCashRequestSource", "FundOrder.RequestFundPurchaseSettlement")
 
-  sealed trait SagaEvent extends StrictDurable
+  sealed trait SagaEvent extends CborSerializable
   final case class Started(correlationId: String) extends SagaEvent
   final case class StepCompleted(correlationId: String, step: String) extends SagaEvent
   final case class Compensated(correlationId: String, failedStep: String, reason: String) extends SagaEvent

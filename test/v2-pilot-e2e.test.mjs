@@ -53,7 +53,7 @@ test('v2 pilot passes full Stop Hook gate across TypeScript (6 suites incl. inte
   }
 });
 
-test('full-coverage governance audit achieves 100% classification across all 76 files (36 legacy handwritten + 40 v2-pilot Onion 5-layer) with 0 arch violations', () => {
+test('full-coverage governance audit achieves 100% classification across all 186 files (36 legacy handwritten + 150 v2-pilot 54-family Onion 5-layer) with 0 arch violations', () => {
   const audit = auditFullCoverageV2({
     rootDir: ROOT,
     manifestFile: COVERAGE_MANIFEST,
@@ -61,17 +61,17 @@ test('full-coverage governance audit achieves 100% classification across all 76 
   });
 
   assert.equal(audit.passed, true, JSON.stringify(audit.diagnostics, null, 2));
-  assert.equal(audit.totalGovernedFiles, 76);
-  assert.equal(audit.classifiedFiles, 76);
+  assert.equal(audit.totalGovernedFiles, 186);
+  assert.equal(audit.classifiedFiles, 186);
   assert.equal(audit.coverageRatio, 1);
   assert.equal(audit.effectBindingSummary.importViolations, 0);
   assert.equal(audit.countsByEvidence.E4, 2);
-  assert.equal(audit.dbRecord.count, 76);
+  assert.equal(audit.dbRecord.count, 186);
 
   const db = new DatabaseSync(DB_FILE, { readOnly: true });
   try {
     const rows = db.prepare('SELECT COUNT(*) AS n FROM file_coverage').get();
-    assert.equal(rows.n, 76);
+    assert.equal(rows.n, 186);
   } finally {
     db.close();
   }

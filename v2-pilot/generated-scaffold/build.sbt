@@ -3,6 +3,7 @@
 name := "bank-wealth-bankwealth"
 version := "0.1.0-SNAPSHOT"
 scalaVersion := "2.13.14"
+ThisBuild / libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always
 
 lazy val root = (project in file("."))
   .enablePlugins(PlayScala)
@@ -18,8 +19,10 @@ lazy val root = (project in file("."))
       guice,
       jdbc,
       "net.imadz" %% "common-core" % "0.2.1",
+      "net.imadz" %% "saga-core" % "0.3.0",
       "com.typesafe.akka" %% "akka-persistence-typed" % "2.6.20",
       "com.typesafe.akka" %% "akka-cluster-sharding-typed" % "2.6.20",
+      "com.typesafe.akka" %% "akka-serialization-jackson" % "2.6.20",
       "com.lightbend.akka" %% "akka-projection-eventsourced" % "1.2.5",
       "com.lightbend.akka" %% "akka-projection-slick" % "1.2.5",
       "org.scalikejdbc" %% "scalikejdbc" % "3.5.0",

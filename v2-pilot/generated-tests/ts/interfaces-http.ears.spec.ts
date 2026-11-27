@@ -13,7 +13,7 @@ async function withServer<T>(externOverrides: Record<string, Record<string, () =
     "CashFundPurchase": cashFundPurchaseHandler,
     "TaBridgeSettlement": taBridgeSettlementHandler,
   };
-  const { server } = createHttpServer({ handlers, externOverrides: externOverrides as never, authority: authority as never });
+  const { server } = createHttpServer({ handlers, externOverrides: externOverrides as never, authority: authority as never, allowRequestStateSnapshot: true });
   await new Promise<void>(resolve => server.listen(0, "127.0.0.1", () => resolve()));
   const addr = server.address();
   const port = typeof addr === "object" && addr ? addr.port : 0;
@@ -25,7 +25,7 @@ async function withServer<T>(externOverrides: Record<string, Record<string, () =
 }
 
 async function withBareRouter<T>(fn: (baseUrl: string) => Promise<T>, authority?: unknown): Promise<T> {
-  const { server } = createHttpServer({ handlers: {}, authority: authority as never });
+  const { server } = createHttpServer({ handlers: {}, authority: authority as never, allowRequestStateSnapshot: true });
   await new Promise<void>(resolve => server.listen(0, "127.0.0.1", () => resolve()));
   const addr = server.address();
   const port = typeof addr === "object" && addr ? addr.port : 0;

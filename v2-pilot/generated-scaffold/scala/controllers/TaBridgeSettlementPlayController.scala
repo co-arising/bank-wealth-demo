@@ -4,9 +4,8 @@
 package controllers
 
 import javax.inject.{Inject, Singleton}
-import net.imadz.common.auth.{ApiError, Endpoint, RoleGate}
 import example.bankwealth.v2.application.services.{TaBridgeSettlementEffectsPort, TaBridgeSettlementExternPorts, TaBridgeSettlementHandler, TaBridgeSettlementRequest}
-import example.bankwealth.v2.infrastructure.api.OkReceipt
+import example.bankwealth.v2.infrastructure.api.{ApiError, Endpoint, OkReceipt, RoleGate}
 import play.api.libs.json.{JsArray, JsBoolean, JsNull, JsNumber, JsObject, JsString, JsValue, Json}
 import play.api.mvc.{AbstractController, Action, AnyContent, ControllerComponents}
 import scala.concurrent.{ExecutionContext, Future}
@@ -46,12 +45,12 @@ final class TaBridgeSettlementPlayController @Inject()(
   def bankTaBridgePortIngestOutcome(): Action[AnyContent] = api.global.write[JsObject]("ta-bridge-service") { (ctx, body) =>
     val principal = Some(Map[String, Any]("id" -> ctx.userId, "roles" -> ctx.roles, "tenantId" -> ctx.tenantId.getOrElse("")))
     val appReq = TaBridgeSettlementRequest(operation = "BankTaBridgePort.ingestOutcome", payload = jsObjToMap(body), principal = principal)
-    Future.successful(handler.handle(appReq, externs, effects) match {
+    Future.successful((handler.handle(appReq, externs, effects) match {
       case Left(err)  => Left(ApiError.badRequest(s"${err.code}: ${err.message}"))
       case Right(res) =>
         val receipt = OkReceipt(id = res.ruleId, ruleId = res.ruleId)
         Right(Json.obj("ok" -> true, "receipt" -> Json.toJson(receipt), "response" -> toJsValue(res.response), "view" -> toJsValue(res.view)))
-    })
+    }): Either[ApiError, JsValue])
   }
 
 }
