@@ -1,15 +1,15 @@
 {
   "schemaVersion": "co-arising.pilot-evidence/v1",
   "truthsrc": {
-    "pinnedCommit": "9a750c20fc033dd3df677b6026019e14b8f7d064",
+    "pinnedCommit": "0b925ad387d2603f1d3e248a31a71831c13c112f",
     "pinnedVersion": "2.0.0",
-    "actualCommit": "9a750c20fc033dd3df677b6026019e14b8f7d064",
-    "actualShort": "9a750c2",
+    "actualCommit": "0b925ad387d2603f1d3e248a31a71831c13c112f",
+    "actualShort": "0b925ad",
     "pinMatched": true
   },
   "bank": {
-    "commit": "c6a2c5ee76109e1dfe86abfd0c3ab0f99beffeaf",
-    "short": "c6a2c5e",
+    "commit": "6f33987bf8b95cf01f0b7d8012d69bd3aee93c88",
+    "short": "6f33987",
     "branch": "feat/co-arising-v2-pilot",
     "canonicalSha256": "963bd7e565d3d814800707a2c0663b997279b108eb72291a6ff6b534de887a22"
   },
@@ -76,8 +76,8 @@
       "killed": 7,
       "killRate": 100
     },
-    "verifiedAt": "2026-11-27T11:33:01.588Z"
+    "verifiedAt": "2026-11-27T12:54:20.088Z"
   },
-  "evidenceSha256": "aa9914e65ef485ad4a17a257c33bf27b60de42628c5d0601cba72b257bddb382",
-  "capturedAt": "2026-11-27T11:33:03.268Z"
+  "evidenceSha256": "c76441bcdeb3997228738a689056089520aae6026ccdc532d4b56d139f5d549b",
+  "capturedAt": "2026-11-27T12:54:21.502Z"
 }

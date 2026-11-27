@@ -113,26 +113,12 @@
     "errors": []
   },
   "mutationCheck": {
-    "enabled": true,
+    "enabled": false,
     "passed": true,
     "minKillRate": 100,
-    "ts": {
-      "skipped": false,
-      "passed": true,
-      "total": 12,
-      "killed": 12,
-      "survived": [],
-      "killRate": 100
-    },
-    "scala": {
-      "skipped": false,
-      "passed": true,
-      "total": 7,
-      "killed": 7,
-      "survived": [],
-      "killRate": 100
-    },
+    "ts": null,
+    "scala": null,
     "errors": []
   },
-  "verifiedAt": "2026-11-27T11:33:01.588Z"
+  "verifiedAt": "2026-11-27T12:54:33.849Z"
 }
