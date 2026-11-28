@@ -2,7 +2,7 @@
   "schemaVersion": "co-arising.verify-v2/v1",
   "passed": true,
   "strict": true,
-  "canonicalSha256": "e988b3ce14a251c4bde60d36369b9dba38851b7debccd9ca131961af535067c3",
+  "canonicalSha256": "0fb96fded72fd36ccbbd56a5ff260b2ffb67569e6f6b8b0f12c839a359520ae2",
   "expectedClozeRed": {
     "isExpectedTddRed": false,
     "unimplementedCount": 0,
@@ -12,7 +12,7 @@
     "passed": true,
     "errors": [],
     "verifiedFiles": 17,
-    "manifestSha256": "0df666e92f1bb3967fdd305c3d339cb1a7d2503724c64f9b7775af51ff275c37"
+    "manifestSha256": "28b51383c082d560a2b5e36c29d778ac5b497535a0704d35142999b579c1918a"
   },
   "tsCheck": {
     "skipped": false,
@@ -45,7 +45,7 @@
       "example.bankwealth.v2.interfaces.http.InterfacesHttpSpec"
     ],
     "failedSpecIds": [],
-    "sbtRuntimeFilesCount": 71
+    "sbtRuntimeFilesCount": 73
   },
   "provenanceCheck": {
     "passed": true,
@@ -92,12 +92,12 @@
   },
   "onionCheck": {
     "passed": true,
-    "checkedCount": 126,
+    "checkedCount": 127,
     "violations": []
   },
   "testabilityCheck": {
     "passed": true,
-    "checkedCount": 23,
+    "checkedCount": 24,
     "violations": []
   },
   "coverageCheck": {
@@ -120,5 +120,11 @@
     "scala": null,
     "errors": []
   },
-  "verifiedAt": "2026-11-27T16:25:14.035Z"
+  "timingsMs": {
+    "tsMs": 1232,
+    "scalaMs": 18020,
+    "mutationMs": 0,
+    "totalMs": 19296
+  },
+  "verifiedAt": "2026-11-28T15:22:05.335Z"
 }

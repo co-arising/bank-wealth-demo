@@ -1,7 +1,7 @@
 // LOCKED EXECUTABLE BDD/TDD ORACLE — 1.0 STRICT-GOVERNANCE ARCHITECTURE (DO NOT MODIFY)
 // source: fund-order-confirm-ta-shares.ears
 // canonicalSha256: 53a7bcd6f4ccfae41f63cd7b193ffc681c9f436d059389686c82de0c66f56393
-// testIrSha256: 8e49e0d25e2c9e2374fc97ced6543cb076c440bd3b2d8b555846f39b971ddc7b
+// testIrSha256: 8aec8b0171198562c69152082537e8e726d04aac5a2b867dc22c40058af5d069
 // layer: domain | tier: L2 | logic: QF_NIA
 package example.bankwealth.v2.domain.invariants
 
@@ -70,6 +70,17 @@ final class FundOrderConfirmTASharesEarsSpec extends AnyFunSuite {
 
   // @CoArisingSpec(id="TA_SHARES_MISMATCH", witness="z3-qf_nia-ta_shares_mismatch-boundary-2")
   test("[TA_SHARES_MISMATCH] (boundary-2) RecordFundTAConfirmed -> reject TA_SHARES_MISMATCH") {
+    val state = FundOrderEntity.State(netAmount = BigDecimal("-0.01"), paymentOutcome = "", taStatus = "")
+    val params = FundOrderRuleParams.RecordFundTAConfirmedParams(shares = -1L, nav = BigDecimal("0.0100"))
+    val outcome = FundOrderConfirmTASharesImpl.apply(state, params)
+    outcome match {
+      case Left(err) => assert(err.code == "TA_SHARES_MISMATCH")
+      case Right(events) => fail(s"expected rejection, got events: $events")
+    }
+  }
+
+  // @CoArisingSpec(id="TA_SHARES_MISMATCH", witness="z3-qf_nia-ta_shares_mismatch-boundary-3")
+  test("[TA_SHARES_MISMATCH] (boundary-3) RecordFundTAConfirmed -> reject TA_SHARES_MISMATCH") {
     val state = FundOrderEntity.State(netAmount = BigDecimal("10000.00"), paymentOutcome = "", taStatus = "")
     val params = FundOrderRuleParams.RecordFundTAConfirmedParams(shares = 99L, nav = BigDecimal("100.0000"))
     val outcome = FundOrderConfirmTASharesImpl.apply(state, params)

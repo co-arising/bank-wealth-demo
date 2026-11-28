@@ -1,5 +1,6 @@
 {
   "schemaVersion": "co-arising.generated-scala-manifest/v1",
+  "packageName": "example.bankwealth.v2",
   "scaffoldPaths": [
     "generated-scaffold/build.sbt",
     "generated-scaffold/conf/application.conf",
@@ -116,6 +117,7 @@
     "generated-scaffold/scala/example/bankwealth/v2/infrastructure/persistence/FundQuotaEventAdapter.scala",
     "generated-scaffold/scala/example/bankwealth/v2/infrastructure/persistence/FundQuotaSnapshotAdapter.scala",
     "generated-scaffold/scala/example/bankwealth/v2/infrastructure/persistence/InMemoryStore.scala",
+    "generated-scaffold/scala/example/bankwealth/v2/infrastructure/persistence/ScalikeJdbcProjectionSession.scala",
     "generated-scaffold/scala/example/bankwealth/v2/infrastructure/persistence/TaBridgeSettlementEffectSerializer.scala",
     "generated-scaffold/scala/example/bankwealth/v2/infrastructure/persistence/TaBridgeSettlementHostSerializer.scala",
     "generated-scaffold/scala/example/bankwealth/v2/infrastructure/persistence/converters/CreditBalanceProtoConverters.scala",
@@ -137,5 +139,8 @@
     "generated-scaffold/scala/example/bankwealth/v2/modules/GeneratedBindingsModule.scala",
     "generated-scaffold/scala/example/bankwealth/v2/modules/OnionBootstrap.scala",
     "generated-scaffold/scala/example/bankwealth/v2/modules/OrchestrationModule.scala"
-  ]
+  ],
+  "starterHandwrittenHashes": {
+    "handwritten/scala/example/bankwealth/v2/infrastructure/api/AuthorizationPortImpl.scala": "8282975dd53b6be510436eb6a9fff4751c196c7e5c837a4180dd13936f29851f"
+  }
 }

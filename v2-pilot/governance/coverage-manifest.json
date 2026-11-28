@@ -1926,6 +1926,26 @@
       "contractRef": "guice-di-wiring-v2",
       "shadowMode": "none",
       "rationale": "Handwritten Guice DI bindings module wiring strict-governance isolation zones"
+    },
+    {
+      "path": "v2-pilot/generated-scaffold/scala/example/bankwealth/v2/infrastructure/persistence/ScalikeJdbcProjectionSession.scala",
+      "branch": "solution",
+      "tier": "S1",
+      "stage": "stage-3-generated",
+      "evidenceTier": "E2",
+      "contractRef": "scala-cqrs-play-service:2",
+      "shadowMode": "none",
+      "rationale": "Generated ScalikeJDBC projection session adapter for Akka JdbcProjection ReadSide/Policy bootstraps"
+    },
+    {
+      "path": "v2-pilot/handwritten/scala/example/bankwealth/v2/infrastructure/api/AuthorizationPortImpl.scala",
+      "branch": "solution",
+      "tier": "S2",
+      "stage": "stage-2-cloze",
+      "evidenceTier": "E3",
+      "contractRef": "v2-handwritten-isolation",
+      "shadowMode": "none",
+      "rationale": "Handwritten fail-closed external PDP authorization isolation zone for Play controllers"
     }
   ]
 }

@@ -1,7 +1,7 @@
 // LOCKED EXECUTABLE APPLICATION BDD/TDD ORACLE — 1.0 STRICT-GOVERNANCE ARCHITECTURE (DO NOT MODIFY)
 // source: cash-fund-purchase.story.ears
 // canonicalSha256: a971bc4e46235d7761d43d4fa0e10b214ec904f4044951d17e7ca9555a05bece
-// testIrSha256: 27b6197ae8a2e275b9166b83c1495ba3ed9fdcfc09498b1501320eb31fa59d9e
+// testIrSha256: 41cf69e5e646e401785f09223ef3d02f04f57d54520a39255ab341ef5e521786
 // layer: application | tier: L3 | logic: QF_AUFLIA
 package example.bankwealth.v2.application.services
 
@@ -84,7 +84,7 @@ final class CashFundPurchaseEarsSpec extends AnyFunSuite {
     }
     val req = CashFundPurchaseRequest(
       operation = "BankCashSubmitPort.submit",
-      payload = Map[String, Any]("amount" -> Map[String, Any]("currency" -> "succeeded", "amount" -> "0.00"), "order" -> Map[String, Any]("paymentOutcome" -> "", "taStatus" -> ""), "principal" -> "", "fundCode" -> "CNY", "clientRequestId" -> ""),
+      payload = Map[String, Any]("amount" -> Map[String, Any]("currency" -> "succeeded", "amount" -> "0.00"), "order" -> Map[String, Any]("paymentOutcome" -> "", "taStatus" -> ""), "principal" -> "", "fundCode" -> "succeeded", "clientRequestId" -> ""),
       stateSnapshot = Map[String, Any]("amount" -> Map[String, Any]("currency" -> "succeeded", "amount" -> "0.00"), "order" -> Map[String, Any]("paymentOutcome" -> "", "taStatus" -> "")),
       principal = Some(Map[String, Any]("id" -> "principal-1", "roles" -> Seq[Any]("investor"), "tenantId" -> "tenant-1", "attributes" -> Map.empty[String, Any], "entitlements" -> Seq.empty[Any]))
     )
@@ -113,7 +113,7 @@ final class CashFundPurchaseEarsSpec extends AnyFunSuite {
     }
     val req = CashFundPurchaseRequest(
       operation = "BankCashSubmitPort.submit",
-      payload = Map[String, Any]("amount" -> Map[String, Any]("currency" -> "", "amount" -> "0.01"), "order" -> Map[String, Any]("paymentOutcome" -> "", "taStatus" -> ""), "principal" -> "", "fundCode" -> "CNY", "clientRequestId" -> ""),
+      payload = Map[String, Any]("amount" -> Map[String, Any]("currency" -> "", "amount" -> "0.01"), "order" -> Map[String, Any]("paymentOutcome" -> "", "taStatus" -> ""), "principal" -> "", "fundCode" -> "", "clientRequestId" -> ""),
       stateSnapshot = Map[String, Any]("amount" -> Map[String, Any]("currency" -> "", "amount" -> "0.01"), "order" -> Map[String, Any]("paymentOutcome" -> "", "taStatus" -> "")),
       principal = Some(Map[String, Any]("id" -> "principal-1", "roles" -> Seq[Any]("investor"), "tenantId" -> "tenant-1", "attributes" -> Map.empty[String, Any], "entitlements" -> Seq.empty[Any]))
     )
@@ -142,7 +142,7 @@ final class CashFundPurchaseEarsSpec extends AnyFunSuite {
     }
     val req = CashFundPurchaseRequest(
       operation = "BankCashSubmitPort.submit",
-      payload = Map[String, Any]("amount" -> Map[String, Any]("currency" -> "CNY", "amount" -> "0.01"), "order" -> Map[String, Any]("paymentOutcome" -> "", "taStatus" -> ""), "principal" -> "", "fundCode" -> "id_5", "clientRequestId" -> "CNY"),
+      payload = Map[String, Any]("amount" -> Map[String, Any]("currency" -> "CNY", "amount" -> "0.01"), "order" -> Map[String, Any]("paymentOutcome" -> "", "taStatus" -> ""), "principal" -> "", "fundCode" -> "confirmed", "clientRequestId" -> "succeeded"),
       stateSnapshot = Map[String, Any]("amount" -> Map[String, Any]("currency" -> "CNY", "amount" -> "0.01"), "order" -> Map[String, Any]("paymentOutcome" -> "", "taStatus" -> "")),
       principal = Some(Map[String, Any]("id" -> "principal-1", "roles" -> Seq[Any]("investor"), "tenantId" -> "tenant-1", "attributes" -> Map.empty[String, Any], "entitlements" -> Seq.empty[Any]))
     )
@@ -184,7 +184,7 @@ final class CashFundPurchaseEarsSpec extends AnyFunSuite {
     }
     val req = CashFundPurchaseRequest(
       operation = "BankCashSubmitPort.submit",
-      payload = Map[String, Any]("amount" -> Map[String, Any]("currency" -> "CNY", "amount" -> "0.02"), "order" -> Map[String, Any]("paymentOutcome" -> "", "taStatus" -> ""), "principal" -> "", "fundCode" -> "CNY", "clientRequestId" -> "id_6"),
+      payload = Map[String, Any]("amount" -> Map[String, Any]("currency" -> "CNY", "amount" -> "0.02"), "order" -> Map[String, Any]("paymentOutcome" -> "", "taStatus" -> ""), "principal" -> "", "fundCode" -> "", "clientRequestId" -> ""),
       stateSnapshot = Map[String, Any]("amount" -> Map[String, Any]("currency" -> "CNY", "amount" -> "0.02"), "order" -> Map[String, Any]("paymentOutcome" -> "", "taStatus" -> "")),
       principal = Some(Map[String, Any]("id" -> "principal-1", "roles" -> Seq[Any]("investor"), "tenantId" -> "tenant-1", "attributes" -> Map.empty[String, Any], "entitlements" -> Seq.empty[Any]))
     )
@@ -226,7 +226,7 @@ final class CashFundPurchaseEarsSpec extends AnyFunSuite {
     }
     val req = CashFundPurchaseRequest(
       operation = "BankCashSubmitPort.submit",
-      payload = Map[String, Any]("amount" -> Map[String, Any]("currency" -> "CNY", "amount" -> "0.01"), "order" -> Map[String, Any]("paymentOutcome" -> "", "taStatus" -> ""), "principal" -> "", "fundCode" -> "id_5", "clientRequestId" -> "id_6"),
+      payload = Map[String, Any]("amount" -> Map[String, Any]("currency" -> "CNY", "amount" -> "0.01"), "order" -> Map[String, Any]("paymentOutcome" -> "", "taStatus" -> ""), "principal" -> "", "fundCode" -> "confirmed", "clientRequestId" -> ""),
       stateSnapshot = Map[String, Any]("amount" -> Map[String, Any]("currency" -> "CNY", "amount" -> "0.01"), "order" -> Map[String, Any]("paymentOutcome" -> "", "taStatus" -> "")),
       principal = Some(Map[String, Any]("id" -> "principal-1", "roles" -> Seq[Any]("investor"), "tenantId" -> "tenant-1", "attributes" -> Map.empty[String, Any], "entitlements" -> Seq.empty[Any]))
     )
@@ -257,7 +257,7 @@ final class CashFundPurchaseEarsSpec extends AnyFunSuite {
     }
     val req = CashFundPurchaseRequest(
       operation = "BankCashSubmitPort.submit",
-      payload = Map[String, Any]("amount" -> Map[String, Any]("currency" -> "CNY", "amount" -> "0.02"), "order" -> Map[String, Any]("paymentOutcome" -> "", "taStatus" -> ""), "principal" -> "", "fundCode" -> "CNY", "clientRequestId" -> "id_6"),
+      payload = Map[String, Any]("amount" -> Map[String, Any]("currency" -> "CNY", "amount" -> "0.02"), "order" -> Map[String, Any]("paymentOutcome" -> "", "taStatus" -> ""), "principal" -> "", "fundCode" -> "succeeded", "clientRequestId" -> ""),
       stateSnapshot = Map[String, Any]("amount" -> Map[String, Any]("currency" -> "CNY", "amount" -> "0.02"), "order" -> Map[String, Any]("paymentOutcome" -> "", "taStatus" -> "")),
       principal = Some(Map[String, Any]("id" -> "principal-1", "roles" -> Seq[Any]("investor"), "tenantId" -> "tenant-1", "attributes" -> Map.empty[String, Any], "entitlements" -> Seq.empty[Any]))
     )
@@ -288,7 +288,7 @@ final class CashFundPurchaseEarsSpec extends AnyFunSuite {
     }
     val req = CashFundPurchaseRequest(
       operation = "BankCashSubmitPort.submit",
-      payload = Map[String, Any]("amount" -> Map[String, Any]("currency" -> "CNY", "amount" -> "0.01"), "order" -> Map[String, Any]("paymentOutcome" -> "", "taStatus" -> ""), "principal" -> "", "fundCode" -> "id_5", "clientRequestId" -> "id_6"),
+      payload = Map[String, Any]("amount" -> Map[String, Any]("currency" -> "CNY", "amount" -> "0.01"), "order" -> Map[String, Any]("paymentOutcome" -> "", "taStatus" -> ""), "principal" -> "", "fundCode" -> "confirmed", "clientRequestId" -> ""),
       stateSnapshot = Map[String, Any]("amount" -> Map[String, Any]("currency" -> "CNY", "amount" -> "0.01"), "order" -> Map[String, Any]("paymentOutcome" -> "", "taStatus" -> "")),
       principal = Some(Map[String, Any]("id" -> "principal-1", "roles" -> Seq[Any]("investor"), "tenantId" -> "tenant-1", "attributes" -> Map.empty[String, Any], "entitlements" -> Seq.empty[Any]))
     )
@@ -317,7 +317,7 @@ final class CashFundPurchaseEarsSpec extends AnyFunSuite {
     }
     val req = CashFundPurchaseRequest(
       operation = "BankCashSubmitPort.submit",
-      payload = Map[String, Any]("amount" -> Map[String, Any]("currency" -> "CNY", "amount" -> "0.02"), "order" -> Map[String, Any]("paymentOutcome" -> "", "taStatus" -> ""), "principal" -> "", "fundCode" -> "CNY", "clientRequestId" -> "id_6"),
+      payload = Map[String, Any]("amount" -> Map[String, Any]("currency" -> "CNY", "amount" -> "0.02"), "order" -> Map[String, Any]("paymentOutcome" -> "", "taStatus" -> ""), "principal" -> "", "fundCode" -> "succeeded", "clientRequestId" -> ""),
       stateSnapshot = Map[String, Any]("amount" -> Map[String, Any]("currency" -> "CNY", "amount" -> "0.02"), "order" -> Map[String, Any]("paymentOutcome" -> "", "taStatus" -> "")),
       principal = Some(Map[String, Any]("id" -> "principal-1", "roles" -> Seq[Any]("investor"), "tenantId" -> "tenant-1", "attributes" -> Map.empty[String, Any], "entitlements" -> Seq.empty[Any]))
     )

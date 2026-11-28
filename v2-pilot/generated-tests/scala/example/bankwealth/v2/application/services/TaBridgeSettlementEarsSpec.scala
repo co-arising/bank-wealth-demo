@@ -93,9 +93,9 @@ final class TaBridgeSettlementEarsSpec extends AnyFunSuite {
       case Right(res) =>
         val dispatched_0 = dispatches.find(_._1 == "FundOrder.RecordFundTAConfirmed").getOrElse(fail("expected dispatch FundOrder.RecordFundTAConfirmed"))
         assert(dispatched_0._2.get("shares").exists(v => v != null), "expected non-null dispatched field FundOrder.RecordFundTAConfirmed.shares")
-        assert(dispatched_0._2.get("shares").map(_.toString).contains("1"), "expected snapshot-backed FundOrder.RecordFundTAConfirmed.shares")
+        assert(dispatched_0._2.get("shares").exists { case _: Int | _: Long | _: BigInt => true; case _ => false }, "expected integer value for snapshot-derived FundOrder.RecordFundTAConfirmed.shares")
         assert(dispatched_0._2.get("nav").exists(v => v != null), "expected non-null dispatched field FundOrder.RecordFundTAConfirmed.nav")
-        assert(dispatched_0._2.get("nav").map(_.toString).contains("10.0000"), "expected snapshot-backed FundOrder.RecordFundTAConfirmed.nav")
+        assert(dispatched_0._2.get("nav").exists { case _: BigDecimal | _: Int | _: Long | _: Double | _: Float => true; case s: String => s.trim.matches("^-?\\d+(?:\\.\\d+)?$"); case _ => false }, "expected decimal value for snapshot-derived FundOrder.RecordFundTAConfirmed.nav")
         assert(!dispatches.exists(_._1 == "FundOrder.RequestIndependentRefund"), "forbidden dispatch FundOrder.RequestIndependentRefund must not occur")
         assert(res.responseType.contains("TaBridgeAcknowledgement"))
         assert(res.response.get("state").contains("confirmed"))

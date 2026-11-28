@@ -3,7 +3,7 @@
   "system": "bank-wealth",
   "subdomain": "bankwealth",
   "context": "bankwealth",
-  "canonicalSha256": "e988b3ce14a251c4bde60d36369b9dba38851b7debccd9ca131961af535067c3",
+  "canonicalSha256": "0fb96fded72fd36ccbbd56a5ff260b2ffb67569e6f6b8b0f12c839a359520ae2",
   "structures": {
     "roles": [
       {
@@ -2271,7 +2271,7 @@
                     "order.paymentOutcome": "",
                     "order.taStatus": "",
                     "principal": "",
-                    "fundCode": "CNY",
+                    "fundCode": "succeeded",
                     "amount": 0,
                     "clientRequestId": "",
                     "order": 0
@@ -2292,7 +2292,7 @@
                     "order.paymentOutcome": "",
                     "order.taStatus": "",
                     "principal": "",
-                    "fundCode": "CNY",
+                    "fundCode": "",
                     "amount": 1,
                     "clientRequestId": "",
                     "order": 1
@@ -2314,7 +2314,7 @@
                       "order.paymentOutcome": "",
                       "order.taStatus": "",
                       "principal": "",
-                      "fundCode": "",
+                      "fundCode": "confirmed",
                       "amount": 0,
                       "clientRequestId": "",
                       "order": 0
@@ -2323,7 +2323,7 @@
                     "externs": {
                       "sessionAuthenticated": true,
                       "originAndCsrfValid": true,
-                      "fundCodeActive": false,
+                      "fundCodeActive": true,
                       "requestExists": false,
                       "payloadMatchesOriginal": false
                     }
@@ -2350,9 +2350,9 @@
                     "order.paymentOutcome": "",
                     "order.taStatus": "",
                     "principal": "",
-                    "fundCode": "id_5",
+                    "fundCode": "confirmed",
                     "amount": 0,
-                    "clientRequestId": "CNY",
+                    "clientRequestId": "succeeded",
                     "order": 0
                   },
                   "mapEntries": {},
@@ -2371,9 +2371,9 @@
                     "order.paymentOutcome": "",
                     "order.taStatus": "",
                     "principal": "",
-                    "fundCode": "CNY",
+                    "fundCode": "",
                     "amount": 1,
-                    "clientRequestId": "id_6",
+                    "clientRequestId": "",
                     "order": 1
                   },
                   "mapEntries": {},
@@ -2462,9 +2462,9 @@
                     "order.paymentOutcome": "",
                     "order.taStatus": "",
                     "principal": "",
-                    "fundCode": "id_5",
+                    "fundCode": "confirmed",
                     "amount": 2437,
-                    "clientRequestId": "id_6",
+                    "clientRequestId": "",
                     "order": 0
                   },
                   "mapEntries": {},
@@ -2483,9 +2483,9 @@
                     "order.paymentOutcome": "",
                     "order.taStatus": "",
                     "principal": "",
-                    "fundCode": "CNY",
+                    "fundCode": "succeeded",
                     "amount": 8365,
-                    "clientRequestId": "id_6",
+                    "clientRequestId": "",
                     "order": 1
                   },
                   "mapEntries": {},
@@ -2540,9 +2540,9 @@
                     "order.paymentOutcome": "",
                     "order.taStatus": "",
                     "principal": "",
-                    "fundCode": "id_5",
+                    "fundCode": "confirmed",
                     "amount": 2437,
-                    "clientRequestId": "id_6",
+                    "clientRequestId": "",
                     "order": 0
                   },
                   "mapEntries": {},
@@ -2561,9 +2561,9 @@
                     "order.paymentOutcome": "",
                     "order.taStatus": "",
                     "principal": "",
-                    "fundCode": "CNY",
+                    "fundCode": "succeeded",
                     "amount": 8365,
-                    "clientRequestId": "id_6",
+                    "clientRequestId": "",
                     "order": 1
                   },
                   "mapEntries": {},
@@ -2908,7 +2908,7 @@
             "examples": []
           }
         ],
-        "sha256": "27b6197ae8a2e275b9166b83c1495ba3ed9fdcfc09498b1501320eb31fa59d9e"
+        "sha256": "41cf69e5e646e401785f09223ef3d02f04f57d54520a39255ab341ef5e521786"
       }
     },
     {
@@ -4818,6 +4818,17 @@
                   },
                   {
                     "scalars": {
+                      "nav": "0.0100",
+                      "order.paymentOutcome": "",
+                      "order.taStatus": "",
+                      "shares": -1,
+                      "order.netAmount": "-0.01"
+                    },
+                    "mapEntries": {},
+                    "externs": {}
+                  },
+                  {
+                    "scalars": {
                       "nav": "100.0000",
                       "order.paymentOutcome": "",
                       "order.taStatus": "",
@@ -4983,7 +4994,7 @@
             ]
           }
         ],
-        "sha256": "8e49e0d25e2c9e2374fc97ced6543cb076c440bd3b2d8b555846f39b971ddc7b"
+        "sha256": "8aec8b0171198562c69152082537e8e726d04aac5a2b867dc22c40058af5d069"
       }
     },
     {
@@ -5501,17 +5512,17 @@
                 },
                 "secondaryWitness": {
                   "scalars": {
-                    "amount": "0.02",
+                    "amount": "0.00",
                     "quota.fundTotalUsed": "0.01",
                     "quota.fundTotalCap": "0.01",
-                    "accountId": "id_2",
+                    "accountId": "",
                     "quota.perAccountCap": "0.01",
                     "quota.minPurchase": "0.01",
                     "quota.maxSingleLimit": "0.01"
                   },
                   "mapEntries": {
                     "quota.accountUsed": {
-                      "accountId": "0.00"
+                      "accountId": "-0.01"
                     }
                   },
                   "externs": {}
@@ -5522,7 +5533,7 @@
                       "amount": "0.01",
                       "quota.fundTotalUsed": "0.00",
                       "quota.fundTotalCap": "0.00",
-                      "accountId": "id_2",
+                      "accountId": "",
                       "quota.perAccountCap": "0.00",
                       "quota.minPurchase": "0.01",
                       "quota.maxSingleLimit": "0.00"
@@ -5539,7 +5550,7 @@
                       "amount": "0.00",
                       "quota.fundTotalUsed": "0.00",
                       "quota.fundTotalCap": "0.00",
-                      "accountId": "id_2",
+                      "accountId": "",
                       "quota.perAccountCap": "0.00",
                       "quota.minPurchase": "0.01",
                       "quota.maxSingleLimit": "0.00"
@@ -5571,7 +5582,7 @@
                     "amount": "0.01",
                     "quota.fundTotalUsed": "0.00",
                     "quota.fundTotalCap": "0.00",
-                    "accountId": "id_2",
+                    "accountId": "",
                     "quota.perAccountCap": "0.00",
                     "quota.minPurchase": "0.00",
                     "quota.maxSingleLimit": "0.01"
@@ -5588,14 +5599,14 @@
                     "amount": "0.02",
                     "quota.fundTotalUsed": "0.01",
                     "quota.fundTotalCap": "0.01",
-                    "accountId": "id_2",
+                    "accountId": "",
                     "quota.perAccountCap": "0.01",
                     "quota.minPurchase": "0.01",
                     "quota.maxSingleLimit": "0.02"
                   },
                   "mapEntries": {
                     "quota.accountUsed": {
-                      "accountId": "0.00"
+                      "accountId": "-0.01"
                     }
                   },
                   "externs": {}
@@ -5620,7 +5631,7 @@
                     "amount": "0.01",
                     "quota.fundTotalUsed": "0.00",
                     "quota.fundTotalCap": "0.01",
-                    "accountId": "id_2",
+                    "accountId": "",
                     "quota.perAccountCap": "0.00",
                     "quota.minPurchase": "0.00",
                     "quota.maxSingleLimit": "0.01"
@@ -5634,17 +5645,17 @@
                 },
                 "secondaryWitness": {
                   "scalars": {
-                    "amount": "0.02",
+                    "amount": "0.03",
                     "quota.fundTotalUsed": "0.01",
-                    "quota.fundTotalCap": "0.03",
+                    "quota.fundTotalCap": "0.04",
                     "accountId": "",
                     "quota.perAccountCap": "0.01",
                     "quota.minPurchase": "0.01",
-                    "quota.maxSingleLimit": "0.02"
+                    "quota.maxSingleLimit": "0.03"
                   },
                   "mapEntries": {
                     "quota.accountUsed": {
-                      "accountId": "0.01"
+                      "accountId": "-0.01"
                     }
                   },
                   "externs": {}
@@ -5669,7 +5680,7 @@
                     "amount": "0.00",
                     "quota.fundTotalUsed": "0.00",
                     "quota.fundTotalCap": "0.00",
-                    "accountId": "id_2",
+                    "accountId": "",
                     "quota.perAccountCap": "0.00",
                     "quota.minPurchase": "0.00",
                     "quota.maxSingleLimit": "0.00"
@@ -5686,19 +5697,37 @@
                     "amount": "0.01",
                     "quota.fundTotalUsed": "0.01",
                     "quota.fundTotalCap": "0.02",
-                    "accountId": "id_2",
+                    "accountId": "",
                     "quota.perAccountCap": "0.01",
                     "quota.minPurchase": "0.01",
                     "quota.maxSingleLimit": "0.01"
                   },
                   "mapEntries": {
                     "quota.accountUsed": {
-                      "accountId": "0.00"
+                      "accountId": "-0.01"
                     }
                   },
                   "externs": {}
                 },
-                "boundaryWitnesses": [],
+                "boundaryWitnesses": [
+                  {
+                    "scalars": {
+                      "amount": "0.00",
+                      "quota.fundTotalUsed": "0.00",
+                      "quota.fundTotalCap": "0.00",
+                      "accountId": "id_2",
+                      "quota.perAccountCap": "0.00",
+                      "quota.minPurchase": "0.00",
+                      "quota.maxSingleLimit": "0.00"
+                    },
+                    "mapEntries": {
+                      "quota.accountUsed": {
+                        "accountId": "0.00"
+                      }
+                    },
+                    "externs": {}
+                  }
+                ],
                 "outcome": "emit SubscriptionQuotaReserved",
                 "actions": [
                   {
@@ -5775,7 +5804,7 @@
             ]
           }
         ],
-        "sha256": "54f1b020c3b4d34915b30552b8e92fba9eb876c220755bece38a74ba70e82db3"
+        "sha256": "27e417d123a3998fc9ba01dd567b82084985bf352178c5d744d8327aa35ec91a"
       }
     }
   ],

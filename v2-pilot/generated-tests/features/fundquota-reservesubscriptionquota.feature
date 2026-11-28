@@ -13,6 +13,6 @@ Feature: FundQuota.ReserveSubscriptionQuota (domain)
     Examples:
       | ruleId | accountId | amount | quota.fundTotalCap | quota.fundTotalUsed | quota.maxSingleLimit | quota.minPurchase | outcome |
       | QUOTA_AMOUNT_RANGE | "id_2" | "0.01" | "0.00" | "0.00" | "0.00" | "0.00" | reject QUOTA_AMOUNT_RANGE |
-      | QUOTA_FUND_CAP | "id_2" | "0.01" | "0.00" | "0.00" | "0.01" | "0.00" | reject QUOTA_FUND_CAP |
-      | QUOTA_ACCOUNT_CAP | "id_2" | "0.01" | "0.01" | "0.00" | "0.01" | "0.00" | reject QUOTA_ACCOUNT_CAP |
-      | QUOTA_RESERVED | "id_2" | "0.00" | "0.00" | "0.00" | "0.00" | "0.00" | emit SubscriptionQuotaReserved |
+      | QUOTA_FUND_CAP | "" | "0.01" | "0.00" | "0.00" | "0.01" | "0.00" | reject QUOTA_FUND_CAP |
+      | QUOTA_ACCOUNT_CAP | "" | "0.01" | "0.01" | "0.00" | "0.01" | "0.00" | reject QUOTA_ACCOUNT_CAP |
+      | QUOTA_RESERVED | "" | "0.00" | "0.00" | "0.00" | "0.00" | "0.00" | emit SubscriptionQuotaReserved |

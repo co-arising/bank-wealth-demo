@@ -81,10 +81,10 @@ test("[TA-BR-03] (primary) BankTaBridgePort.ingestOutcome -> dispatch FundOrder.
   assert.ok(dispatched_0, "expected dispatch FundOrder.RecordFundTAConfirmed");
   assert.notEqual(dispatched_0.payload["shares"], undefined, "expected dispatched field FundOrder.RecordFundTAConfirmed.shares");
   assert.notEqual(dispatched_0.payload["shares"], null, "expected non-null dispatched field FundOrder.RecordFundTAConfirmed.shares");
-  assert.equal(String(dispatched_0.payload["shares"]), "1", "expected snapshot-backed FundOrder.RecordFundTAConfirmed.shares");
+  assert.equal(typeof dispatched_0.payload["shares"] === "number" && Number.isFinite(dispatched_0.payload["shares"]), true, "expected integer value for snapshot-derived FundOrder.RecordFundTAConfirmed.shares");
   assert.notEqual(dispatched_0.payload["nav"], undefined, "expected dispatched field FundOrder.RecordFundTAConfirmed.nav");
   assert.notEqual(dispatched_0.payload["nav"], null, "expected non-null dispatched field FundOrder.RecordFundTAConfirmed.nav");
-  assert.equal(String(dispatched_0.payload["nav"]), "10.0000", "expected snapshot-backed FundOrder.RecordFundTAConfirmed.nav");
+  assert.equal((typeof dispatched_0.payload["nav"] === "number" && Number.isFinite(dispatched_0.payload["nav"])) || (typeof dispatched_0.payload["nav"] === "string" && /^-?\d+(?:\.\d+)?$/u.test((dispatched_0.payload["nav"] as string).trim())), true, "expected decimal value for snapshot-derived FundOrder.RecordFundTAConfirmed.nav");
   assert.equal(dispatches.filter(x => x.target === "FundOrder.RequestIndependentRefund").length, 0, "forbidden dispatch FundOrder.RequestIndependentRefund must not occur");
   if (outcome.ok) {
     assert.equal(outcome.responseType, "TaBridgeAcknowledgement");

@@ -1,5 +1,5 @@
 // LOCKED EXECUTABLE INTERFACES HTTP ORACLE — 1.0 STRICT-GOVERNANCE ARCHITECTURE (DO NOT MODIFY)
-// canonicalSha256: e988b3ce14a251c4bde60d36369b9dba38851b7debccd9ca131961af535067c3
+// canonicalSha256: 0fb96fded72fd36ccbbd56a5ff260b2ffb67569e6f6b8b0f12c839a359520ae2
 // layer: interfaces | tests HttpRouter, Controllers, and OnionBootstrap DI composition
 package example.bankwealth.v2.interfaces.http
 
@@ -176,7 +176,7 @@ final class InterfacesHttpSpec extends AnyFunSuite {
     }
     val auth = new RoleBasedAuthority(_ => Some(Principal("principal-1", Set("investor"), tenantId = Some("t-1"), attributes = Map.empty, entitlements = Set.empty)))
     val rt = OnionBootstrap.createRuntime(cashFundPurchaseHandler = Some(CashFundPurchaseImpl), cashFundPurchaseExterns = Some(externs), authority = auth)
-    val req = HttpRequest(method = "POST", path = "/api/v1/bankwealth/bank-cash-submit-port/submit", body = Map[String, Any]("amount" -> Map[String, Any]("currency" -> "CNY", "amount" -> "0.01"), "order" -> Map[String, Any]("paymentOutcome" -> "", "taStatus" -> ""), "principal" -> "", "fundCode" -> "id_5", "clientRequestId" -> "CNY"), stateSnapshot = Map[String, Any]("amount" -> Map[String, Any]("currency" -> "CNY", "amount" -> "0.01"), "order" -> Map[String, Any]("paymentOutcome" -> "", "taStatus" -> "")))
+    val req = HttpRequest(method = "POST", path = "/api/v1/bankwealth/bank-cash-submit-port/submit", body = Map[String, Any]("amount" -> Map[String, Any]("currency" -> "CNY", "amount" -> "0.01"), "order" -> Map[String, Any]("paymentOutcome" -> "", "taStatus" -> ""), "principal" -> "", "fundCode" -> "confirmed", "clientRequestId" -> "succeeded"), stateSnapshot = Map[String, Any]("amount" -> Map[String, Any]("currency" -> "CNY", "amount" -> "0.01"), "order" -> Map[String, Any]("paymentOutcome" -> "", "taStatus" -> "")))
     val res = rt.router.route(req)
     assert(res.status == 200)
     assert(res.body.get("ok").contains(true))
