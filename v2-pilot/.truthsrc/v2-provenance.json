@@ -121,10 +121,10 @@
     "errors": []
   },
   "timingsMs": {
-    "tsMs": 1232,
-    "scalaMs": 18020,
+    "tsMs": 1729,
+    "scalaMs": 18827,
     "mutationMs": 0,
-    "totalMs": 19296
+    "totalMs": 20600
   },
-  "verifiedAt": "2026-11-28T15:22:05.335Z"
+  "verifiedAt": "2026-11-28T15:27:04.700Z"
 }
